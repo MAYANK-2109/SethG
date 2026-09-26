@@ -3,34 +3,32 @@ package com.sethg.app.data.local
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import androidx.security.crypto.MasterKeys
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Secure token store backed by EncryptedSharedPreferences (AES-256-GCM).
- * Used to persist JWT access and refresh tokens across app restarts.
+ * Uses security-crypto 1.0.0 stable API (MasterKeys).
  */
 @Singleton
 class SecureTokenStore @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     companion object {
-        private const val FILE_NAME     = "sethg_secure_prefs"
-        private const val KEY_ACCESS    = "access_token"
-        private const val KEY_REFRESH   = "refresh_token"
+        private const val FILE_NAME  = "sethg_secure_prefs"
+        private const val KEY_ACCESS  = "access_token"
+        private const val KEY_REFRESH = "refresh_token"
     }
 
     private val prefs: SharedPreferences by lazy {
-        val masterKey = MasterKey.Builder(context)
-            .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-            .build()
+        val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
 
         EncryptedSharedPreferences.create(
-            context,
             FILE_NAME,
-            masterKey,
+            masterKeyAlias,
+            context,
             EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
             EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
         )

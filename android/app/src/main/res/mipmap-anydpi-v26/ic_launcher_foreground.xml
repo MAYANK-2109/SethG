@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Recycling symbol background circle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,20 C35.2,20 20,35.2 20,54 C20,72.8 35.2,88 54,88 C72.8,88 88,72.8 88,54 C88,35.2 72.8,20 54,20Z" />
+
+    <!-- Recycling arrows (simplified ♻ shape) -->
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M54,30 L62,44 L58,44 L58,60 L70,60 L70,56 L78,64 L70,72 L70,68 L54,68 L54,44 L50,44 Z" />
+    <path
+        android:fillColor="#1B5E20"
+        android:pathData="M38,60 L30,52 L38,44 L38,48 L50,48 L50,64 L38,64 Z" />
+</vector>

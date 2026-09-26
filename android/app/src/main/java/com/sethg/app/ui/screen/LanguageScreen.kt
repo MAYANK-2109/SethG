@@ -1,10 +1,10 @@
 package com.sethg.app.ui.screen
 
-import androidx.compose.animation.*
-import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,13 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.sethg.app.R
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.LanguageViewModel
 
@@ -176,7 +174,7 @@ private fun LanguageCard(
             }
             if (isSelected) {
                 Icon(
-                    imageVector = androidx.compose.material.icons.Icons.Filled.CheckCircle,
+                    imageVector = Icons.Filled.CheckCircle,
                     contentDescription = "Selected",
                     tint = GreenPrimary,
                     modifier = Modifier.size(24.dp)
