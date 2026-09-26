@@ -10,6 +10,9 @@ plugins {
 
 // Redirect build output outside OneDrive to prevent file-lock conflicts caused by OneDrive syncing
 // build intermediates while Gradle is actively writing/deleting them.
-allprojects {
-    layout.buildDirectory.set(File("C:/gradle-builds/SethG/${project.name}"))
+// Only on Windows checkouts inside OneDrive — everyone else keeps the normal build/ folder.
+if (System.getProperty("os.name").startsWith("Windows") && rootDir.path.contains("OneDrive")) {
+    allprojects {
+        layout.buildDirectory.set(File("C:/gradle-builds/SethG/${project.name}"))
+    }
 }
