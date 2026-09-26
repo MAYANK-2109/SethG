@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.google.gson.Gson
 import com.sethg.app.BuildConfig
 import com.sethg.app.data.local.SecureTokenStore
+import com.sethg.app.data.local.db.ALL_MIGRATIONS
 import com.sethg.app.data.local.db.EarningsDao
 import com.sethg.app.data.local.db.LotDao
 import com.sethg.app.data.local.db.SethGDatabase
@@ -81,7 +82,8 @@ object AppModule {
     @Provides @Singleton
     fun provideDatabase(@ApplicationContext context: Context): SethGDatabase =
         Room.databaseBuilder(context, SethGDatabase::class.java, "sethg.db")
-            .fallbackToDestructiveMigration()
+            // No destructive fallback: unsynced lots exist only on this phone
+            .addMigrations(*ALL_MIGRATIONS)
             .build()
 
     @Provides fun provideUserDao(db: SethGDatabase): UserDao = db.userDao()

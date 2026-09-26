@@ -50,9 +50,20 @@ class LotRepository @Inject constructor(
     }
 
     /** Photos live in app-private storage — invisible to the gallery and other apps. */
-    fun newPhotoFile(): File {
-        val dir = File(context.filesDir, "lot_photos").apply { mkdirs() }
-        return File(dir, "${UUID.randomUUID()}.jpg")
+    fun newPhotoFile(): File = File(photoDir(), "${UUID.randomUUID()}.jpg")
+
+    private fun photoDir(): File = File(context.filesDir, "lot_photos").apply { mkdirs() }
+
+    /**
+     * Deletes photo files no lot refers to (drafts abandoned by a crash or force-stop).
+     * Only files older than an hour, so a draft being captured right now is never touched.
+     */
+    suspend fun deleteOrphanPhotos(): Int = withContext(Dispatchers.IO) {
+        val referenced = lotDao.allPhotoPaths().toSet()
+        val cutoff = System.currentTimeMillis() - 60 * 60 * 1000L
+        photoDir().listFiles().orEmpty()
+            .filter { it.absolutePath !in referenced && it.lastModified() < cutoff }
+            .count { it.delete() }
     }
 
     sealed class PhotoCheck {
@@ -128,7 +139,8 @@ class LotRepository @Inject constructor(
 
 private fun LotWithPhotos.toDomain() = Lot(
     lotId      = lot.lotId,
-    category   = MaterialCategory.valueOf(lot.category),
+    // Unknown names (e.g. a lot saved by a newer app version) fall back to OTHER instead of crashing
+    category   = MaterialCategory.entries.firstOrNull { it.name == lot.category } ?: MaterialCategory.OTHER,
     weightKg   = lot.weightKg,
     estimate   = PriceEstimate(lot.estimateLow, lot.estimateHigh),
     status     = lot.status,

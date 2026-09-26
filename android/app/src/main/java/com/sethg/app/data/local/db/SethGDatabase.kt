@@ -105,6 +105,9 @@ interface LotDao {
     @Query("SELECT * FROM lots ORDER BY createdAt DESC")
     fun observeLots(): Flow<List<LotWithPhotos>>
 
+    @Query("SELECT filePath FROM lot_photos")
+    suspend fun allPhotoPaths(): List<String>
+
     @Insert
     suspend fun insertLot(lot: LotEntity)
 
@@ -123,7 +126,7 @@ interface LotDao {
 @Database(
     entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
     version = 2,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
