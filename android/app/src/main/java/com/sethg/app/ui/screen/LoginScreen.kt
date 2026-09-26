@@ -11,17 +11,18 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.*
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.sethg.app.R
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.AuthViewModel
-import kotlinx.coroutines.flow.collect
 
 @Composable
 fun LoginScreen(
@@ -46,15 +47,13 @@ fun LoginScreen(
         }
     }
 
-    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) { padding ->
+    Scaffold(
+        containerColor = LightBackground,
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(Color(0xFF0A1F0A), BackgroundDark)
-                    )
-                )
                 .padding(padding)
         ) {
             Column(
@@ -65,67 +64,100 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                Spacer(Modifier.height(60.dp))
+                Spacer(Modifier.height(50.dp))
 
-                // Logo
-                Box(
+                // Logo (Popped Card)
+                Surface(
                     modifier = Modifier
                         .size(80.dp)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(GreenPrimary),
-                    contentAlignment = Alignment.Center
+                        .shadow(
+                            elevation = 10.dp,
+                            shape = RoundedCornerShape(22.dp),
+                            ambientColor = Color(0x1F047857),
+                            spotColor = Color(0x3D047857)
+                        ),
+                    shape = RoundedCornerShape(22.dp),
+                    color = GreenPrimary,
+                    tonalElevation = 6.dp
                 ) {
-                    Text("♻️", fontSize = 40.sp)
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(
+                            imageVector = Icons.Filled.Autorenew,
+                            contentDescription = "Seth G Logo",
+                            tint = Color.White,
+                            modifier = Modifier.size(44.dp)
+                        )
+                    }
                 }
+
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "Seth G",
+                    stringResource(R.string.app_name),
                     style = MaterialTheme.typography.headlineLarge,
                     color = GreenPrimary,
                     fontWeight = FontWeight.ExtraBold
                 )
                 Text(
-                    "लॉगिन करें",
+                    stringResource(R.string.login_title),
                     style = MaterialTheme.typography.titleMedium,
-                    color = SubText
+                    color = TextSecondary,
+                    fontWeight = FontWeight.Medium
                 )
 
-                Spacer(Modifier.height(40.dp))
+                Spacer(Modifier.height(36.dp))
 
-                // Phone / Email field
-                SethGTextField(
-                    value         = identifier,
-                    onValueChange = {
-                        identifier = it
-                        viewModel.loginIdentifier = it
-                    },
-                    label         = "📱 फोन नंबर / Phone or Email",
-                    keyboardType  = KeyboardType.Text
-                )
+                // Input fields inside a popped card container
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            ambientColor = Color(0x0A000000),
+                            spotColor = Color(0x14000000)
+                        )
+                        .border(1.dp, LightBorder, RoundedCornerShape(24.dp)),
+                    shape = RoundedCornerShape(24.dp),
+                    color = LightSurface
+                ) {
+                    Column(modifier = Modifier.padding(20.dp)) {
+                        SethGTextField(
+                            value         = identifier,
+                            onValueChange = {
+                                identifier = it
+                                viewModel.loginIdentifier = it
+                            },
+                            label         = stringResource(R.string.phone_or_email),
+                            leadingIcon   = Icons.Filled.Phone,
+                            keyboardType  = KeyboardType.Text
+                        )
 
-                Spacer(Modifier.height(16.dp))
+                        Spacer(Modifier.height(16.dp))
 
-                // Password field
-                SethGTextField(
-                    value         = password,
-                    onValueChange = {
-                        password = it
-                        viewModel.loginPassword = it
-                    },
-                    label         = "🔒 पासवर्ड / Password",
-                    isPassword    = true,
-                    showPassword  = showPass,
-                    onTogglePass  = { showPass = !showPass }
-                )
+                        SethGTextField(
+                            value         = password,
+                            onValueChange = {
+                                password = it
+                                viewModel.loginPassword = it
+                            },
+                            label         = stringResource(R.string.password),
+                            leadingIcon   = Icons.Filled.Lock,
+                            isPassword    = true,
+                            showPassword  = showPass,
+                            onTogglePass  = { showPass = !showPass }
+                        )
+                    }
+                }
 
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(28.dp))
 
                 Button(
                     onClick   = { viewModel.login() },
                     enabled   = !state.isLoading,
                     modifier  = Modifier
                         .fillMaxWidth()
-                        .height(56.dp),
+                        .height(56.dp)
+                        .shadow(elevation = 8.dp, shape = RoundedCornerShape(16.dp), spotColor = GreenPrimary.copy(alpha = 0.4f)),
                     shape     = RoundedCornerShape(16.dp),
                     colors    = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
                 ) {
@@ -137,9 +169,10 @@ fun LoginScreen(
                         )
                     } else {
                         Text(
-                            "लॉगिन  ·  Login",
+                            stringResource(R.string.login),
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
                     }
                 }
@@ -148,9 +181,10 @@ fun LoginScreen(
 
                 TextButton(onClick = onNavigateToRegister) {
                     Text(
-                        "नया खाता बनाएं  ·  Create Account",
+                        stringResource(R.string.create_account),
                         color = GreenPrimary,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
 
@@ -167,6 +201,7 @@ fun SethGTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    leadingIcon: ImageVector? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false,
     showPassword: Boolean = false,
@@ -177,6 +212,9 @@ fun SethGTextField(
         value         = value,
         onValueChange = onValueChange,
         label         = { Text(label, style = MaterialTheme.typography.bodyMedium) },
+        leadingIcon   = leadingIcon?.let {
+            { Icon(it, contentDescription = null, tint = GreenPrimary) }
+        },
         singleLine    = true,
         modifier      = modifier.fillMaxWidth(),
         shape         = RoundedCornerShape(14.dp),
@@ -188,17 +226,20 @@ fun SethGTextField(
                 Icon(
                     imageVector = if (showPassword) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
                     contentDescription = "Toggle password",
-                    tint = SubText
+                    tint = TextSecondary
                 )
             }
         }) else null,
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor   = GreenPrimary,
-            unfocusedBorderColor = SurfaceVariant,
-            focusedLabelColor    = GreenPrimary,
-            cursorColor          = GreenPrimary,
-            focusedTextColor     = OnSurfaceDark,
-            unfocusedTextColor   = OnSurfaceDark
+            focusedContainerColor   = LightSurfaceVariant,
+            unfocusedContainerColor = LightSurfaceVariant.copy(alpha = 0.5f),
+            focusedBorderColor      = GreenPrimary,
+            unfocusedBorderColor    = LightBorder,
+            focusedLabelColor       = GreenPrimary,
+            unfocusedLabelColor     = TextSecondary,
+            cursorColor             = GreenPrimary,
+            focusedTextColor        = TextPrimary,
+            unfocusedTextColor      = TextPrimary
         )
     )
 }

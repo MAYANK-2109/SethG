@@ -9,23 +9,33 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import com.sethg.app.data.local.AppPreferences
 import com.sethg.app.ui.navigation.SethGNavHost
 import com.sethg.app.ui.theme.SethGTheme
+import com.sethg.app.util.ProvideAppLocale
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var appPreferences: AppPreferences
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            SethGTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    SethGNavHost()
+            val languageCode by appPreferences.languageFlow.collectAsState(initial = "en")
+
+            ProvideAppLocale(languageCode = languageCode) {
+                SethGTheme {
+                    Surface(
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        SethGNavHost()
+                    }
                 }
             }
         }
