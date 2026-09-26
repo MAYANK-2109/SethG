@@ -75,13 +75,13 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                             contentDescription = "Lots"
                         )
                     },
-                    label    = { Text("माल") },
+                    label    = { Text(stringResource(R.string.my_lots), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium) },
                     colors   = NavigationBarItemDefaults.colors(
                         selectedIconColor   = GreenPrimary,
                         selectedTextColor   = GreenPrimary,
-                        indicatorColor      = GreenPrimary.copy(alpha = 0.15f),
-                        unselectedIconColor = SubText,
-                        unselectedTextColor = SubText
+                        indicatorColor      = GreenContainer,
+                        unselectedIconColor = TextSecondary,
+                        unselectedTextColor = TextSecondary
                     )
                 )
                 NavigationBarItem(

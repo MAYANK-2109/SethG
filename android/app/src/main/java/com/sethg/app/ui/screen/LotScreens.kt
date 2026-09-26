@@ -84,7 +84,7 @@ fun LotsScreen(
     val lots by viewModel.lots.collectAsState()
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = LightBackground,
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = onNewLot,
@@ -124,7 +124,7 @@ fun LotsScreen(
                     Spacer(Modifier.height(12.dp))
                     Text(
                         stringResource(R.string.no_lots_yet),
-                        color = SubText,
+                        color = TextSecondary,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -143,7 +143,7 @@ fun LotsScreen(
 @Composable
 private fun LotCard(lot: Lot) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        colors = CardDefaults.cardColors(containerColor = LightSurface),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -154,23 +154,23 @@ private fun LotCard(lot: Lot) {
                 modifier = Modifier
                     .size(72.dp)
                     .clip(RoundedCornerShape(12.dp))
-                    .background(SurfaceVariant)
+                    .background(LightSurfaceVariant)
             )
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(lot.category.icon, contentDescription = null, tint = GreenContainer, modifier = Modifier.size(18.dp))
+                    Icon(lot.category.icon, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(
                         "${stringResource(lot.category.labelRes)} · ${formatKg(lot.weightKg)} kg",
-                        color = OnSurfaceDark,
+                        color = TextPrimary,
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                Text(lot.estimate.format(), color = AmberSecondary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(lot.estimate.format(), color = OchreSecondary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 Text(
                     "${lot.lotId} · ${SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault()).format(Date(lot.createdAt))}",
-                    color = SubText,
+                    color = TextSecondary,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
@@ -178,7 +178,7 @@ private fun LotCard(lot: Lot) {
                 StatusChip(stringResource(R.string.status_listed), GreenPrimary)
                 if (lot.syncStatus == "PENDING") {
                     Spacer(Modifier.height(4.dp))
-                    StatusChip(stringResource(R.string.sync_pending), AmberSecondary)
+                    StatusChip(stringResource(R.string.sync_pending), OchreSecondary)
                 }
             }
         }
@@ -232,14 +232,14 @@ fun NewLotScreen(
     state.rejectedPhoto?.let { rejected ->
         AlertDialog(
             onDismissRequest = viewModel::dismissRejection,
-            icon = { Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = AmberSecondary) },
+            icon = { Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = OchreSecondary) },
             title = { Text(stringResource(R.string.not_ewaste_title)) },
             text = {
                 Column {
                     Text(stringResource(R.string.not_ewaste_message))
                     rejected.detectedLabel?.let {
                         Spacer(Modifier.height(8.dp))
-                        Text(stringResource(R.string.detected_in_photo, it), color = SubText)
+                        Text(stringResource(R.string.detected_in_photo, it), color = TextSecondary)
                     }
                 }
             },
@@ -259,7 +259,7 @@ fun NewLotScreen(
     }
 
     Scaffold(
-        containerColor = BackgroundDark,
+        containerColor = LightBackground,
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) },
@@ -268,11 +268,11 @@ fun NewLotScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.close))
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceDark)
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = LightSurface)
             )
         },
         bottomBar = {
-            Surface(color = SurfaceDark, tonalElevation = 8.dp) {
+            Surface(color = LightSurface, tonalElevation = 8.dp) {
                 Button(
                     onClick = viewModel::save,
                     enabled = state.canSave,
@@ -298,11 +298,11 @@ fun NewLotScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            Text(state.lotId, color = SubText, style = MaterialTheme.typography.bodySmall)
+            Text(state.lotId, color = TextSecondary, style = MaterialTheme.typography.bodySmall)
 
             // 1 ── Photos (in-app camera only)
             StepHeader(1, stringResource(R.string.step_photo))
-            Text(stringResource(R.string.step_photo_hint), color = SubText, style = MaterialTheme.typography.bodySmall)
+            Text(stringResource(R.string.step_photo_hint), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
             Row(
                 modifier = Modifier.horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -318,8 +318,12 @@ fun NewLotScreen(
                         Icon(
                             Icons.Filled.Verified,
                             contentDescription = stringResource(R.string.photo_verified),
-                            tint = GreenContainer,
-                            modifier = Modifier.align(Alignment.BottomStart).padding(6.dp).size(20.dp)
+                            tint = GreenPrimary,
+                            modifier = Modifier
+                                .align(Alignment.BottomStart)
+                                .padding(6.dp)
+                                .size(20.dp)
+                                .background(Color.White, CircleShape)
                         )
                         IconButton(
                             onClick = { viewModel.removePhoto(photo) },
@@ -335,13 +339,13 @@ fun NewLotScreen(
                 }
                 if (state.isSealing) {
                     Column(
-                        modifier = Modifier.size(104.dp).background(SurfaceVariant, RoundedCornerShape(12.dp)),
+                        modifier = Modifier.size(104.dp).background(LightSurfaceVariant, RoundedCornerShape(12.dp)),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         CircularProgressIndicator(color = GreenPrimary, modifier = Modifier.size(32.dp))
                         Spacer(Modifier.height(6.dp))
-                        Text(stringResource(R.string.checking_photo), color = SubText, fontSize = 11.sp, textAlign = TextAlign.Center)
+                        Text(stringResource(R.string.checking_photo), color = TextSecondary, fontSize = 11.sp, textAlign = TextAlign.Center)
                     }
                 } else if (state.canAddPhoto) {
                     Column(
@@ -396,18 +400,18 @@ fun NewLotScreen(
             // 4 ── Price range
             state.estimate?.let { estimate ->
                 Card(
-                    colors = CardDefaults.cardColors(containerColor = AmberSecondary.copy(alpha = 0.15f)),
+                    colors = CardDefaults.cardColors(containerColor = OchreSecondary.copy(alpha = 0.15f)),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(Modifier.fillMaxWidth().padding(20.dp)) {
-                        Text(stringResource(R.string.estimated_price), color = AmberSecondary, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.estimated_price), color = OchreSecondary, fontWeight = FontWeight.SemiBold)
                         Text(
                             estimate.format(),
-                            color = Color.White,
+                            color = TextPrimary,
                             fontSize = 32.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
-                        Text(stringResource(R.string.price_range_note), color = SubText, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(R.string.price_range_note), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -425,7 +429,7 @@ private fun StepHeader(number: Int, title: String) {
             contentAlignment = Alignment.Center
         ) { Text("$number", color = Color.White, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.width(10.dp))
-        Text(title, color = OnSurfaceDark, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+        Text(title, color = TextPrimary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
     }
 }
 
@@ -436,12 +440,12 @@ private fun CategoryTile(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val borderColor = if (selected) GreenPrimary else SurfaceVariant
+    val borderColor = if (selected) GreenPrimary else LightSurfaceVariant
     Column(
         modifier = modifier
             .aspectRatio(1f)
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) GreenPrimary.copy(alpha = 0.2f) else SurfaceDark)
+            .background(if (selected) GreenPrimary.copy(alpha = 0.2f) else LightSurface)
             .border(2.dp, borderColor, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(8.dp),
@@ -451,13 +455,13 @@ private fun CategoryTile(
         Icon(
             category.icon,
             contentDescription = null,
-            tint = if (selected) GreenContainer else OnSurfaceDark,
+            tint = if (selected) GreenPrimary else TextPrimary,
             modifier = Modifier.size(36.dp)
         )
         Spacer(Modifier.height(6.dp))
         Text(
             stringResource(category.labelRes),
-            color = OnSurfaceDark,
+            color = TextPrimary,
             fontSize = 13.sp,
             textAlign = TextAlign.Center,
             maxLines = 2
@@ -471,19 +475,19 @@ private fun LotSavedView(lotId: String, estimate: PriceEstimate?, onDone: () -> 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(BackgroundDark)
+            .background(LightBackground)
             .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(88.dp))
         Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.lot_created), color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Text(stringResource(R.string.lot_created), color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(8.dp))
-        Text("${stringResource(R.string.lot_id)}: $lotId", color = OnSurfaceDark, fontSize = 18.sp)
-        estimate?.let { Text(it.format(), color = AmberSecondary, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+        Text("${stringResource(R.string.lot_id)}: $lotId", color = TextPrimary, fontSize = 18.sp)
+        estimate?.let { Text(it.format(), color = OchreSecondary, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
         Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.saved_offline_note), color = SubText, textAlign = TextAlign.Center)
+        Text(stringResource(R.string.saved_offline_note), color = TextSecondary, textAlign = TextAlign.Center)
         Spacer(Modifier.height(32.dp))
         Button(
             onClick = onDone,
