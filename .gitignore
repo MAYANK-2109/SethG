@@ -32,3 +32,8 @@ backend/dist/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# ML training data & artifacts
+ml/data/
+ml/.venv/
+ml/runs/

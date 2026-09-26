@@ -74,4 +74,8 @@
     <string name="detected_in_photo">फोटोत दिसले: %1$s</string>
     <string name="retake_photo">दुसरा फोटो घ्या</string>
     <string name="checking_photo">फोटो तपासत आहे…</string>
+    <string name="cat_charger">चार्जर / अडॅप्टर</string>
+    <string name="cat_mobile">मोबाईल फोन</string>
+    <string name="cat_switch">स्विच / MCB</string>
+    <string name="cat_other">इतर ई-कचरा</string>
 </resources>

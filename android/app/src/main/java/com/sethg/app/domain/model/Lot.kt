@@ -2,19 +2,24 @@ package com.sethg.app.domain.model
 
 import kotlin.math.roundToInt
 
-// ── Material categories (PS 26229 list) ───────────────────────────────────────
+// ── Material categories (PS 26229 list + common kabadi items) ─────────────────
+// Order = display order in the picker (most common first).
 // rateLow / rateHigh are ₹ per kg.
 // ⚠️ PLACEHOLDER RATES — replace with prices collected from field survey with
 //    collectors/recyclers before any demo. Do not present these as real prices.
 
 enum class MaterialCategory(val rateLow: Double, val rateHigh: Double) {
     CABLE(150.0, 350.0),
+    CHARGER(20.0, 60.0),      // chargers, adapters, SMPS
     PCB(60.0, 250.0),
+    MOBILE(100.0, 400.0),     // phones, tablets
     BATTERY(40.0, 120.0),
     MOTOR(25.0, 60.0),
+    SWITCH(30.0, 80.0),       // switches, MCBs, sockets
     LCD(8.0, 30.0),
     CRT(0.0, 5.0),
-    PLASTIC(8.0, 20.0)
+    PLASTIC(8.0, 20.0),
+    OTHER(10.0, 50.0)         // any other e-waste
 }
 
 data class PriceEstimate(val low: Int, val high: Int)

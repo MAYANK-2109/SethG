@@ -22,6 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
+import kotlin.math.roundToInt
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -64,7 +65,8 @@ class LotRepository @Inject constructor(
         val check = eWasteDetector.check(file)
         if (check.verdict == EWasteDetector.Verdict.NOT_EWASTE) {
             file.delete()
-            return@withContext PhotoCheck.NotEWaste(check.topLabel)
+            // Only name what was seen when ML Kit made the call; our model has no object names
+            return@withContext PhotoCheck.NotEWaste(check.topLabel.takeIf { check.eWasteScore == null })
         }
         val proof = signer.seal(file, lotId)
         PhotoCheck.Accepted(
@@ -76,7 +78,10 @@ class LotRepository @Inject constructor(
                 payload    = proof.payload,
                 signature  = proof.signature,
                 aiVerdict  = check.verdict.name,
-                aiLabel    = check.topLabel
+                aiLabel    = listOfNotNull(
+                    check.topLabel,
+                    check.eWasteScore?.let { "e-waste ${(it * 100).roundToInt()}%" }
+                ).joinToString(" · ").ifEmpty { null }
             )
         )
     }

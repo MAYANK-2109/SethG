@@ -45,23 +45,31 @@ import java.util.Locale
 private val MaterialCategory.icon: ImageVector
     get() = when (this) {
         MaterialCategory.CABLE   -> Icons.Filled.Cable
+        MaterialCategory.CHARGER -> Icons.Filled.Power
         MaterialCategory.PCB     -> Icons.Filled.Memory
+        MaterialCategory.MOBILE  -> Icons.Filled.Smartphone
         MaterialCategory.BATTERY -> Icons.Filled.BatteryFull
         MaterialCategory.MOTOR   -> Icons.Filled.Settings
+        MaterialCategory.SWITCH  -> Icons.Filled.ToggleOn
         MaterialCategory.LCD     -> Icons.Filled.Monitor
         MaterialCategory.CRT     -> Icons.Filled.Tv
         MaterialCategory.PLASTIC -> Icons.Filled.Recycling
+        MaterialCategory.OTHER   -> Icons.Filled.Category
     }
 
 private val MaterialCategory.labelRes: Int
     get() = when (this) {
         MaterialCategory.CABLE   -> R.string.cat_cable
+        MaterialCategory.CHARGER -> R.string.cat_charger
         MaterialCategory.PCB     -> R.string.cat_pcb
+        MaterialCategory.MOBILE  -> R.string.cat_mobile
         MaterialCategory.BATTERY -> R.string.cat_battery
         MaterialCategory.MOTOR   -> R.string.cat_motor
+        MaterialCategory.SWITCH  -> R.string.cat_switch
         MaterialCategory.LCD     -> R.string.cat_lcd
         MaterialCategory.CRT     -> R.string.cat_crt
         MaterialCategory.PLASTIC -> R.string.cat_plastic
+        MaterialCategory.OTHER   -> R.string.cat_other
     }
 
 private fun PriceEstimate.format() = "₹%,d – ₹%,d".format(low, high)

@@ -49,6 +49,11 @@ android {
         buildConfig = true
     }
 
+    // Keep the model uncompressed so it can be memory-mapped
+    androidResources {
+        noCompress += "tflite"
+    }
+
     // Reduce APK size for low-memory devices
     packaging {
         resources {
@@ -107,6 +112,7 @@ dependencies {
 
     // On-device e-waste photo check (bundled model — works offline)
     implementation(libs.mlkit.image.labeling)
+    implementation(libs.litert)   // custom e-waste classifier (assets/ewaste_classifier.tflite)
 
     debugImplementation(libs.androidx.ui.tooling)
 }

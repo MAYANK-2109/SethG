@@ -74,4 +74,8 @@
     <string name="detected_in_photo">Detected in photo: %1$s</string>
     <string name="retake_photo">Take another photo</string>
     <string name="checking_photo">Checking photo…</string>
+    <string name="cat_charger">Charger / Adapter</string>
+    <string name="cat_mobile">Mobile phone</string>
+    <string name="cat_switch">Switch / MCB</string>
+    <string name="cat_other">Other e-waste</string>
 </resources>
