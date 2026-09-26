@@ -100,5 +100,13 @@ dependencies {
     // Image loading
     implementation(libs.coil.compose)
 
+    // In-app camera (lot photos — no gallery uploads)
+    implementation(libs.camera.camera2)
+    implementation(libs.camera.lifecycle)
+    implementation(libs.camera.view)
+
+    // On-device e-waste photo check (bundled model — works offline)
+    implementation(libs.mlkit.image.labeling)
+
     debugImplementation(libs.androidx.ui.tooling)
 }

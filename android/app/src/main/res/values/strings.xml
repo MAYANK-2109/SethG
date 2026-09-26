@@ -36,4 +36,39 @@
     <!-- Errors -->
     <string name="network_error">नेटवर्क की समस्या</string>
     <string name="loading">लोड हो रहा है…</string>
+
+    <!-- Lots -->
+    <string name="my_lots">मेरा माल</string>
+    <string name="new_lot">नया माल</string>
+    <string name="no_lots_yet">अभी कोई माल नहीं।\nनीचे \"नया माल\" दबाकर फोटो लें।</string>
+    <string name="step_photo">माल की फोटो लें</string>
+    <string name="step_photo_hint">सिर्फ ऐप के कैमरे से फोटो (1 से 3)</string>
+    <string name="take_photo">फोटो लें</string>
+    <string name="photo_verified">फोटो सत्यापित</string>
+    <string name="camera_permission_needed">माल की फोटो लेने के लिए कैमरा की अनुमति चाहिए</string>
+    <string name="allow_camera">कैमरा चालू करें</string>
+    <string name="close">बंद करें</string>
+    <string name="step_category">माल का प्रकार चुनें</string>
+    <string name="step_weight">अंदाज़न वज़न</string>
+    <string name="estimated_price">अंदाज़न कीमत</string>
+    <string name="price_range_note">असली कीमत तौल और माल की क्वालिटी पर तय होगी</string>
+    <string name="create_lot">माल दर्ज करें</string>
+    <string name="lot_created">माल दर्ज हो गया!</string>
+    <string name="lot_id">माल नंबर</string>
+    <string name="saved_offline_note">फोन में सेव है। इंटरनेट आने पर अपने-आप भेजा जाएगा।</string>
+    <string name="done">ठीक है</string>
+    <string name="status_listed">दर्ज</string>
+    <string name="sync_pending">भेजना बाकी</string>
+    <string name="cat_cable">तार / केबल</string>
+    <string name="cat_pcb">सर्किट बोर्ड</string>
+    <string name="cat_battery">बैटरी</string>
+    <string name="cat_motor">मोटर</string>
+    <string name="cat_lcd">LCD स्क्रीन</string>
+    <string name="cat_crt">पुराना TV (CRT)</string>
+    <string name="cat_plastic">प्लास्टिक</string>
+    <string name="not_ewaste_title">यह ई-कचरा नहीं है</string>
+    <string name="not_ewaste_message">इस फोटो में ई-कचरा नहीं दिखा। कृपया ई-कचरे (तार, बोर्ड, बैटरी, मोटर, TV, फोन आदि) की दूसरी फोटो लें।</string>
+    <string name="detected_in_photo">फोटो में दिखा: %1$s</string>
+    <string name="retake_photo">दूसरी फोटो लें</string>
+    <string name="checking_photo">फोटो जाँच रहे हैं…</string>
 </resources>

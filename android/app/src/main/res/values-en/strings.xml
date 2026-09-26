@@ -25,4 +25,39 @@
     <string name="cancel">Cancel</string>
     <string name="network_error">Network error</string>
     <string name="loading">Loading…</string>
+
+    <!-- Lots -->
+    <string name="my_lots">My Lots</string>
+    <string name="new_lot">New Lot</string>
+    <string name="no_lots_yet">No lots yet.\nTap \"New Lot\" below to take a photo.</string>
+    <string name="step_photo">Take photos of the material</string>
+    <string name="step_photo_hint">In-app camera only (1 to 3 photos)</string>
+    <string name="take_photo">Take photo</string>
+    <string name="photo_verified">Photo verified</string>
+    <string name="camera_permission_needed">Camera permission is needed to photograph your material</string>
+    <string name="allow_camera">Allow camera</string>
+    <string name="close">Close</string>
+    <string name="step_category">Choose material type</string>
+    <string name="step_weight">Approximate weight</string>
+    <string name="estimated_price">Estimated price</string>
+    <string name="price_range_note">Final price depends on actual weight and material grade</string>
+    <string name="create_lot">Create lot</string>
+    <string name="lot_created">Lot created!</string>
+    <string name="lot_id">Lot ID</string>
+    <string name="saved_offline_note">Saved on your phone. It will be sent automatically when internet is available.</string>
+    <string name="done">Done</string>
+    <string name="status_listed">Listed</string>
+    <string name="sync_pending">Not synced</string>
+    <string name="cat_cable">Wire / Cable</string>
+    <string name="cat_pcb">Circuit board</string>
+    <string name="cat_battery">Battery</string>
+    <string name="cat_motor">Motor</string>
+    <string name="cat_lcd">LCD screen</string>
+    <string name="cat_crt">Old TV (CRT)</string>
+    <string name="cat_plastic">Plastic</string>
+    <string name="not_ewaste_title">This is not e-waste</string>
+    <string name="not_ewaste_message">We couldn\'t see e-waste in this photo. Please take another photo of e-waste (wires, boards, batteries, motors, TVs, phones, etc.).</string>
+    <string name="detected_in_photo">Detected in photo: %1$s</string>
+    <string name="retake_photo">Take another photo</string>
+    <string name="checking_photo">Checking photo…</string>
 </resources>

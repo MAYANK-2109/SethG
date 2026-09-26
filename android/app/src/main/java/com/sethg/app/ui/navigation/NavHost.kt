@@ -16,6 +16,7 @@ sealed class Screen(val route: String) {
     object Dashboard : Screen("dashboard")
     object Profile   : Screen("profile")
     object EditProfile : Screen("edit_profile")
+    object NewLot    : Screen("new_lot")
 }
 
 @Composable
@@ -81,6 +82,10 @@ fun SethGNavHost() {
                     }
                 }
             )
+        }
+
+        composable(Screen.NewLot.route) {
+            NewLotScreen(onDone = { navController.popBackStack() })
         }
     }
 }

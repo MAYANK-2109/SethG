@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.sethg.app.domain.model.EarningsSummary
+import com.sethg.app.ui.navigation.Screen
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.AuthViewModel
 import com.sethg.app.ui.viewmodel.DashboardViewModel
@@ -65,7 +66,25 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                     onClick  = { selectedTab = 1 },
                     icon     = {
                         Icon(
-                            if (selectedTab == 1) Icons.Filled.Person else Icons.Outlined.Person,
+                            if (selectedTab == 1) Icons.Filled.Inventory2 else Icons.Outlined.Inventory2,
+                            contentDescription = "Lots"
+                        )
+                    },
+                    label    = { Text("माल") },
+                    colors   = NavigationBarItemDefaults.colors(
+                        selectedIconColor   = GreenPrimary,
+                        selectedTextColor   = GreenPrimary,
+                        indicatorColor      = GreenPrimary.copy(alpha = 0.15f),
+                        unselectedIconColor = SubText,
+                        unselectedTextColor = SubText
+                    )
+                )
+                NavigationBarItem(
+                    selected = selectedTab == 2,
+                    onClick  = { selectedTab = 2 },
+                    icon     = {
+                        Icon(
+                            if (selectedTab == 2) Icons.Filled.Person else Icons.Outlined.Person,
                             contentDescription = "Profile"
                         )
                     },
@@ -84,7 +103,8 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
         Box(Modifier.padding(padding)) {
             when (selectedTab) {
                 0 -> DashboardScreen()
-                1 -> ProfileScreen(
+                1 -> LotsScreen(onNewLot = { navController.navigate(Screen.NewLot.route) })
+                2 -> ProfileScreen(
                     onLogout  = {
                         authVm.logout()
                         onLogout()

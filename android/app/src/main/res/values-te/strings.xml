@@ -25,4 +25,39 @@
     <string name="cancel">రద్దు చేయండి</string>
     <string name="network_error">నెట్‌వర్క్ లోపం</string>
     <string name="loading">లోడ్ అవుతోంది…</string>
+
+    <!-- Lots -->
+    <string name="my_lots">నా సరుకు</string>
+    <string name="new_lot">కొత్త సరుకు</string>
+    <string name="no_lots_yet">ఇంకా సరుకు లేదు.\nకింద \"కొత్త సరుకు\" నొక్కి ఫోటో తీయండి.</string>
+    <string name="step_photo">సరుకు ఫోటో తీయండి</string>
+    <string name="step_photo_hint">యాప్ కెమెరాతో మాత్రమే (1 నుండి 3 ఫోటోలు)</string>
+    <string name="take_photo">ఫోటో తీయండి</string>
+    <string name="photo_verified">ఫోటో ధృవీకరించబడింది</string>
+    <string name="camera_permission_needed">సరుకు ఫోటో తీయడానికి కెమెరా అనుమతి కావాలి</string>
+    <string name="allow_camera">కెమెరా అనుమతించండి</string>
+    <string name="close">మూసివేయి</string>
+    <string name="step_category">సరుకు రకం ఎంచుకోండి</string>
+    <string name="step_weight">సుమారు బరువు</string>
+    <string name="estimated_price">సుమారు ధర</string>
+    <string name="price_range_note">అసలు ధర బరువు మరియు నాణ్యతపై ఆధారపడి ఉంటుంది</string>
+    <string name="create_lot">సరుకు నమోదు చేయండి</string>
+    <string name="lot_created">సరుకు నమోదైంది!</string>
+    <string name="lot_id">సరుకు నంబర్</string>
+    <string name="saved_offline_note">ఫోన్‌లో సేవ్ అయింది. ఇంటర్నెట్ వచ్చినప్పుడు ఆటోమేటిక్‌గా పంపబడుతుంది.</string>
+    <string name="done">సరే</string>
+    <string name="status_listed">నమోదైంది</string>
+    <string name="sync_pending">పంపాల్సి ఉంది</string>
+    <string name="cat_cable">వైర్ / కేబుల్</string>
+    <string name="cat_pcb">సర్క్యూట్ బోర్డ్</string>
+    <string name="cat_battery">బ్యాటరీ</string>
+    <string name="cat_motor">మోటార్</string>
+    <string name="cat_lcd">LCD స్క్రీన్</string>
+    <string name="cat_crt">పాత TV (CRT)</string>
+    <string name="cat_plastic">ప్లాస్టిక్</string>
+    <string name="not_ewaste_title">ఇది ఈ-వ్యర్థం కాదు</string>
+    <string name="not_ewaste_message">ఈ ఫోటోలో ఈ-వ్యర్థం కనిపించలేదు. దయచేసి ఈ-వ్యర్థం (వైర్లు, బోర్డులు, బ్యాటరీలు, మోటార్లు, TV, ఫోన్లు మొదలైనవి) యొక్క మరో ఫోటో తీయండి.</string>
+    <string name="detected_in_photo">ఫోటోలో కనిపించింది: %1$s</string>
+    <string name="retake_photo">మరో ఫోటో తీయండి</string>
+    <string name="checking_photo">ఫోటో తనిఖీ చేస్తోంది…</string>
 </resources>

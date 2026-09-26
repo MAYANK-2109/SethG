@@ -25,6 +25,48 @@ data class EarningsEntity(
     val updatedAt: Long = System.currentTimeMillis()
 )
 
+@Entity(tableName = "lots")
+data class LotEntity(
+    @PrimaryKey val lotId: String,    // e.g. "SG-260926-7KQ4"
+    val category: String,             // MaterialCategory.name
+    val weightKg: Double,
+    val estimateLow: Int,
+    val estimateHigh: Int,
+    val status: String,               // "LISTED" → … → "PAID"
+    val syncStatus: String,           // "PENDING" until uploaded
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+// One row per in-app camera photo, with the signed capture proof
+@Entity(
+    tableName = "lot_photos",
+    foreignKeys = [ForeignKey(
+        entity = LotEntity::class,
+        parentColumns = ["lotId"],
+        childColumns = ["lotId"],
+        onDelete = ForeignKey.CASCADE
+    )],
+    indices = [Index("lotId")]
+)
+data class LotPhotoEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val lotId: String,
+    val filePath: String,
+    val sha256: String,
+    val capturedAt: Long,
+    val nonce: String,
+    val payload: String,              // "sha256|lotId|capturedAt|nonce|device"
+    val signature: String,            // Base64 ECDSA signature from Android Keystore
+    val aiVerdict: String,            // EWasteDetector.Verdict: EWASTE | UNCERTAIN
+    val aiLabel: String?              // Top ML Kit label, e.g. "Computer"
+)
+
+data class LotWithPhotos(
+    @Embedded val lot: LotEntity,
+    @Relation(parentColumn = "lotId", entityColumn = "lotId")
+    val photos: List<LotPhotoEntity>
+)
+
 // ── DAOs ──────────────────────────────────────────────────────────────────────
 
 @Dao
@@ -57,14 +99,34 @@ interface EarningsDao {
     suspend fun clearAll()
 }
 
+@Dao
+interface LotDao {
+    @Transaction
+    @Query("SELECT * FROM lots ORDER BY createdAt DESC")
+    fun observeLots(): Flow<List<LotWithPhotos>>
+
+    @Insert
+    suspend fun insertLot(lot: LotEntity)
+
+    @Insert
+    suspend fun insertPhotos(photos: List<LotPhotoEntity>)
+
+    @Transaction
+    suspend fun insertLotWithPhotos(lot: LotEntity, photos: List<LotPhotoEntity>) {
+        insertLot(lot)
+        insertPhotos(photos)
+    }
+}
+
 // ── Database ──────────────────────────────────────────────────────────────────
 
 @Database(
-    entities = [UserEntity::class, EarningsEntity::class],
-    version = 1,
+    entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class SethGDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun earningsDao(): EarningsDao
+    abstract fun lotDao(): LotDao
 }

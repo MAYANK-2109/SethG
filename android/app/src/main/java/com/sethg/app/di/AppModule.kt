@@ -6,6 +6,7 @@ import com.google.gson.Gson
 import com.sethg.app.BuildConfig
 import com.sethg.app.data.local.SecureTokenStore
 import com.sethg.app.data.local.db.EarningsDao
+import com.sethg.app.data.local.db.LotDao
 import com.sethg.app.data.local.db.SethGDatabase
 import com.sethg.app.data.local.db.UserDao
 import com.sethg.app.data.remote.SethGApiService
@@ -85,4 +86,5 @@ object AppModule {
 
     @Provides fun provideUserDao(db: SethGDatabase): UserDao = db.userDao()
     @Provides fun provideEarningsDao(db: SethGDatabase): EarningsDao = db.earningsDao()
+    @Provides fun provideLotDao(db: SethGDatabase): LotDao = db.lotDao()
 }

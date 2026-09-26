@@ -1,0 +1,487 @@
+package com.sethg.app.ui.screen
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
+import com.sethg.app.R
+import com.sethg.app.domain.model.Lot
+import com.sethg.app.domain.model.MaterialCategory
+import com.sethg.app.domain.model.PriceEstimate
+import com.sethg.app.ui.theme.*
+import com.sethg.app.ui.viewmodel.LotsViewModel
+import com.sethg.app.ui.viewmodel.NewLotViewModel
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+// ── Category visuals (icon-first for low-literacy users) ─────────────────────
+
+private val MaterialCategory.icon: ImageVector
+    get() = when (this) {
+        MaterialCategory.CABLE   -> Icons.Filled.Cable
+        MaterialCategory.PCB     -> Icons.Filled.Memory
+        MaterialCategory.BATTERY -> Icons.Filled.BatteryFull
+        MaterialCategory.MOTOR   -> Icons.Filled.Settings
+        MaterialCategory.LCD     -> Icons.Filled.Monitor
+        MaterialCategory.CRT     -> Icons.Filled.Tv
+        MaterialCategory.PLASTIC -> Icons.Filled.Recycling
+    }
+
+private val MaterialCategory.labelRes: Int
+    get() = when (this) {
+        MaterialCategory.CABLE   -> R.string.cat_cable
+        MaterialCategory.PCB     -> R.string.cat_pcb
+        MaterialCategory.BATTERY -> R.string.cat_battery
+        MaterialCategory.MOTOR   -> R.string.cat_motor
+        MaterialCategory.LCD     -> R.string.cat_lcd
+        MaterialCategory.CRT     -> R.string.cat_crt
+        MaterialCategory.PLASTIC -> R.string.cat_plastic
+    }
+
+private fun PriceEstimate.format() = "₹%,d – ₹%,d".format(low, high)
+
+// ── My lots (bottom-nav tab) ──────────────────────────────────────────────────
+
+@Composable
+fun LotsScreen(
+    onNewLot: () -> Unit,
+    viewModel: LotsViewModel = hiltViewModel()
+) {
+    val lots by viewModel.lots.collectAsState()
+
+    Scaffold(
+        containerColor = BackgroundDark,
+        floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = onNewLot,
+                containerColor = GreenPrimary,
+                contentColor = Color.White,
+                icon = { Icon(Icons.Filled.AddAPhoto, contentDescription = null) },
+                text = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) }
+            )
+        }
+    ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.horizontalGradient(
+                            colors = listOf(GreenPrimary.copy(alpha = 0.8f), Color(0xFF1B5E20))
+                        )
+                    )
+                    .padding(horizontal = 24.dp, vertical = 28.dp)
+            ) {
+                Text(
+                    stringResource(R.string.my_lots),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.ExtraBold
+                )
+            }
+
+            if (lots.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text("📦", fontSize = 56.sp)
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        stringResource(R.string.no_lots_yet),
+                        color = SubText,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(lots, key = { it.lotId }) { LotCard(it) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun LotCard(lot: Lot) {
+    Card(
+        colors = CardDefaults.cardColors(containerColor = SurfaceDark),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = lot.photos.firstOrNull()?.let { File(it.filePath) },
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(SurfaceVariant)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(lot.category.icon, contentDescription = null, tint = GreenContainer, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "${stringResource(lot.category.labelRes)} · ${formatKg(lot.weightKg)} kg",
+                        color = OnSurfaceDark,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+                Text(lot.estimate.format(), color = AmberSecondary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(
+                    "${lot.lotId} · ${SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault()).format(Date(lot.createdAt))}",
+                    color = SubText,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                StatusChip(stringResource(R.string.status_listed), GreenPrimary)
+                if (lot.syncStatus == "PENDING") {
+                    Spacer(Modifier.height(4.dp))
+                    StatusChip(stringResource(R.string.sync_pending), AmberSecondary)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatusChip(text: String, color: Color) {
+    Surface(shape = RoundedCornerShape(8.dp), color = color.copy(alpha = 0.2f)) {
+        Text(
+            text,
+            color = color,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+        )
+    }
+}
+
+private fun formatKg(kg: Double) = if (kg % 1.0 == 0.0) kg.toInt().toString() else kg.toString()
+
+// ── New lot: photo → category → weight → price range → save ──────────────────
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun NewLotScreen(
+    onDone: () -> Unit,
+    viewModel: NewLotViewModel = hiltViewModel()
+) {
+    val state by viewModel.uiState.collectAsState()
+    var showCamera by remember { mutableStateOf(false) }
+
+    if (showCamera) {
+        BackHandler { showCamera = false }
+        CameraCapture(
+            newPhotoFile = viewModel::newPhotoFile,
+            onPhotoCaptured = { file ->
+                viewModel.onPhotoCaptured(file)
+                showCamera = false
+            },
+            onClose = { showCamera = false }
+        )
+        return
+    }
+
+    state.savedLotId?.let { lotId ->
+        LotSavedView(lotId = lotId, estimate = state.estimate, onDone = onDone)
+        return
+    }
+
+    state.rejectedPhoto?.let { rejected ->
+        AlertDialog(
+            onDismissRequest = viewModel::dismissRejection,
+            icon = { Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = AmberSecondary) },
+            title = { Text(stringResource(R.string.not_ewaste_title)) },
+            text = {
+                Column {
+                    Text(stringResource(R.string.not_ewaste_message))
+                    rejected.detectedLabel?.let {
+                        Spacer(Modifier.height(8.dp))
+                        Text(stringResource(R.string.detected_in_photo, it), color = SubText)
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.dismissRejection()
+                        showCamera = true
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                ) { Text(stringResource(R.string.retake_photo)) }
+            },
+            dismissButton = {
+                TextButton(onClick = viewModel::dismissRejection) { Text(stringResource(R.string.cancel)) }
+            }
+        )
+    }
+
+    Scaffold(
+        containerColor = BackgroundDark,
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) },
+                navigationIcon = {
+                    IconButton(onClick = onDone) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.close))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = SurfaceDark)
+            )
+        },
+        bottomBar = {
+            Surface(color = SurfaceDark, tonalElevation = 8.dp) {
+                Button(
+                    onClick = viewModel::save,
+                    enabled = state.canSave,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .navigationBarsPadding()
+                        .padding(16.dp)
+                        .height(56.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                ) {
+                    if (state.isSaving) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
+                    else Text(stringResource(R.string.create_lot), fontSize = 18.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            Text(state.lotId, color = SubText, style = MaterialTheme.typography.bodySmall)
+
+            // 1 ── Photos (in-app camera only)
+            StepHeader(1, stringResource(R.string.step_photo))
+            Text(stringResource(R.string.step_photo_hint), color = SubText, style = MaterialTheme.typography.bodySmall)
+            Row(
+                modifier = Modifier.horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                state.photos.forEach { photo ->
+                    Box(Modifier.size(104.dp)) {
+                        AsyncImage(
+                            model = File(photo.filePath),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(12.dp))
+                        )
+                        Icon(
+                            Icons.Filled.Verified,
+                            contentDescription = stringResource(R.string.photo_verified),
+                            tint = GreenContainer,
+                            modifier = Modifier.align(Alignment.BottomStart).padding(6.dp).size(20.dp)
+                        )
+                        IconButton(
+                            onClick = { viewModel.removePhoto(photo) },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(28.dp)
+                                .background(Color.Black.copy(alpha = 0.6f), CircleShape)
+                        ) {
+                            Icon(Icons.Filled.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        }
+                    }
+                }
+                if (state.isSealing) {
+                    Column(
+                        modifier = Modifier.size(104.dp).background(SurfaceVariant, RoundedCornerShape(12.dp)),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = GreenPrimary, modifier = Modifier.size(32.dp))
+                        Spacer(Modifier.height(6.dp))
+                        Text(stringResource(R.string.checking_photo), color = SubText, fontSize = 11.sp, textAlign = TextAlign.Center)
+                    }
+                } else if (state.canAddPhoto) {
+                    Column(
+                        modifier = Modifier
+                            .size(104.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .border(2.dp, GreenPrimary, RoundedCornerShape(12.dp))
+                            .clickable { showCamera = true },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(36.dp))
+                        Text(stringResource(R.string.take_photo), color = GreenPrimary, fontSize = 12.sp, textAlign = TextAlign.Center)
+                    }
+                }
+            }
+
+            // 2 ── Category
+            StepHeader(2, stringResource(R.string.step_category))
+            MaterialCategory.entries.chunked(3).forEach { row ->
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    row.forEach { category ->
+                        CategoryTile(
+                            category = category,
+                            selected = state.category == category,
+                            onClick = { viewModel.selectCategory(category) },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    repeat(3 - row.size) { Spacer(Modifier.weight(1f)) }
+                }
+            }
+
+            // 3 ── Weight
+            StepHeader(3, stringResource(R.string.step_weight))
+            OutlinedTextField(
+                value = state.weightText,
+                onValueChange = viewModel::setWeightText,
+                suffix = { Text("kg") },
+                placeholder = { Text("0") },
+                singleLine = true,
+                textStyle = MaterialTheme.typography.headlineSmall,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                listOf(1, 5, 10, 50).forEach { kg ->
+                    AssistChip(onClick = { viewModel.addWeight(kg) }, label = { Text("+$kg kg") })
+                }
+            }
+
+            // 4 ── Price range
+            state.estimate?.let { estimate ->
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = AmberSecondary.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Column(Modifier.fillMaxWidth().padding(20.dp)) {
+                        Text(stringResource(R.string.estimated_price), color = AmberSecondary, fontWeight = FontWeight.SemiBold)
+                        Text(
+                            estimate.format(),
+                            color = Color.White,
+                            fontSize = 32.sp,
+                            fontWeight = FontWeight.ExtraBold
+                        )
+                        Text(stringResource(R.string.price_range_note), color = SubText, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            state.error?.let { Text(it, color = ErrorColor) }
+        }
+    }
+}
+
+@Composable
+private fun StepHeader(number: Int, title: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            Modifier.size(28.dp).background(GreenPrimary, CircleShape),
+            contentAlignment = Alignment.Center
+        ) { Text("$number", color = Color.White, fontWeight = FontWeight.Bold) }
+        Spacer(Modifier.width(10.dp))
+        Text(title, color = OnSurfaceDark, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+    }
+}
+
+@Composable
+private fun CategoryTile(
+    category: MaterialCategory,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val borderColor = if (selected) GreenPrimary else SurfaceVariant
+    Column(
+        modifier = modifier
+            .aspectRatio(1f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(if (selected) GreenPrimary.copy(alpha = 0.2f) else SurfaceDark)
+            .border(2.dp, borderColor, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
+            .padding(8.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            category.icon,
+            contentDescription = null,
+            tint = if (selected) GreenContainer else OnSurfaceDark,
+            modifier = Modifier.size(36.dp)
+        )
+        Spacer(Modifier.height(6.dp))
+        Text(
+            stringResource(category.labelRes),
+            color = OnSurfaceDark,
+            fontSize = 13.sp,
+            textAlign = TextAlign.Center,
+            maxLines = 2
+        )
+    }
+}
+
+@Composable
+private fun LotSavedView(lotId: String, estimate: PriceEstimate?, onDone: () -> Unit) {
+    BackHandler(onBack = onDone)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BackgroundDark)
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(88.dp))
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.lot_created), color = Color.White, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(8.dp))
+        Text("${stringResource(R.string.lot_id)}: $lotId", color = OnSurfaceDark, fontSize = 18.sp)
+        estimate?.let { Text(it.format(), color = AmberSecondary, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+        Spacer(Modifier.height(8.dp))
+        Text(stringResource(R.string.saved_offline_note), color = SubText, textAlign = TextAlign.Center)
+        Spacer(Modifier.height(32.dp))
+        Button(
+            onClick = onDone,
+            modifier = Modifier.fillMaxWidth().height(56.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+        ) { Text(stringResource(R.string.done), fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+    }
+}
