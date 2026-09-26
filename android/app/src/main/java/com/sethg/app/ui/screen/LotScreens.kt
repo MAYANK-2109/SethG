@@ -1,6 +1,9 @@
 package com.sethg.app.ui.screen
 
+import android.Manifest
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -29,6 +32,9 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.sethg.app.R
+import com.sethg.app.data.local.City
+import com.sethg.app.data.local.ResolvedRate
+import com.sethg.app.data.local.Zone
 import com.sethg.app.domain.model.Lot
 import com.sethg.app.domain.model.MaterialCategory
 import com.sethg.app.domain.model.PriceEstimate
@@ -73,6 +79,16 @@ private val MaterialCategory.labelRes: Int
     }
 
 private fun PriceEstimate.format() = "₹%,d – ₹%,d".format(low, high)
+
+private val Zone.labelRes: Int
+    get() = when (this) {
+        Zone.NORTH     -> R.string.zone_north
+        Zone.WEST      -> R.string.zone_west
+        Zone.SOUTH     -> R.string.zone_south
+        Zone.EAST      -> R.string.zone_east
+        Zone.CENTRAL   -> R.string.zone_central
+        Zone.NORTHEAST -> R.string.zone_northeast
+    }
 
 // ── My lots (bottom-nav tab) ──────────────────────────────────────────────────
 
@@ -168,6 +184,14 @@ private fun LotCard(lot: Lot) {
                     )
                 }
                 Text(lot.estimate.format(), color = OchreSecondary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                lot.priceRegion?.let { region ->
+                    val zone = Zone.entries.firstOrNull { it.name == region }
+                    Text(
+                        "📍 ${if (zone != null) stringResource(zone.labelRes) else region}",
+                        color = TextSecondary,
+                        fontSize = 12.sp
+                    )
+                }
                 Text(
                     "${lot.lotId} · ${SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault()).format(Date(lot.createdAt))}",
                     color = TextSecondary,
@@ -210,6 +234,17 @@ fun NewLotScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     var showCamera by remember { mutableStateOf(false) }
+    var showCityPicker by remember { mutableStateOf(false) }
+
+    if (showCityPicker) {
+        CityPickerDialog(
+            cities = viewModel.cities,
+            selected = state.city,
+            onDetect = viewModel::detectCity,
+            onPick = { viewModel.setCity(it); showCityPicker = false },
+            onDismiss = { showCityPicker = false }
+        )
+    }
 
     if (showCamera) {
         BackHandler { showCamera = false }
@@ -397,6 +432,9 @@ fun NewLotScreen(
                 }
             }
 
+            // Area whose scrap rates are used
+            AreaRow(city = state.city, onChange = { showCityPicker = true })
+
             // 4 ── Price range
             state.estimate?.let { estimate ->
                 Card(
@@ -411,6 +449,7 @@ fun NewLotScreen(
                             fontSize = 32.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
+                        state.rate?.let { RateBasis(it, state.city) }
                         Text(stringResource(R.string.price_range_note), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                     }
                 }
@@ -419,6 +458,104 @@ fun NewLotScreen(
             state.error?.let { Text(it, color = ErrorColor) }
         }
     }
+}
+
+@Composable
+private fun AreaRow(city: City?, onChange: () -> Unit) {
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = if (city == null) OchreSecondary.copy(alpha = 0.12f) else LightSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onChange)
+    ) {
+        Row(Modifier.padding(horizontal = 12.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Filled.Place, contentDescription = null, tint = if (city == null) OchreSecondary else GreenPrimary)
+            Spacer(Modifier.width(8.dp))
+            Column(Modifier.weight(1f)) {
+                Text(stringResource(R.string.price_area), color = TextSecondary, fontSize = 12.sp)
+                Text(
+                    city?.let { "${it.name} · ${stringResource(it.zone.labelRes)}" } ?: stringResource(R.string.choose_area),
+                    color = TextPrimary,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+            TextButton(onClick = onChange) { Text(stringResource(R.string.change)) }
+        }
+    }
+}
+
+@Composable
+private fun RateBasis(rate: ResolvedRate, city: City?) {
+    val text = when (rate.level) {
+        ResolvedRate.Level.CITY     -> stringResource(R.string.rate_basis_city, rate.regionName)
+        ResolvedRate.Level.ZONE     -> stringResource(R.string.rate_basis_zone, stringResource(city!!.zone.labelRes))
+        ResolvedRate.Level.NATIONAL -> stringResource(R.string.rate_basis_national)
+    }
+    Text("📍 $text", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+}
+
+@Composable
+private fun CityPickerDialog(
+    cities: List<City>,
+    selected: City?,
+    onDetect: () -> Boolean,
+    onPick: (City) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var locationFailed by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        locationFailed = !(granted && onDetect())
+        if (!locationFailed) onDismiss()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.choose_area)) },
+        text = {
+            Column {
+                OutlinedButton(
+                    onClick = { permissionLauncher.launch(Manifest.permission.ACCESS_COARSE_LOCATION) },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(Icons.Filled.MyLocation, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(stringResource(R.string.use_my_location))
+                }
+                if (locationFailed) {
+                    Text(stringResource(R.string.location_unavailable), color = ErrorColor, fontSize = 12.sp)
+                }
+                Spacer(Modifier.height(8.dp))
+                LazyColumn(Modifier.heightIn(max = 360.dp)) {
+                    cities.groupBy { it.zone }.forEach { (zone, zoneCities) ->
+                        item(key = zone.name) {
+                            Text(
+                                stringResource(zone.labelRes),
+                                color = GreenPrimary,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+                            )
+                        }
+                        items(zoneCities, key = { it.name }) { city ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onPick(city) }
+                                    .padding(vertical = 10.dp, horizontal = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text("${city.name}, ${city.state}", color = TextPrimary, modifier = Modifier.weight(1f))
+                                if (city == selected) Icon(Icons.Filled.Check, contentDescription = null, tint = GreenPrimary)
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
+    )
 }
 
 @Composable

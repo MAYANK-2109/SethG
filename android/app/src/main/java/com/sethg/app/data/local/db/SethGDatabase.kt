@@ -32,6 +32,7 @@ data class LotEntity(
     val weightKg: Double,
     val estimateLow: Int,
     val estimateHigh: Int,
+    val priceRegion: String? = null,  // "Raipur" | zone name | "India" — whose rates priced it
     val status: String,               // "LISTED" → … → "PAID"
     val syncStatus: String,           // "PENDING" until uploaded
     val createdAt: Long = System.currentTimeMillis()
@@ -125,7 +126,7 @@ interface LotDao {
 
 @Database(
     entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {

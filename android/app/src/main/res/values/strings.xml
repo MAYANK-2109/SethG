@@ -78,4 +78,20 @@
     <string name="cat_mobile">मोबाइल फोन</string>
     <string name="cat_switch">स्विच / MCB</string>
     <string name="cat_other">अन्य ई-कचरा</string>
+
+    <!-- Price zones -->
+    <string name="price_area">किस इलाके के रेट</string>
+    <string name="choose_area">अपना शहर चुनें</string>
+    <string name="change">बदलें</string>
+    <string name="use_my_location">मेरी लोकेशन से पता करें</string>
+    <string name="location_unavailable">लोकेशन नहीं मिली। नीचे से अपना शहर चुनें।</string>
+    <string name="rate_basis_city">%1$s के कबाड़ी रेट पर आधारित</string>
+    <string name="rate_basis_zone">%1$s के औसत रेट पर (आपके शहर के रेट उपलब्ध नहीं)</string>
+    <string name="rate_basis_national">पूरे भारत के औसत रेट पर</string>
+    <string name="zone_north">उत्तर भारत</string>
+    <string name="zone_west">पश्चिम भारत</string>
+    <string name="zone_south">दक्षिण भारत</string>
+    <string name="zone_east">पूर्व भारत</string>
+    <string name="zone_central">मध्य भारत</string>
+    <string name="zone_northeast">पूर्वोत्तर भारत</string>
 </resources>

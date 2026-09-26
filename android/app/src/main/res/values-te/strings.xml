@@ -78,4 +78,20 @@
     <string name="cat_mobile">మొబైల్ ఫోన్</string>
     <string name="cat_switch">స్విచ్ / MCB</string>
     <string name="cat_other">ఇతర ఈ-వ్యర్థం</string>
+
+    <!-- Price zones -->
+    <string name="price_area">ఏ ప్రాంతం ధరలు</string>
+    <string name="choose_area">మీ నగరాన్ని ఎంచుకోండి</string>
+    <string name="change">మార్చు</string>
+    <string name="use_my_location">నా లొకేషన్ ఉపయోగించు</string>
+    <string name="location_unavailable">లొకేషన్ అందుబాటులో లేదు. కింద మీ నగరాన్ని ఎంచుకోండి.</string>
+    <string name="rate_basis_city">%1$s లోని స్క్రాప్ ధరల ఆధారంగా</string>
+    <string name="rate_basis_zone">%1$s సగటు ధరల ఆధారంగా (మీ నగరం ధరలు లేవు)</string>
+    <string name="rate_basis_national">భారతదేశ సగటు ధరల ఆధారంగా</string>
+    <string name="zone_north">ఉత్తర భారతం</string>
+    <string name="zone_west">పశ్చిమ భారతం</string>
+    <string name="zone_south">దక్షిణ భారతం</string>
+    <string name="zone_east">తూర్పు భారతం</string>
+    <string name="zone_central">మధ్య భారతం</string>
+    <string name="zone_northeast">ఈశాన్య భారతం</string>
 </resources>

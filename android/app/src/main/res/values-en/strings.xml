@@ -78,4 +78,20 @@
     <string name="cat_mobile">Mobile phone</string>
     <string name="cat_switch">Switch / MCB</string>
     <string name="cat_other">Other e-waste</string>
+
+    <!-- Price zones -->
+    <string name="price_area">Rates for area</string>
+    <string name="choose_area">Choose your city</string>
+    <string name="change">Change</string>
+    <string name="use_my_location">Use my location</string>
+    <string name="location_unavailable">Location not available. Pick your city below.</string>
+    <string name="rate_basis_city">Based on scrap rates in %1$s</string>
+    <string name="rate_basis_zone">Based on %1$s average rates (no data for your city yet)</string>
+    <string name="rate_basis_national">Based on all-India average rates</string>
+    <string name="zone_north">North India</string>
+    <string name="zone_west">West India</string>
+    <string name="zone_south">South India</string>
+    <string name="zone_east">East India</string>
+    <string name="zone_central">Central India</string>
+    <string name="zone_northeast">Northeast India</string>
 </resources>

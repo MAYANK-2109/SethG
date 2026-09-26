@@ -1,0 +1,1112 @@
+{
+ "updated": "2026-09-26",
+ "unit": "INR_per_kg",
+ "cities": [
+  {
+   "name": "Delhi",
+   "state": "Delhi",
+   "zone": "NORTH",
+   "lat": 28.61,
+   "lon": 77.21,
+   "rates": {
+    "LCD": {
+     "low": 18.4,
+     "high": 24.9
+    },
+    "CRT": {
+     "low": 9.5,
+     "high": 12.9
+    },
+    "OTHER": {
+     "low": 25.5,
+     "high": 34.5
+    },
+    "CABLE": {
+     "low": 58.6,
+     "high": 79.3
+    },
+    "PLASTIC": {
+     "low": 13.2,
+     "high": 17.8
+    },
+    "BATTERY": {
+     "low": 72.0,
+     "high": 97.5
+    },
+    "MOTOR": {
+     "low": 37.4,
+     "high": 50.6
+    },
+    "MOBILE": {
+     "low": 141.7,
+     "high": 191.7
+    },
+    "CHARGER": {
+     "low": 25.5,
+     "high": 34.5
+    },
+    "SWITCH": {
+     "low": 25.5,
+     "high": 34.5
+    }
+   }
+  },
+  {
+   "name": "Gurugram",
+   "state": "Haryana",
+   "zone": "NORTH",
+   "lat": 28.46,
+   "lon": 77.03,
+   "rates": {}
+  },
+  {
+   "name": "Noida",
+   "state": "Uttar Pradesh",
+   "zone": "NORTH",
+   "lat": 28.54,
+   "lon": 77.39,
+   "rates": {
+    "PLASTIC": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "MOTOR": {
+     "low": 29.8,
+     "high": 40.2
+    },
+    "LCD": {
+     "low": 17.0,
+     "high": 23.0
+    },
+    "CRT": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "BATTERY": {
+     "low": 68.8,
+     "high": 93.1
+    }
+   }
+  },
+  {
+   "name": "Chandigarh",
+   "state": "Chandigarh",
+   "zone": "NORTH",
+   "lat": 30.73,
+   "lon": 76.78,
+   "rates": {
+    "BATTERY": {
+     "low": 74.0,
+     "high": 100.1
+    }
+   }
+  },
+  {
+   "name": "Ludhiana",
+   "state": "Punjab",
+   "zone": "NORTH",
+   "lat": 30.9,
+   "lon": 75.86,
+   "rates": {}
+  },
+  {
+   "name": "Jaipur",
+   "state": "Rajasthan",
+   "zone": "NORTH",
+   "lat": 26.91,
+   "lon": 75.79,
+   "rates": {
+    "LCD": {
+     "low": 14.2,
+     "high": 19.2
+    },
+    "CRT": {
+     "low": 6.4,
+     "high": 8.6
+    },
+    "OTHER": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "CABLE": {
+     "low": 212.5,
+     "high": 287.5
+    },
+    "BATTERY": {
+     "low": 76.5,
+     "high": 103.5
+    },
+    "PLASTIC": {
+     "low": 6.0,
+     "high": 8.0
+    },
+    "CHARGER": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "SWITCH": {
+     "low": 8.5,
+     "high": 11.5
+    }
+   }
+  },
+  {
+   "name": "Lucknow",
+   "state": "Uttar Pradesh",
+   "zone": "NORTH",
+   "lat": 26.85,
+   "lon": 80.95,
+   "rates": {
+    "LCD": {
+     "low": 5.7,
+     "high": 7.7
+    },
+    "CRT": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "OTHER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "CABLE": {
+     "low": 38.2,
+     "high": 51.7
+    },
+    "BATTERY": {
+     "low": 68.0,
+     "high": 92.0
+    },
+    "PLASTIC": {
+     "low": 3.4,
+     "high": 4.6
+    },
+    "CHARGER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "SWITCH": {
+     "low": 12.8,
+     "high": 17.2
+    }
+   }
+  },
+  {
+   "name": "Kanpur",
+   "state": "Uttar Pradesh",
+   "zone": "NORTH",
+   "lat": 26.45,
+   "lon": 80.33,
+   "rates": {}
+  },
+  {
+   "name": "Dehradun",
+   "state": "Uttarakhand",
+   "zone": "NORTH",
+   "lat": 30.32,
+   "lon": 78.03,
+   "rates": {}
+  },
+  {
+   "name": "Mumbai",
+   "state": "Maharashtra",
+   "zone": "WEST",
+   "lat": 19.08,
+   "lon": 72.88,
+   "rates": {
+    "LCD": {
+     "low": 15.6,
+     "high": 21.1
+    },
+    "CRT": {
+     "low": 4.2,
+     "high": 5.8
+    },
+    "OTHER": {
+     "low": 23.4,
+     "high": 31.6
+    },
+    "CABLE": {
+     "low": 403.8,
+     "high": 546.2
+    },
+    "PLASTIC": {
+     "low": 8.5,
+     "high": 12.5
+    },
+    "BATTERY": {
+     "low": 71.4,
+     "high": 96.6
+    },
+    "PCB": {
+     "low": 85.0,
+     "high": 115.0
+    },
+    "MOBILE": {
+     "low": 120.0,
+     "high": 200.0
+    },
+    "CHARGER": {
+     "low": 23.4,
+     "high": 31.6
+    },
+    "SWITCH": {
+     "low": 23.4,
+     "high": 31.6
+    }
+   }
+  },
+  {
+   "name": "Thane",
+   "state": "Maharashtra",
+   "zone": "WEST",
+   "lat": 19.22,
+   "lon": 72.98,
+   "rates": {}
+  },
+  {
+   "name": "Pune",
+   "state": "Maharashtra",
+   "zone": "WEST",
+   "lat": 18.52,
+   "lon": 73.86,
+   "rates": {
+    "LCD": {
+     "low": 19.2,
+     "high": 26.0
+    },
+    "CRT": {
+     "low": 6.1,
+     "high": 8.3
+    },
+    "OTHER": {
+     "low": 10.6,
+     "high": 14.4
+    },
+    "CABLE": {
+     "low": 127.5,
+     "high": 172.5
+    },
+    "PLASTIC": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "MOBILE": {
+     "low": 354.2,
+     "high": 479.2
+    },
+    "BATTERY": {
+     "low": 51.0,
+     "high": 69.0
+    },
+    "CHARGER": {
+     "low": 10.6,
+     "high": 14.4
+    },
+    "SWITCH": {
+     "low": 10.6,
+     "high": 14.4
+    }
+   }
+  },
+  {
+   "name": "Nashik",
+   "state": "Maharashtra",
+   "zone": "WEST",
+   "lat": 20.0,
+   "lon": 73.79,
+   "rates": {}
+  },
+  {
+   "name": "Ahmedabad",
+   "state": "Gujarat",
+   "zone": "WEST",
+   "lat": 23.02,
+   "lon": 72.57,
+   "rates": {
+    "LCD": {
+     "low": 14.2,
+     "high": 19.2
+    },
+    "CRT": {
+     "low": 4.2,
+     "high": 5.8
+    },
+    "OTHER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "CABLE": {
+     "low": 17.0,
+     "high": 23.0
+    },
+    "BATTERY": {
+     "low": 68.0,
+     "high": 92.0
+    },
+    "PLASTIC": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "CHARGER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "SWITCH": {
+     "low": 12.8,
+     "high": 17.2
+    }
+   }
+  },
+  {
+   "name": "Surat",
+   "state": "Gujarat",
+   "zone": "WEST",
+   "lat": 21.17,
+   "lon": 72.83,
+   "rates": {}
+  },
+  {
+   "name": "Goa",
+   "state": "Goa",
+   "zone": "WEST",
+   "lat": 15.49,
+   "lon": 73.83,
+   "rates": {}
+  },
+  {
+   "name": "Bengaluru",
+   "state": "Karnataka",
+   "zone": "SOUTH",
+   "lat": 12.97,
+   "lon": 77.59,
+   "rates": {
+    "LCD": {
+     "low": 7.1,
+     "high": 9.6
+    },
+    "CRT": {
+     "low": 4.2,
+     "high": 5.8
+    },
+    "OTHER": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "CABLE": {
+     "low": 42.5,
+     "high": 57.5
+    },
+    "BATTERY": {
+     "low": 59.5,
+     "high": 80.5
+    },
+    "PLASTIC": {
+     "low": 4.2,
+     "high": 5.8
+    },
+    "CHARGER": {
+     "low": 8.5,
+     "high": 11.5
+    },
+    "SWITCH": {
+     "low": 8.5,
+     "high": 11.5
+    }
+   }
+  },
+  {
+   "name": "Chennai",
+   "state": "Tamil Nadu",
+   "zone": "SOUTH",
+   "lat": 13.08,
+   "lon": 80.27,
+   "rates": {
+    "CABLE": {
+     "low": 350.0,
+     "high": 470.0
+    },
+    "CRT": {
+     "low": 5.0,
+     "high": 15.0
+    },
+    "OTHER": {
+     "low": 35.0,
+     "high": 60.0
+    },
+    "BATTERY": {
+     "low": 75.0,
+     "high": 98.5
+    },
+    "PLASTIC": {
+     "low": 9.0,
+     "high": 18.0
+    },
+    "CHARGER": {
+     "low": 35.0,
+     "high": 60.0
+    },
+    "SWITCH": {
+     "low": 35.0,
+     "high": 60.0
+    }
+   }
+  },
+  {
+   "name": "Hyderabad",
+   "state": "Telangana",
+   "zone": "SOUTH",
+   "lat": 17.39,
+   "lon": 78.49,
+   "rates": {
+    "LCD": {
+     "low": 15.6,
+     "high": 21.1
+    },
+    "CRT": {
+     "low": 4.2,
+     "high": 5.8
+    },
+    "OTHER": {
+     "low": 17.0,
+     "high": 23.0
+    },
+    "CABLE": {
+     "low": 29.8,
+     "high": 40.2
+    },
+    "PLASTIC": {
+     "low": 6.8,
+     "high": 9.2
+    },
+    "MOBILE": {
+     "low": 83.3,
+     "high": 611.1
+    },
+    "BATTERY": {
+     "low": 72.2,
+     "high": 97.7
+    },
+    "CHARGER": {
+     "low": 17.0,
+     "high": 23.0
+    },
+    "SWITCH": {
+     "low": 17.0,
+     "high": 23.0
+    }
+   }
+  },
+  {
+   "name": "Coimbatore",
+   "state": "Tamil Nadu",
+   "zone": "SOUTH",
+   "lat": 11.02,
+   "lon": 76.96,
+   "rates": {}
+  },
+  {
+   "name": "Kochi",
+   "state": "Kerala",
+   "zone": "SOUTH",
+   "lat": 9.93,
+   "lon": 76.27,
+   "rates": {}
+  },
+  {
+   "name": "Visakhapatnam",
+   "state": "Andhra Pradesh",
+   "zone": "SOUTH",
+   "lat": 17.69,
+   "lon": 83.22,
+   "rates": {}
+  },
+  {
+   "name": "Vijayawada",
+   "state": "Andhra Pradesh",
+   "zone": "SOUTH",
+   "lat": 16.51,
+   "lon": 80.65,
+   "rates": {}
+  },
+  {
+   "name": "Kolkata",
+   "state": "West Bengal",
+   "zone": "EAST",
+   "lat": 22.57,
+   "lon": 88.36,
+   "rates": {
+    "OTHER": {
+     "low": 37.9,
+     "high": 51.3
+    },
+    "BATTERY": {
+     "low": 63.0,
+     "high": 85.2
+    },
+    "PLASTIC": {
+     "low": 12.0,
+     "high": 25.0
+    },
+    "CHARGER": {
+     "low": 37.9,
+     "high": 51.3
+    },
+    "SWITCH": {
+     "low": 37.9,
+     "high": 51.3
+    }
+   }
+  },
+  {
+   "name": "Bhubaneswar",
+   "state": "Odisha",
+   "zone": "EAST",
+   "lat": 20.3,
+   "lon": 85.82,
+   "rates": {
+    "OTHER": {
+     "low": 36.5,
+     "high": 49.4
+    },
+    "PCB": {
+     "low": 150.0,
+     "high": 400.0
+    },
+    "PLASTIC": {
+     "low": 10.0,
+     "high": 15.0
+    },
+    "CHARGER": {
+     "low": 36.5,
+     "high": 49.4
+    },
+    "SWITCH": {
+     "low": 36.5,
+     "high": 49.4
+    }
+   }
+  },
+  {
+   "name": "Patna",
+   "state": "Bihar",
+   "zone": "EAST",
+   "lat": 25.59,
+   "lon": 85.14,
+   "rates": {}
+  },
+  {
+   "name": "Ranchi",
+   "state": "Jharkhand",
+   "zone": "EAST",
+   "lat": 23.34,
+   "lon": 85.31,
+   "rates": {}
+  },
+  {
+   "name": "Jamshedpur",
+   "state": "Jharkhand",
+   "zone": "EAST",
+   "lat": 22.8,
+   "lon": 86.2,
+   "rates": {}
+  },
+  {
+   "name": "Raipur",
+   "state": "Chhattisgarh",
+   "zone": "CENTRAL",
+   "lat": 21.25,
+   "lon": 81.63,
+   "rates": {
+    "LCD": {
+     "low": 9.6,
+     "high": 13.0
+    },
+    "CRT": {
+     "low": 7.4,
+     "high": 10.1
+    },
+    "OTHER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "CABLE": {
+     "low": 17.0,
+     "high": 23.0
+    },
+    "BATTERY": {
+     "low": 59.5,
+     "high": 80.5
+    },
+    "PLASTIC": {
+     "low": 8.0,
+     "high": 10.9
+    },
+    "CHARGER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "SWITCH": {
+     "low": 12.8,
+     "high": 17.2
+    }
+   }
+  },
+  {
+   "name": "Bhilai",
+   "state": "Chhattisgarh",
+   "zone": "CENTRAL",
+   "lat": 21.19,
+   "lon": 81.38,
+   "rates": {}
+  },
+  {
+   "name": "Bilaspur",
+   "state": "Chhattisgarh",
+   "zone": "CENTRAL",
+   "lat": 22.08,
+   "lon": 82.15,
+   "rates": {}
+  },
+  {
+   "name": "Bhopal",
+   "state": "Madhya Pradesh",
+   "zone": "CENTRAL",
+   "lat": 23.26,
+   "lon": 77.41,
+   "rates": {
+    "LCD": {
+     "low": 7.8,
+     "high": 10.5
+    },
+    "CRT": {
+     "low": 14.2,
+     "high": 19.2
+    },
+    "CABLE": {
+     "low": 51.0,
+     "high": 69.0
+    },
+    "BATTERY": {
+     "low": 68.0,
+     "high": 92.0
+    },
+    "PLASTIC": {
+     "low": 10.2,
+     "high": 13.8
+    }
+   }
+  },
+  {
+   "name": "Indore",
+   "state": "Madhya Pradesh",
+   "zone": "CENTRAL",
+   "lat": 22.72,
+   "lon": 75.86,
+   "rates": {
+    "LCD": {
+     "low": 7.1,
+     "high": 9.6
+    },
+    "CRT": {
+     "low": 10.6,
+     "high": 14.4
+    },
+    "OTHER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "CABLE": {
+     "low": 55.0,
+     "high": 80.0
+    },
+    "BATTERY": {
+     "low": 67.9,
+     "high": 91.8
+    },
+    "PLASTIC": {
+     "low": 6.8,
+     "high": 9.2
+    },
+    "MOTOR": {
+     "low": 40.0,
+     "high": 80.0
+    },
+    "CHARGER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "SWITCH": {
+     "low": 12.8,
+     "high": 17.2
+    }
+   }
+  },
+  {
+   "name": "Jabalpur",
+   "state": "Madhya Pradesh",
+   "zone": "CENTRAL",
+   "lat": 23.18,
+   "lon": 79.99,
+   "rates": {}
+  },
+  {
+   "name": "Nagpur",
+   "state": "Maharashtra",
+   "zone": "CENTRAL",
+   "lat": 21.15,
+   "lon": 79.09,
+   "rates": {
+    "LCD": {
+     "low": 9.9,
+     "high": 13.4
+    },
+    "CRT": {
+     "low": 5.3,
+     "high": 7.2
+    },
+    "OTHER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "CABLE": {
+     "low": 85.0,
+     "high": 115.0
+    },
+    "BATTERY": {
+     "low": 68.0,
+     "high": 92.0
+    },
+    "PLASTIC": {
+     "low": 4.7,
+     "high": 6.3
+    },
+    "MOBILE": {
+     "low": 177.1,
+     "high": 239.6
+    },
+    "CHARGER": {
+     "low": 12.8,
+     "high": 17.2
+    },
+    "SWITCH": {
+     "low": 12.8,
+     "high": 17.2
+    }
+   }
+  },
+  {
+   "name": "Guwahati",
+   "state": "Assam",
+   "zone": "NORTHEAST",
+   "lat": 26.14,
+   "lon": 91.74,
+   "rates": {
+    "OTHER": {
+     "low": 36.5,
+     "high": 49.4
+    },
+    "PCB": {
+     "low": 150.0,
+     "high": 400.0
+    },
+    "PLASTIC": {
+     "low": 10.0,
+     "high": 15.0
+    },
+    "CHARGER": {
+     "low": 36.5,
+     "high": 49.4
+    },
+    "SWITCH": {
+     "low": 36.5,
+     "high": 49.4
+    }
+   }
+  },
+  {
+   "name": "Shillong",
+   "state": "Meghalaya",
+   "zone": "NORTHEAST",
+   "lat": 25.58,
+   "lon": 91.89,
+   "rates": {}
+  },
+  {
+   "name": "Agartala",
+   "state": "Tripura",
+   "zone": "NORTHEAST",
+   "lat": 23.83,
+   "lon": 91.29,
+   "rates": {}
+  },
+  {
+   "name": "Imphal",
+   "state": "Manipur",
+   "zone": "NORTHEAST",
+   "lat": 24.82,
+   "lon": 93.94,
+   "rates": {}
+  }
+ ],
+ "zones": {
+  "CENTRAL": {
+   "LCD": {
+    "low": 8.7,
+    "high": 11.8
+   },
+   "CRT": {
+    "low": 9.0,
+    "high": 12.2
+   },
+   "OTHER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "CABLE": {
+    "low": 53.0,
+    "high": 74.5
+   },
+   "BATTERY": {
+    "low": 68.0,
+    "high": 91.9
+   },
+   "PLASTIC": {
+    "low": 7.4,
+    "high": 10.1
+   },
+   "MOBILE": {
+    "low": 177.1,
+    "high": 239.6
+   },
+   "MOTOR": {
+    "low": 40.0,
+    "high": 80.0
+   },
+   "CHARGER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "SWITCH": {
+    "low": 12.8,
+    "high": 17.2
+   }
+  },
+  "WEST": {
+   "LCD": {
+    "low": 15.6,
+    "high": 21.1
+   },
+   "CRT": {
+    "low": 4.2,
+    "high": 5.8
+   },
+   "OTHER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "CABLE": {
+    "low": 127.5,
+    "high": 172.5
+   },
+   "PLASTIC": {
+    "low": 8.5,
+    "high": 11.5
+   },
+   "MOBILE": {
+    "low": 237.1,
+    "high": 339.6
+   },
+   "BATTERY": {
+    "low": 68.0,
+    "high": 92.0
+   },
+   "PCB": {
+    "low": 85.0,
+    "high": 115.0
+   },
+   "CHARGER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "SWITCH": {
+    "low": 12.8,
+    "high": 17.2
+   }
+  },
+  "NORTH": {
+   "LCD": {
+    "low": 15.6,
+    "high": 21.1
+   },
+   "CRT": {
+    "low": 9.0,
+    "high": 12.2
+   },
+   "OTHER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "CABLE": {
+    "low": 58.6,
+    "high": 79.3
+   },
+   "PLASTIC": {
+    "low": 9.4,
+    "high": 12.6
+   },
+   "BATTERY": {
+    "low": 72.0,
+    "high": 97.5
+   },
+   "MOTOR": {
+    "low": 33.6,
+    "high": 45.4
+   },
+   "MOBILE": {
+    "low": 141.7,
+    "high": 191.7
+   },
+   "CHARGER": {
+    "low": 12.8,
+    "high": 17.2
+   },
+   "SWITCH": {
+    "low": 12.8,
+    "high": 17.2
+   }
+  },
+  "SOUTH": {
+   "LCD": {
+    "low": 11.3,
+    "high": 15.4
+   },
+   "CRT": {
+    "low": 4.2,
+    "high": 5.8
+   },
+   "OTHER": {
+    "low": 17.0,
+    "high": 23.0
+   },
+   "CABLE": {
+    "low": 42.5,
+    "high": 57.5
+   },
+   "BATTERY": {
+    "low": 72.2,
+    "high": 97.7
+   },
+   "PLASTIC": {
+    "low": 6.8,
+    "high": 9.2
+   },
+   "MOBILE": {
+    "low": 83.3,
+    "high": 611.1
+   },
+   "CHARGER": {
+    "low": 17.0,
+    "high": 23.0
+   },
+   "SWITCH": {
+    "low": 17.0,
+    "high": 23.0
+   }
+  },
+  "EAST": {
+   "OTHER": {
+    "low": 37.2,
+    "high": 50.3
+   },
+   "BATTERY": {
+    "low": 63.0,
+    "high": 85.2
+   },
+   "PLASTIC": {
+    "low": 11.0,
+    "high": 20.0
+   },
+   "PCB": {
+    "low": 150.0,
+    "high": 400.0
+   },
+   "CHARGER": {
+    "low": 37.2,
+    "high": 50.3
+   },
+   "SWITCH": {
+    "low": 37.2,
+    "high": 50.3
+   }
+  },
+  "NORTHEAST": {
+   "OTHER": {
+    "low": 36.5,
+    "high": 49.4
+   },
+   "PCB": {
+    "low": 150.0,
+    "high": 400.0
+   },
+   "PLASTIC": {
+    "low": 10.0,
+    "high": 15.0
+   },
+   "CHARGER": {
+    "low": 36.5,
+    "high": 49.4
+   },
+   "SWITCH": {
+    "low": 36.5,
+    "high": 49.4
+   }
+  }
+ },
+ "national": {
+  "LCD": {
+   "low": 14.2,
+   "high": 19.2
+  },
+  "CRT": {
+   "low": 6.2,
+   "high": 9.3
+  },
+  "OTHER": {
+   "low": 12.8,
+   "high": 17.2
+  },
+  "CABLE": {
+   "low": 55.0,
+   "high": 79.3
+  },
+  "BATTERY": {
+   "low": 68.0,
+   "high": 92.0
+  },
+  "PLASTIC": {
+   "low": 8.5,
+   "high": 11.5
+  },
+  "MOBILE": {
+   "low": 141.7,
+   "high": 239.6
+  },
+  "MOTOR": {
+   "low": 37.4,
+   "high": 50.6
+  },
+  "PCB": {
+   "low": 150.0,
+   "high": 400.0
+  },
+  "CHARGER": {
+   "low": 12.8,
+   "high": 17.2
+  },
+  "SWITCH": {
+   "low": 12.8,
+   "high": 17.2
+  }
+ }
+}

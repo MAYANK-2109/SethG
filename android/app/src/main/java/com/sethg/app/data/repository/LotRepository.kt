@@ -106,6 +106,7 @@ class LotRepository @Inject constructor(
         category: MaterialCategory,
         weightKg: Double,
         estimate: PriceEstimate,
+        priceRegion: String?,
         photos: List<CapturedPhoto>
     ) = withContext(Dispatchers.IO) {
         lotDao.insertLotWithPhotos(
@@ -115,6 +116,7 @@ class LotRepository @Inject constructor(
                 weightKg     = weightKg,
                 estimateLow  = estimate.low,
                 estimateHigh = estimate.high,
+                priceRegion  = priceRegion,
                 status       = STATUS_LISTED,
                 syncStatus   = SYNC_PENDING
             ),
@@ -143,6 +145,7 @@ private fun LotWithPhotos.toDomain() = Lot(
     category   = MaterialCategory.entries.firstOrNull { it.name == lot.category } ?: MaterialCategory.OTHER,
     weightKg   = lot.weightKg,
     estimate   = PriceEstimate(lot.estimateLow, lot.estimateHigh),
+    priceRegion = lot.priceRegion,
     status     = lot.status,
     syncStatus = lot.syncStatus,
     createdAt  = lot.createdAt,

@@ -22,6 +22,14 @@ class AppPreferences @Inject constructor(
     companion object {
         val KEY_LANGUAGE          = stringPreferencesKey("selected_language")
         val KEY_LANGUAGE_SELECTED = booleanPreferencesKey("language_selected")
+        val KEY_PRICE_CITY        = stringPreferencesKey("price_city")
+    }
+
+    /** City whose scrap rates are used for price estimates (null = not chosen yet). */
+    val priceCityFlow: Flow<String?> = context.dataStore.data.map { prefs -> prefs[KEY_PRICE_CITY] }
+
+    suspend fun setPriceCity(name: String) {
+        context.dataStore.edit { prefs -> prefs[KEY_PRICE_CITY] = name }
     }
 
     val languageFlow: Flow<String> = context.dataStore.data.map { prefs ->
