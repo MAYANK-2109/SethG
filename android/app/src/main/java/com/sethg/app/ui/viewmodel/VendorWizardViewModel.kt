@@ -2,6 +2,7 @@ package com.sethg.app.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.sethg.app.data.local.EWasteDetector
 import com.sethg.app.data.local.LastLocation
 import com.sethg.app.data.local.PricePredictor
 import com.sethg.app.data.local.PriceRateRepository
@@ -39,13 +40,17 @@ class VendorWizardViewModel @Inject constructor(
     private val dao: VendorTransactionDao,
     private val rates: PriceRateRepository,
     private val pricePredictor: PricePredictor,
-    private val lastLocation: LastLocation
+    private val lastLocation: LastLocation,
+    private val eWasteDetector: EWasteDetector
 ) : ViewModel() {
 
     data class UiState(
         val txnId: String = newId(),
         // Step 1
         val photoPath: String? = null,
+        val checkingPhoto: Boolean = false,
+        val rejectedLabel: String? = null,      // set → "not e-waste, take another photo"
+        val photoRejected: Boolean = false,
         // Step 2
         val category: MaterialCategory? = null,
         val weightText: String = "",
@@ -126,7 +131,25 @@ class VendorWizardViewModel @Inject constructor(
 
     // ── Setters ───────────────────────────────────────────────────────────────
 
-    fun setPhoto(path: String) = _uiState.update { it.copy(photoPath = path) }
+    /** Same on-device e-waste check as New Lot: bottles, food, people… are rejected. */
+    fun setPhoto(path: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(checkingPhoto = true, photoRejected = false, rejectedLabel = null) }
+            val file = java.io.File(path)
+            val result = runCatching { eWasteDetector.check(file) }.getOrNull()
+            if (result?.verdict == EWasteDetector.Verdict.NOT_EWASTE) {
+                file.delete()
+                _uiState.update {
+                    it.copy(checkingPhoto = false, photoRejected = true,
+                        rejectedLabel = result.topLabel.takeIf { result.eWasteScore == null })
+                }
+            } else {
+                _uiState.update { it.copy(checkingPhoto = false, photoPath = path) }
+            }
+        }
+    }
+
+    fun dismissPhotoRejection() = _uiState.update { it.copy(photoRejected = false, rejectedLabel = null) }
 
     fun setCategory(cat: MaterialCategory) {
         _uiState.update { it.copy(category = cat) }

@@ -17,6 +17,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.sethg.app.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,6 +86,32 @@ fun VendorDashboardScreen(
                 onClose = { showCamera = false }
             )
             return
+        }
+
+        if (state.photoRejected) {
+            AlertDialog(
+                onDismissRequest = viewModel::dismissPhotoRejection,
+                icon = { Icon(Icons.Filled.ErrorOutline, contentDescription = null, tint = OchreSecondary) },
+                title = { Text(stringResource(R.string.not_ewaste_title)) },
+                text = {
+                    Column {
+                        Text(stringResource(R.string.not_ewaste_message))
+                        state.rejectedLabel?.let {
+                            Spacer(Modifier.height(8.dp))
+                            Text(stringResource(R.string.detected_in_photo, it), color = TextSecondary)
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(
+                        onClick = { viewModel.dismissPhotoRejection(); showCamera = true },
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                    ) { Text(stringResource(R.string.retake_photo)) }
+                },
+                dismissButton = {
+                    TextButton(onClick = viewModel::dismissPhotoRejection) { Text(stringResource(R.string.cancel)) }
+                }
+            )
         }
 
         BackHandler {
