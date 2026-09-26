@@ -37,3 +37,5 @@ Thumbs.db
 ml/data/
 ml/.venv/
 ml/runs/
+__pycache__/
+*.pyc
