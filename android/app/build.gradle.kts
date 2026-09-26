@@ -57,8 +57,11 @@ android {
         noCompress += "tflite"
     }
 
-    // Reduce APK size for low-memory devices
+    // Reduce APK size for low-memory devices and ensure 16 KB alignment for native libs
     packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
