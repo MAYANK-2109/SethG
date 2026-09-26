@@ -18,8 +18,8 @@ android {
         // Bump on every build that changes the DB schema or ships to testers:
         // Android refuses to install a lower versionCode over a higher one,
         // so a stale checkout can't silently replace a newer app.
-        versionCode = 4      // matches DB version 4 (lots, zone prices, user roles)
-        versionName = "1.3.0"
+        versionCode = 5      // matches DB version 5 (lot location + handover code)
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -121,6 +121,9 @@ dependencies {
     // On-device e-waste photo check (bundled model — works offline)
     implementation(libs.mlkit.image.labeling)
     implementation(libs.litert)   // custom e-waste classifier (assets/ewaste_classifier.tflite)
+
+    // Background sync + nearby-lot / offer alerts
+    implementation(libs.work.runtime)
 
     debugImplementation(libs.androidx.ui.tooling)
 }

@@ -36,6 +36,9 @@ data class LotEntity(
     val estimateLow: Int,
     val estimateHigh: Int,
     val priceRegion: String? = null,  // "Raipur" | zone name | "India" — whose rates priced it
+    val lat: Double? = null,          // where the material is — used for 3–5 km recycler matching
+    val lon: Double? = null,
+    val handoverOtp: String? = null,  // 6-digit code from the server on acceptance; shown to the driver
     val status: String,               // "LISTED" → … → "PAID"
     val syncStatus: String,           // "PENDING" until uploaded
     val createdAt: Long = System.currentTimeMillis()
@@ -109,6 +112,25 @@ interface LotDao {
     @Query("SELECT * FROM lots ORDER BY createdAt DESC")
     fun observeLots(): Flow<List<LotWithPhotos>>
 
+    @Query("SELECT * FROM lots WHERE lotId = :lotId")
+    fun observeLot(lotId: String): Flow<LotWithPhotos?>
+
+    @Transaction
+    @Query("SELECT * FROM lots WHERE syncStatus = 'PENDING'")
+    suspend fun pendingSync(): List<LotWithPhotos>
+
+    @Query("UPDATE lots SET syncStatus = :syncStatus WHERE lotId = :lotId")
+    suspend fun setSyncStatus(lotId: String, syncStatus: String)
+
+    @Query("UPDATE lots SET status = :status WHERE lotId = :lotId")
+    suspend fun setStatus(lotId: String, status: String)
+
+    @Query("UPDATE lots SET lat = :lat, lon = :lon WHERE lotId = :lotId")
+    suspend fun setLocation(lotId: String, lat: Double, lon: Double)
+
+    @Query("UPDATE lots SET handoverOtp = :otp WHERE lotId = :lotId")
+    suspend fun setHandoverOtp(lotId: String, otp: String)
+
     @Query("SELECT filePath FROM lot_photos")
     suspend fun allPhotoPaths(): List<String>
 
@@ -129,7 +151,7 @@ interface LotDao {
 
 @Database(
     entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {

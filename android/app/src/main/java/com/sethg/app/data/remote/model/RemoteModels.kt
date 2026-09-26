@@ -101,3 +101,155 @@ data class AddEarningRequest(
     @SerializedName("weight_kg") val weightKg: Double? = null,
     val note: String? = null
 )
+
+// ── Lots, offers, trips, handover (stages 2–4) ───────────────────────────────
+
+data class SyncLotRequest(
+    val id: String,
+    val category: String,
+    @SerializedName("weight_kg") val weightKg: Double,
+    @SerializedName("estimate_low") val estimateLow: Int,
+    @SerializedName("estimate_high") val estimateHigh: Int,
+    @SerializedName("price_region") val priceRegion: String?,
+    val lat: Double,
+    val lon: Double,
+    @SerializedName("photo_hashes") val photoHashes: List<String>
+)
+
+data class RemoteOffer(
+    val id: String,
+    @SerializedName("rate_per_kg") val ratePerKg: Double,
+    @SerializedName("pickup_date") val pickupDate: String,
+    val note: String?,
+    @SerializedName("distance_km") val distanceKm: Double,
+    val status: String,
+    @SerializedName("recycler_name") val recyclerName: String,
+    @SerializedName("offer_total") val offerTotal: Double
+)
+
+data class RemoteHandover(
+    val id: String,
+    @SerializedName("actual_weight_kg") val actualWeightKg: Double,
+    @SerializedName("final_amount") val finalAmount: Double,
+    @SerializedName("weight_flagged") val weightFlagged: Boolean,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class RemoteLot(
+    val id: String,
+    val category: String,
+    @SerializedName("weight_kg") val weightKg: Double,
+    val status: String,
+    @SerializedName("transport_mode") val transportMode: String?,
+    @SerializedName("trip_mode") val tripMode: String?,
+    @SerializedName("hub_name") val hubName: String?,
+    @SerializedName("slot_start") val slotStart: String?,
+    @SerializedName("slot_end") val slotEnd: String?,
+    val offers: List<RemoteOffer> = emptyList(),
+    val handover: RemoteHandover?
+)
+
+data class SyncLotResponse(
+    val lot: RemoteLot,
+    @SerializedName("matched_recyclers") val matchedRecyclers: Int,
+    @SerializedName("match_radius_km") val matchRadiusKm: Int
+)
+
+data class MyLotsResponse(val lots: List<RemoteLot>)
+
+data class RemoteHub(val id: String, val name: String, @SerializedName("distance_km") val distanceKm: Double)
+
+data class TransportOptions(
+    @SerializedName("pickup_allowed") val pickupAllowed: Boolean,
+    @SerializedName("vehicle_min_kg") val vehicleMinKg: Double,
+    val hubs: List<RemoteHub>
+)
+
+data class AcceptOfferResponse(
+    val lot: RemoteLot,
+    @SerializedName("handover_otp") val handoverOtp: String,
+    @SerializedName("transport_options") val transportOptions: TransportOptions
+)
+
+data class TransportRequest(val mode: String, @SerializedName("hub_id") val hubId: String? = null)
+
+data class LotResponse(val lot: RemoteLot)
+
+// Recycler side
+data class RecyclerProfileRequest(
+    val lat: Double,
+    val lon: Double,
+    @SerializedName("accepted_materials") val acceptedMaterials: List<String>?,
+    @SerializedName("vehicle_min_kg") val vehicleMinKg: Double?
+)
+
+data class NearbyLot(
+    val id: String,
+    val category: String,
+    @SerializedName("weight_kg") val weightKg: Double,
+    @SerializedName("estimate_low") val estimateLow: Int,
+    @SerializedName("estimate_high") val estimateHigh: Int,
+    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("collector_first_name") val collectorFirstName: String,
+    @SerializedName("distance_km") val distanceKm: Double,
+    @SerializedName("offer_count") val offerCount: Int,
+    @SerializedName("my_rate_per_kg") val myRatePerKg: Double?
+)
+
+data class NearbyLotsResponse(val lots: List<NearbyLot>, @SerializedName("server_time") val serverTime: String)
+
+data class OfferRequest(
+    @SerializedName("rate_per_kg") val ratePerKg: Double,
+    @SerializedName("pickup_date") val pickupDate: String,
+    val note: String?
+)
+
+data class TripStop(
+    @SerializedName("lot_id") val lotId: String,
+    @SerializedName("stop_seq") val stopSeq: Int,
+    @SerializedName("slot_start") val slotStart: String,
+    @SerializedName("slot_end") val slotEnd: String,
+    val category: String,
+    @SerializedName("weight_kg") val weightKg: Double,
+    val status: String,
+    val lat: Double,
+    val lon: Double,
+    @SerializedName("collector_name") val collectorName: String,
+    @SerializedName("collector_phone") val collectorPhone: String?
+)
+
+data class RemoteTrip(
+    val id: String,
+    val mode: String,
+    @SerializedName("scheduled_date") val scheduledDate: String,
+    @SerializedName("total_kg") val totalKg: Double,
+    @SerializedName("hub_name") val hubName: String?,
+    val stops: List<TripStop>
+)
+
+data class TripsResponse(val trips: List<RemoteTrip>)
+
+data class AcceptedLot(
+    val id: String,
+    val category: String,
+    @SerializedName("weight_kg") val weightKg: Double,
+    val status: String,
+    @SerializedName("transport_mode") val transportMode: String?,
+    @SerializedName("rate_per_kg") val ratePerKg: Double,
+    @SerializedName("expected_amount") val expectedAmount: Double,
+    @SerializedName("collector_name") val collectorName: String,
+    @SerializedName("slot_start") val slotStart: String?
+)
+
+data class AcceptedLotsResponse(val lots: List<AcceptedLot>)
+
+data class HandoverRequest(
+    @SerializedName("actual_weight_kg") val actualWeightKg: Double,
+    val lat: Double,
+    val lon: Double,
+    @SerializedName("captured_at") val capturedAt: String,
+    @SerializedName("photo_hashes") val photoHashes: List<String>,
+    val otp: String
+)
+
+data class HandoverResponse(val handover: RemoteHandover)

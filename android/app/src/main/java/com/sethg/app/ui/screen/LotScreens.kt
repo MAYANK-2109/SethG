@@ -63,7 +63,7 @@ private val MaterialCategory.icon: ImageVector
         MaterialCategory.OTHER   -> Icons.Filled.Category
     }
 
-private val MaterialCategory.labelRes: Int
+internal val MaterialCategory.labelRes: Int
     get() = when (this) {
         MaterialCategory.CABLE   -> R.string.cat_cable
         MaterialCategory.CHARGER -> R.string.cat_charger
@@ -95,6 +95,7 @@ private val Zone.labelRes: Int
 @Composable
 fun LotsScreen(
     onNewLot: () -> Unit,
+    onOpenLot: (String) -> Unit = {},
     viewModel: LotsViewModel = hiltViewModel()
 ) {
     val lots by viewModel.lots.collectAsState()
@@ -149,7 +150,7 @@ fun LotsScreen(
                     contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(lots, key = { it.lotId }) { LotCard(it) }
+                    items(lots, key = { it.lotId }) { LotCard(it, onClick = { onOpenLot(it.lotId) }) }
                 }
             }
         }
@@ -157,8 +158,9 @@ fun LotsScreen(
 }
 
 @Composable
-private fun LotCard(lot: Lot) {
+private fun LotCard(lot: Lot, onClick: () -> Unit) {
     Card(
+        onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = LightSurface),
         shape = RoundedCornerShape(16.dp)
     ) {
@@ -199,7 +201,17 @@ private fun LotCard(lot: Lot) {
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
-                StatusChip(stringResource(R.string.status_listed), GreenPrimary)
+                StatusChip(
+                    stringResource(
+                        when (lot.status) {
+                            "ACCEPTED"    -> R.string.status_accepted
+                            "SCHEDULED"   -> R.string.status_scheduled
+                            "HANDED_OVER" -> R.string.status_handed_over
+                            else          -> R.string.status_listed
+                        }
+                    ),
+                    GreenPrimary
+                )
                 if (lot.syncStatus == "PENDING") {
                     Spacer(Modifier.height(4.dp))
                     StatusChip(stringResource(R.string.sync_pending), OchreSecondary)
@@ -235,6 +247,16 @@ fun NewLotScreen(
     val state by viewModel.uiState.collectAsState()
     var showCamera by remember { mutableStateOf(false) }
     var showCityPicker by remember { mutableStateOf(false) }
+
+    // Precise location puts the lot in front of recyclers within 3–5 km
+    val locationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { }
+    LaunchedEffect(Unit) {
+        locationPermission.launch(
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        )
+    }
 
     if (showCityPicker) {
         CityPickerDialog(

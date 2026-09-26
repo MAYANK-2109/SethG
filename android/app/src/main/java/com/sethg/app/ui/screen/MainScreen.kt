@@ -1,5 +1,10 @@
 package com.sethg.app.ui.screen
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -42,6 +47,18 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     val authVm: AuthViewModel = hiltViewModel()
     val profileVm: ProfileViewModel = hiltViewModel()
     val profileState by profileVm.uiState.collectAsState()
+    // Only collectors create lots; recyclers work from their dashboard (nearby lots, trips)
+    val showLotsTab = profileState.user?.role != "recycler"
+
+    // Alerts for new offers (collectors) and nearby lots (recyclers)
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
 
     Scaffold(
         containerColor = LightBackground,
@@ -69,24 +86,26 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                         unselectedTextColor = TextSecondary
                     )
                 )
-                NavigationBarItem(
-                    selected = selectedTab == 1,
-                    onClick  = { selectedTab = 1 },
-                    icon     = {
-                        Icon(
-                            if (selectedTab == 1) Icons.Filled.Inventory2 else Icons.Outlined.Inventory2,
-                            contentDescription = "Lots"
+                if (showLotsTab) {
+                    NavigationBarItem(
+                        selected = selectedTab == 1,
+                        onClick  = { selectedTab = 1 },
+                        icon     = {
+                            Icon(
+                                if (selectedTab == 1) Icons.Filled.Inventory2 else Icons.Outlined.Inventory2,
+                                contentDescription = "Lots"
+                            )
+                        },
+                        label    = { Text(stringResource(R.string.my_lots), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium) },
+                        colors   = NavigationBarItemDefaults.colors(
+                            selectedIconColor   = GreenPrimary,
+                            selectedTextColor   = GreenPrimary,
+                            indicatorColor      = GreenContainer,
+                            unselectedIconColor = TextSecondary,
+                            unselectedTextColor = TextSecondary
                         )
-                    },
-                    label    = { Text(stringResource(R.string.my_lots), fontWeight = if (selectedTab == 1) FontWeight.Bold else FontWeight.Medium) },
-                    colors   = NavigationBarItemDefaults.colors(
-                        selectedIconColor   = GreenPrimary,
-                        selectedTextColor   = GreenPrimary,
-                        indicatorColor      = GreenContainer,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
                     )
-                )
+                }
                 NavigationBarItem(
                     selected = selectedTab == 2,
                     onClick  = { selectedTab = 2 },
@@ -112,12 +131,17 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
             when (selectedTab) {
                 0 -> {
                     when (profileState.user?.role) {
-                        "recycler" -> RecyclerDashboardScreen()
+                        "recycler" -> RecyclerDashboardScreen(
+                            onHandover = { id, kg -> navController.navigate(Screen.Handover.of(id, kg)) }
+                        )
                         "vendor" -> VendorDashboardScreen()
                         else -> DashboardScreen()
                     }
                 }
-                1 -> LotsScreen(onNewLot = { navController.navigate(Screen.NewLot.route) })
+                1 -> if (showLotsTab) LotsScreen(
+                    onNewLot = { navController.navigate(Screen.NewLot.route) },
+                    onOpenLot = { navController.navigate(Screen.LotDetail.of(it)) }
+                )
                 2 -> ProfileScreen(
                     onLogout  = {
                         authVm.logout()

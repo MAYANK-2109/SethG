@@ -3,6 +3,14 @@ package com.sethg.app.data.repository
 import android.content.Context
 import com.sethg.app.data.local.CaptureSigner
 import com.sethg.app.data.local.EWasteDetector
+import com.sethg.app.data.local.LastLocation
+import com.sethg.app.data.remote.SethGApiService
+import com.sethg.app.data.remote.model.AcceptOfferResponse
+import com.sethg.app.data.remote.model.RemoteLot
+import com.sethg.app.data.remote.model.SyncLotRequest
+import com.sethg.app.data.remote.model.TransportRequest
+import com.sethg.app.domain.model.Result
+import com.sethg.app.work.LotAlertsWorker
 import com.sethg.app.data.local.db.LotDao
 import com.sethg.app.data.local.db.LotEntity
 import com.sethg.app.data.local.db.LotPhotoEntity
@@ -31,15 +39,20 @@ class LotRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val lotDao: LotDao,
     private val signer: CaptureSigner,
-    private val eWasteDetector: EWasteDetector
+    private val eWasteDetector: EWasteDetector,
+    private val api: SethGApiService,
+    private val lastLocation: LastLocation
 ) {
     companion object {
         const val STATUS_LISTED = "LISTED"
         const val SYNC_PENDING  = "PENDING"
+        const val SYNC_DONE     = "SYNCED"
         private const val ID_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // no 0/O, 1/I
     }
 
     fun observeLots(): Flow<List<Lot>> = lotDao.observeLots().map { list -> list.map { it.toDomain() } }
+
+    fun observeLot(lotId: String): Flow<Lot?> = lotDao.observeLot(lotId).map { it?.toDomain() }
 
     /** Offline-safe ID: date + random suffix, so two phones never collide. */
     fun newLotId(): String {
@@ -109,6 +122,7 @@ class LotRepository @Inject constructor(
         priceRegion: String?,
         photos: List<CapturedPhoto>
     ) = withContext(Dispatchers.IO) {
+        val here = lastLocation.fresh()
         lotDao.insertLotWithPhotos(
             LotEntity(
                 lotId        = lotId,
@@ -117,6 +131,8 @@ class LotRepository @Inject constructor(
                 estimateLow  = estimate.low,
                 estimateHigh = estimate.high,
                 priceRegion  = priceRegion,
+                lat          = here?.latitude,
+                lon          = here?.longitude,
                 status       = STATUS_LISTED,
                 syncStatus   = SYNC_PENDING
             ),
@@ -134,6 +150,79 @@ class LotRepository @Inject constructor(
                 )
             }
         )
+        LotAlertsWorker.runNow(context)   // upload now, or as soon as there is network
+    }
+
+    // ── Server sync: lots → recyclers within 3–5 km ──────────────────────────
+
+    /** Uploads lots saved offline. Lots without a location get one now if possible. Returns how many synced. */
+    suspend fun syncPending(): Int = withContext(Dispatchers.IO) {
+        var synced = 0
+        for (pending in lotDao.pendingSync()) {
+            val lot = pending.lot
+            var lat = lot.lat
+            var lon = lot.lon
+            if (lat == null || lon == null) {
+                val here = lastLocation.fresh() ?: continue          // can't match without a location
+                lat = here.latitude; lon = here.longitude
+                lotDao.setLocation(lot.lotId, lat, lon)
+            }
+            val response = runCatching {
+                api.syncLot(
+                    SyncLotRequest(
+                        id = lot.lotId, category = lot.category, weightKg = lot.weightKg,
+                        estimateLow = lot.estimateLow, estimateHigh = lot.estimateHigh,
+                        priceRegion = lot.priceRegion, lat = lat, lon = lon,
+                        photoHashes = pending.photos.map { it.sha256 }
+                    )
+                )
+            }.getOrNull() ?: break                                     // offline: try again later
+            if (response.isSuccessful) {
+                lotDao.setSyncStatus(lot.lotId, SYNC_DONE)
+                synced++
+            }
+        }
+        synced
+    }
+
+    /** Pulls offers / schedule / handover for this collector's lots and mirrors the status locally. */
+    suspend fun refreshFromServer(): Result<List<RemoteLot>> = withContext(Dispatchers.IO) { try {
+        val response = api.myLots()
+        val lots = response.body()?.lots
+        if (response.isSuccessful && lots != null) {
+            lots.forEach { lotDao.setStatus(it.id, it.status) }
+            Result.Success(lots)
+        } else Result.Error("Could not load offers", response.code())
+    } catch (e: Exception) {
+        Result.Error(e.localizedMessage ?: "Network error")
+    } }
+
+    /** Accepting locks the price; the server returns the handover code once — keep it on the phone. */
+    suspend fun acceptOffer(lotId: String, offerId: String): Result<AcceptOfferResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.acceptOffer(lotId, offerId)
+            val body = response.body()
+            if (response.isSuccessful && body != null) {
+                lotDao.setHandoverOtp(lotId, body.handoverOtp)
+                lotDao.setStatus(lotId, body.lot.status)
+                Result.Success(body)
+            } else Result.Error(errorMessage(response.errorBody()?.string()) ?: "Could not accept offer", response.code())
+        } catch (e: Exception) {
+            Result.Error(e.localizedMessage ?: "Network error")
+        }
+    }
+
+    suspend fun chooseTransport(lotId: String, mode: String, hubId: String?): Result<RemoteLot> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.chooseTransport(lotId, TransportRequest(mode, hubId))
+            val lot = response.body()?.lot
+            if (response.isSuccessful && lot != null) {
+                lotDao.setStatus(lotId, lot.status)
+                Result.Success(lot)
+            } else Result.Error(errorMessage(response.errorBody()?.string()) ?: "Could not save choice", response.code())
+        } catch (e: Exception) {
+            Result.Error(e.localizedMessage ?: "Network error")
+        }
     }
 }
 
@@ -148,6 +237,7 @@ private fun LotWithPhotos.toDomain() = Lot(
     priceRegion = lot.priceRegion,
     status     = lot.status,
     syncStatus = lot.syncStatus,
+    handoverOtp = lot.handoverOtp,
     createdAt  = lot.createdAt,
     photos     = photos.map {
         CapturedPhoto(
@@ -156,3 +246,7 @@ private fun LotWithPhotos.toDomain() = Lot(
         )
     }
 )
+
+/** Pulls {"error": "..."} out of an API error body. */
+internal fun errorMessage(body: String?): String? =
+    body?.let { Regex("\"error\"\\s*:\\s*\"([^\"]+)\"").find(it)?.groupValues?.get(1) }

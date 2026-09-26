@@ -17,6 +17,10 @@ sealed class Screen(val route: String) {
     object Profile   : Screen("profile")
     object EditProfile : Screen("edit_profile")
     object NewLot    : Screen("new_lot")
+    object LotDetail : Screen("lot/{lotId}") { fun of(id: String) = "lot/$id" }
+    object Handover  : Screen("handover/{lotId}/{declaredKg}") {
+        fun of(id: String, declaredKg: Double) = "handover/$id/$declaredKg"
+    }
 }
 
 @Composable
@@ -86,6 +90,14 @@ fun SethGNavHost() {
 
         composable(Screen.NewLot.route) {
             NewLotScreen(onDone = { navController.popBackStack() })
+        }
+
+        composable(Screen.LotDetail.route) {
+            LotDetailScreen(onBack = { navController.popBackStack() })
+        }
+
+        composable(Screen.Handover.route) {
+            HandoverScreen(onDone = { navController.popBackStack() })
         }
     }
 }

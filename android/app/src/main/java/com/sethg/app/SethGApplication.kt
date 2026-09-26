@@ -2,6 +2,7 @@ package com.sethg.app
 
 import android.app.Application
 import com.sethg.app.data.repository.LotRepository
+import com.sethg.app.work.LotAlertsWorker
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -19,5 +20,7 @@ class SethGApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         appScope.launch { runCatching { lotRepository.deleteOrphanPhotos() } }
+        LotAlertsWorker.schedule(this)
+        LotAlertsWorker.runNow(this)
     }
 }
