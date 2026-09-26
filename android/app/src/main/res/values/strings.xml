@@ -3,6 +3,7 @@
     <string name="app_name">Seth G</string>
     <string name="app_tagline">कबाड़ी वाला App</string>
     <string name="select_language">अपनी भाषा चुनें</string>
+    <string name="change_language">भाषा बदलें</string>
     <string name="continue_btn">आगे बढ़ें</string>
 
     <string name="login">लॉगिन</string>

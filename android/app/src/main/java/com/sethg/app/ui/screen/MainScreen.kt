@@ -30,6 +30,7 @@ import com.sethg.app.ui.navigation.Screen
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.AuthViewModel
 import com.sethg.app.ui.viewmodel.DashboardViewModel
+import com.sethg.app.ui.viewmodel.LanguageViewModel
 import com.sethg.app.ui.viewmodel.ProfileViewModel
 
 // ── Bottom-nav wrapper ────────────────────────────────────────────────────────
@@ -429,11 +430,14 @@ private fun LoadingEarningsCard(modifier: Modifier = Modifier) {
 @Composable
 fun ProfileScreen(
     onLogout: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    viewModel: ProfileViewModel = hiltViewModel(),
+    languageVm: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val langState by languageVm.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     var showEditDialog by remember { mutableStateOf(false) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -524,8 +528,12 @@ fun ProfileScreen(
                     ProfileInfoRow(icon = Icons.Filled.Email, label = stringResource(R.string.email), value = user.email ?: "—")
                     ProfileInfoRow(
                         icon = Icons.Filled.Language,
-                        label = stringResource(R.string.select_language),
-                        value = languageOptions.find { it.code == user.language }?.nativeName ?: user.language
+                        label = stringResource(R.string.change_language),
+                        value = languageOptions.find { it.code == langState.selectedLanguage }?.nativeName
+                            ?: languageOptions.find { it.code == user.language }?.nativeName
+                            ?: user.language,
+                        showChevron = true,
+                        onClick = { showLanguagePicker = true }
                     )
                 }
 
@@ -625,16 +633,42 @@ fun ProfileScreen(
             }
         )
     }
+
+    // Language picker dialog
+    if (showLanguagePicker) {
+        LanguagePickerDialog(
+            currentCode = langState.selectedLanguage,
+            onDismiss   = { showLanguagePicker = false },
+            onConfirm   = { code ->
+                languageVm.selectLanguage(code)
+                languageVm.confirmLanguage()          // saves to DataStore → triggers ProvideAppLocale
+                viewModel.updateProfile(language = code) // sync to server (best-effort)
+                showLanguagePicker = false
+            }
+        )
+    }
 }
 
 @Composable
-private fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
+private fun ProfileInfoRow(
+    icon: ImageVector,
+    label: String,
+    value: String,
+    showChevron: Boolean = false,
+    onClick: (() -> Unit)? = null
+) {
+    val clickModifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 24.dp, vertical = 6.dp)
             .shadow(4.dp, RoundedCornerShape(16.dp), ambientColor = Color(0x0A000000), spotColor = Color(0x14000000))
-            .border(1.dp, LightBorder, RoundedCornerShape(16.dp)),
+            .border(
+                width = if (onClick != null) 1.5.dp else 1.dp,
+                color = if (onClick != null) GreenPrimary.copy(alpha = 0.35f) else LightBorder,
+                shape = RoundedCornerShape(16.dp)
+            )
+            .then(clickModifier),
         shape = RoundedCornerShape(16.dp),
         color = LightSurface
     ) {
@@ -644,22 +678,30 @@ private fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
         ) {
             Surface(
                 shape = RoundedCornerShape(12.dp),
-                color = GreenContainer,
+                color = if (onClick != null) GreenPrimary.copy(alpha = 0.12f) else GreenContainer,
                 modifier = Modifier.size(40.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = icon,
                         contentDescription = null,
-                        tint = GreenOnContainer,
+                        tint = if (onClick != null) GreenPrimary else GreenOnContainer,
                         modifier = Modifier.size(20.dp)
                     )
                 }
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+                Text(label, style = MaterialTheme.typography.labelLarge, color = if (onClick != null) GreenPrimary else TextSecondary)
                 Text(value, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
+            }
+            if (showChevron) {
+                Icon(
+                    imageVector = Icons.Filled.ChevronRight,
+                    contentDescription = null,
+                    tint = GreenPrimary,
+                    modifier = Modifier.size(22.dp)
+                )
             }
         }
     }
@@ -704,6 +746,71 @@ private fun EditProfileDialog(
             ) {
                 if (isSaving) CircularProgressIndicator(Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                 else Text(stringResource(R.string.save), color = Color.White, fontWeight = FontWeight.Bold)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel), color = TextSecondary)
+            }
+        }
+    )
+}
+
+// ── Language Picker Dialog (reused from LanguageScreen) ───────────────────────
+
+@Composable
+private fun LanguagePickerDialog(
+    currentCode: String,
+    onDismiss: () -> Unit,
+    onConfirm: (code: String) -> Unit
+) {
+    var selected by remember { mutableStateOf(currentCode) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor   = LightSurface,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.Language,
+                    contentDescription = null,
+                    tint = GreenPrimary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    stringResource(R.string.change_language),
+                    style      = MaterialTheme.typography.titleLarge,
+                    color      = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier            = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                languageOptions.forEach { lang ->
+                    LanguageCard(
+                        option     = lang,
+                        isSelected = selected == lang.code,
+                        onClick    = { selected = lang.code }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(selected) },
+                colors  = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                shape   = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.continue_btn),
+                    color      = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
             }
         },
         dismissButton = {

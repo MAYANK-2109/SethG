@@ -3,6 +3,7 @@
     <string name="app_name">Seth G</string>
     <string name="app_tagline">రీసైక్లర్ యాప్</string>
     <string name="select_language">మీ భాషను ఎంచుకోండి</string>
+    <string name="change_language">భాష మార్చండి</string>
     <string name="continue_btn">కొనసాగించండి</string>
 
     <string name="login">లాగిన్</string>

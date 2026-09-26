@@ -600,7 +600,7 @@ private fun CategoryTile(
         Icon(
             category.icon,
             contentDescription = null,
-            tint = if (selected) GreenPrimary else TextPrimary,
+            tint = if (selected) GreenContainer else TextPrimary,
             modifier = Modifier.size(36.dp)
         )
         Spacer(Modifier.height(6.dp))

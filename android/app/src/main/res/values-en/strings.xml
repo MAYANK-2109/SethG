@@ -3,6 +3,7 @@
     <string name="app_name">Seth G</string>
     <string name="app_tagline">Recycler App</string>
     <string name="select_language">Select your language</string>
+    <string name="change_language">Change Language</string>
     <string name="continue_btn">Continue</string>
 
     <string name="login">Login</string>

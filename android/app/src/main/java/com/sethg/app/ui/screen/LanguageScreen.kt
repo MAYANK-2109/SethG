@@ -152,7 +152,7 @@ fun LanguageScreen(
 }
 
 @Composable
-private fun LanguageCard(
+internal fun LanguageCard(
     option: LanguageOption,
     isSelected: Boolean,
     onClick: () -> Unit

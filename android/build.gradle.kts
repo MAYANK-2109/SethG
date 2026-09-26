@@ -7,3 +7,9 @@ plugins {
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.ksp) apply false
 }
+
+// Redirect build output outside OneDrive to prevent file-lock conflicts caused by OneDrive syncing
+// build intermediates while Gradle is actively writing/deleting them.
+allprojects {
+    layout.buildDirectory.set(File("C:/gradle-builds/SethG/${project.name}"))
+}
