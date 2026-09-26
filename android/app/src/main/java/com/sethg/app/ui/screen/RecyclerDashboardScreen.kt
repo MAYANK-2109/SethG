@@ -161,36 +161,34 @@ fun RecyclerDashboardScreen(
                 })
             }
 
-            // ── Purchase Ledger ───────────────────────────────────────────────
-            if (purchases.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("♻️", fontSize = 56.sp)
-                    Spacer(Modifier.height(12.dp))
+            // ── Market (nearby lots, trips, handover) + purchase ledger ────────
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                if (profileState.user?.isVerified == true) {
+                    item { RecyclerMarketSection(onHandover = onHandover) }
+                }
+                item {
                     Text(
-                        "No purchase records yet.\nTap + Add Purchase to log material bought from a vendor.",
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge
+                        "Purchase Ledger",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = TextPrimary,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
                     )
                 }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
+                if (purchases.isEmpty()) {
                     item {
                         Text(
-                            "Purchase Ledger",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            "No purchase records yet.\nTap + Add Purchase to log material bought from a vendor.",
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
                         )
                     }
+                } else {
                     items(purchases, key = { it.purchaseId }) { purchase ->
                         RecyclerPurchaseCard(purchase = purchase, onDelete = { purchaseVm.delete(it) })
                     }
@@ -198,9 +196,6 @@ fun RecyclerDashboardScreen(
             }
         }
     }
-
-    // If verified, also show nearby lots market (existing functionality)
-    // This is shown inline below the purchase ledger if expanded
 
     if (showLanguagePicker) {
         LanguagePickerDialog(

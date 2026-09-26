@@ -52,6 +52,9 @@ interface SethGApiService {
     @POST("lots/{id}/transport")
     suspend fun chooseTransport(@Path("id") lotId: String, @Body request: TransportRequest): Response<LotResponse>
 
+    @POST("lots/{id}/confirm")
+    suspend fun confirmHandover(@Path("id") lotId: String, @Body request: ConfirmHandoverRequest): Response<LotResponse>
+
     // ── Recycler ──────────────────────────────────────────────────────────────
     @PUT("recycler/profile")
     suspend fun updateRecyclerProfile(@Body request: RecyclerProfileRequest): Response<Unit>

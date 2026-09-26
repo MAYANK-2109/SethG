@@ -52,9 +52,11 @@ data class Lot(
     val weightKg: Double,
     val estimate: PriceEstimate,
     val priceRegion: String?,     // whose rates priced it: "Raipur", "CENTRAL" or "India"
-    val status: String,           // LISTED → ACCEPTED → SCHEDULED → HANDED_OVER
+    val status: String,           // LISTED → ACCEPTED → SCHEDULED → WEIGHED → HANDED_OVER
     val syncStatus: String,
-    val handoverOtp: String?,     // shown to the driver at pickup
+    val canCheckCode: Boolean,    // handover code hash is on the phone (works offline)
+    val confirmedAt: Long?,       // vendor entered the recycler's code
+    val confirmPending: Boolean,  // …not yet sent to the server
     val createdAt: Long,
     val photos: List<CapturedPhoto>
 )

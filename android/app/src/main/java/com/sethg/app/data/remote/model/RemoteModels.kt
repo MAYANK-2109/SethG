@@ -133,7 +133,8 @@ data class RemoteHandover(
     @SerializedName("actual_weight_kg") val actualWeightKg: Double,
     @SerializedName("final_amount") val finalAmount: Double,
     @SerializedName("weight_flagged") val weightFlagged: Boolean,
-    @SerializedName("created_at") val createdAt: String
+    @SerializedName("created_at") val createdAt: String,
+    @SerializedName("confirmed_at") val confirmedAt: String? = null   // null until the vendor enters the code
 )
 
 data class RemoteLot(
@@ -147,7 +148,8 @@ data class RemoteLot(
     @SerializedName("slot_start") val slotStart: String?,
     @SerializedName("slot_end") val slotEnd: String?,
     val offers: List<RemoteOffer> = emptyList(),
-    val handover: RemoteHandover?
+    val handover: RemoteHandover?,
+    @SerializedName("handover_otp_hash") val handoverOtpHash: String? = null  // sha256("lotId:code"), for the offline check
 )
 
 data class SyncLotResponse(
@@ -168,13 +170,14 @@ data class TransportOptions(
 
 data class AcceptOfferResponse(
     val lot: RemoteLot,
-    @SerializedName("handover_otp") val handoverOtp: String,
     @SerializedName("transport_options") val transportOptions: TransportOptions
 )
 
 data class TransportRequest(val mode: String, @SerializedName("hub_id") val hubId: String? = null)
 
 data class LotResponse(val lot: RemoteLot)
+
+data class ConfirmHandoverRequest(val otp: String, @SerializedName("confirmed_at") val confirmedAt: String)
 
 // Recycler side
 data class RecyclerProfileRequest(
@@ -216,7 +219,8 @@ data class TripStop(
     val lat: Double,
     val lon: Double,
     @SerializedName("collector_name") val collectorName: String,
-    @SerializedName("collector_phone") val collectorPhone: String?
+    @SerializedName("collector_phone") val collectorPhone: String?,
+    @SerializedName("handover_otp") val handoverOtp: String      // the vendor types this in to confirm
 )
 
 data class RemoteTrip(
@@ -239,7 +243,8 @@ data class AcceptedLot(
     @SerializedName("rate_per_kg") val ratePerKg: Double,
     @SerializedName("expected_amount") val expectedAmount: Double,
     @SerializedName("collector_name") val collectorName: String,
-    @SerializedName("slot_start") val slotStart: String?
+    @SerializedName("slot_start") val slotStart: String?,
+    @SerializedName("handover_otp") val handoverOtp: String
 )
 
 data class AcceptedLotsResponse(val lots: List<AcceptedLot>)
@@ -249,8 +254,10 @@ data class HandoverRequest(
     val lat: Double,
     val lon: Double,
     @SerializedName("captured_at") val capturedAt: String,
-    @SerializedName("photo_hashes") val photoHashes: List<String>,
-    val otp: String
+    @SerializedName("photo_hashes") val photoHashes: List<String>
 )
 
-data class HandoverResponse(val handover: RemoteHandover)
+data class HandoverResponse(
+    val handover: RemoteHandover,
+    @SerializedName("handover_otp") val handoverOtp: String
+)

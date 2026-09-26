@@ -132,7 +132,9 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
             when (selectedTab) {
                 0 -> when (profileState.user?.role) {
                     "vendor"   -> VendorDashboardScreen()
-                    "recycler" -> RecyclerDashboardScreen()
+                    "recycler" -> RecyclerDashboardScreen(
+                        onHandover = { lotId, kg -> navController.navigate(Screen.Handover.of(lotId, kg)) }
+                    )
                     else       -> DashboardScreen(
                         user = profileState.user,
                         onUploadCertificate = { profileVm.updateProfile(certificateUrl = "mock_cert_url_123") }

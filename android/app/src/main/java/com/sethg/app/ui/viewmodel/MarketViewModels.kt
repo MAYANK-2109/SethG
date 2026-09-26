@@ -40,7 +40,8 @@ class LotDetailViewModel @Inject constructor(
         val transportOptions: TransportOptions? = null,
         val isLoading: Boolean = false,
         val busy: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val codeCheck: LotRepository.CodeCheck? = null   // result of the last code entry
     )
 
     private val _uiState = MutableStateFlow(UiState())
@@ -76,6 +77,15 @@ class LotDetailViewModel @Inject constructor(
         }
     }
 
+    /** Vendor types the code from the recycler's phone; checked on this phone, synced later. */
+    fun confirmHandover(code: String) {
+        viewModelScope.launch {
+            val check = lotRepo.confirmHandover(lotId, code)
+            _uiState.update { it.copy(codeCheck = check) }
+            if (check == LotRepository.CodeCheck.OK) refresh()
+        }
+    }
+
     fun chooseTransport(mode: String, hubId: String? = null) {
         viewModelScope.launch {
             _uiState.update { it.copy(busy = true, error = null) }
@@ -99,6 +109,7 @@ class RecyclerViewModel @Inject constructor(
     data class UiState(
         val nearby: List<NearbyLot> = emptyList(),
         val waiting: List<AcceptedLot> = emptyList(),    // accepted, not yet on a trip
+        val awaitingVendor: List<AcceptedLot> = emptyList(), // weighed; vendor still has to enter the code
         val trips: List<RemoteTrip> = emptyList(),
         val isLoading: Boolean = false,
         val message: String? = null,
@@ -115,13 +126,14 @@ class RecyclerViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             val nearby = repo.nearbyLots()
             val trips = repo.trips()                     // plans pooled / hub trips first
-            val accepted = repo.acceptedLots()
+            val accepted = (repo.acceptedLots() as? Result.Success)?.data
             _uiState.update { s ->
                 s.copy(
                     isLoading = false,
                     nearby = (nearby as? Result.Success)?.data?.lots ?: s.nearby,
                     trips = (trips as? Result.Success)?.data ?: s.trips,
-                    waiting = ((accepted as? Result.Success)?.data ?: s.waiting).filter { it.status == "ACCEPTED" },
+                    waiting = accepted?.filter { it.status == "ACCEPTED" } ?: s.waiting,
+                    awaitingVendor = accepted?.filter { it.status == "WEIGHED" } ?: s.awaitingVendor,
                     needsFacility = (nearby as? Result.Error)?.code == 409,
                     message = (nearby as? Result.Error)?.message?.takeIf { (nearby as Result.Error).code != 409 }
                 )
@@ -176,14 +188,13 @@ class HandoverViewModel @Inject constructor(
 
     data class UiState(
         val weightText: String = "",
-        val otp: String = "",
         val photos: List<Photo> = emptyList(),
         val busy: Boolean = false,
         val done: RemoteHandover? = null,
+        val code: String? = null,        // shown to the vendor, who types it in to confirm
         val error: String? = null
     ) {
-        val canSubmit get() = weightText.toDoubleOrNull()?.let { it > 0 } == true &&
-            otp.length == 6 && photos.isNotEmpty() && !busy
+        val canSubmit get() = weightText.toDoubleOrNull()?.let { it > 0 } == true && photos.isNotEmpty() && !busy
     }
 
     private val _uiState = MutableStateFlow(UiState())
@@ -203,10 +214,6 @@ class HandoverViewModel @Inject constructor(
         if (text.isEmpty() || Regex("""^\d{0,5}(\.\d{0,2})?$""").matches(text)) _uiState.update { it.copy(weightText = text) }
     }
 
-    fun setOtp(text: String) {
-        if (text.length <= 6 && text.all(Char::isDigit)) _uiState.update { it.copy(otp = text) }
-    }
-
     fun submit() {
         val s = _uiState.value
         if (!s.canSubmit) return
@@ -221,10 +228,10 @@ class HandoverViewModel @Inject constructor(
                 .apply { timeZone = TimeZone.getTimeZone("UTC") }.format(Date())
             val request = HandoverRequest(
                 actualWeightKg = s.weightText.toDouble(), lat = here.latitude, lon = here.longitude,
-                capturedAt = now, photoHashes = s.photos.map { it.sha256 }, otp = s.otp
+                capturedAt = now, photoHashes = s.photos.map { it.sha256 }
             )
             when (val r = repo.handover(lotId, request)) {
-                is Result.Success -> _uiState.update { it.copy(busy = false, done = r.data) }
+                is Result.Success -> _uiState.update { it.copy(busy = false, done = r.data.handover, code = r.data.handoverOtp) }
                 is Result.Error   -> _uiState.update { it.copy(busy = false, error = r.message) }
                 Result.Loading    -> Unit
             }

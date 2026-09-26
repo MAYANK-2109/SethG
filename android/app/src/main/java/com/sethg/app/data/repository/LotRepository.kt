@@ -6,6 +6,7 @@ import com.sethg.app.data.local.EWasteDetector
 import com.sethg.app.data.local.LastLocation
 import com.sethg.app.data.remote.SethGApiService
 import com.sethg.app.data.remote.model.AcceptOfferResponse
+import com.sethg.app.data.remote.model.ConfirmHandoverRequest
 import com.sethg.app.data.remote.model.RemoteLot
 import com.sethg.app.data.remote.model.SyncLotRequest
 import com.sethg.app.data.remote.model.TransportRequest
@@ -22,13 +23,16 @@ import com.sethg.app.domain.model.PriceEstimate
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.security.MessageDigest
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import java.util.UUID
 import kotlin.math.roundToInt
 import javax.inject.Inject
@@ -182,28 +186,70 @@ class LotRepository @Inject constructor(
                 synced++
             }
         }
+        syncConfirmations()
         synced
     }
+
+    // ── Stage 4: vendor confirms the handover with the recycler's code ──────
+
+    enum class CodeCheck { OK, WRONG, NOT_AVAILABLE }
+
+    /**
+     * Checks the code shown on the recycler's phone against the hash kept on this
+     * phone — no network needed. A right code is saved and sent to the server at sync.
+     */
+    suspend fun confirmHandover(lotId: String, code: String): CodeCheck = withContext(Dispatchers.IO) {
+        val hash = lotDao.observeLot(lotId).first()?.lot?.otpHash ?: return@withContext CodeCheck.NOT_AVAILABLE
+        if (sha256("$lotId:$code") != hash) return@withContext CodeCheck.WRONG
+        lotDao.setConfirmation(lotId, code, System.currentTimeMillis())
+        LotAlertsWorker.runNow(context)   // send now, or as soon as there is network
+        CodeCheck.OK
+    }
+
+    /** Sends confirmations entered offline; the server checks the code again. */
+    private suspend fun syncConfirmations() {
+        val utc = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply { timeZone = TimeZone.getTimeZone("UTC") }
+        for (lot in lotDao.pendingConfirmations()) {
+            val otp = lot.confirmOtp ?: continue
+            val at = utc.format(Date(lot.confirmedAt ?: System.currentTimeMillis()))
+            val response = runCatching { api.confirmHandover(lot.lotId, ConfirmHandoverRequest(otp, at)) }.getOrNull()
+                ?: return                                              // offline: try again later
+            when {
+                response.isSuccessful -> {
+                    lotDao.setConfirmation(lot.lotId, null, lot.confirmedAt)   // sent; keep the time
+                    response.body()?.lot?.let { lotDao.setStatus(it.id, it.status) }
+                }
+                response.code() == 403 || response.code() == 404 ->
+                    lotDao.setConfirmation(lot.lotId, null, null)      // server refused: ask for the code again
+            }
+        }
+    }
+
+    private fun sha256(text: String): String =
+        MessageDigest.getInstance("SHA-256").digest(text.toByteArray()).joinToString("") { "%02x".format(it) }
 
     /** Pulls offers / schedule / handover for this collector's lots and mirrors the status locally. */
     suspend fun refreshFromServer(): Result<List<RemoteLot>> = withContext(Dispatchers.IO) { try {
         val response = api.myLots()
         val lots = response.body()?.lots
         if (response.isSuccessful && lots != null) {
-            lots.forEach { lotDao.setStatus(it.id, it.status) }
+            lots.forEach { lot ->
+                lotDao.setStatus(lot.id, lot.status)
+                lot.handoverOtpHash?.let { lotDao.setOtpHash(lot.id, it) }
+            }
             Result.Success(lots)
         } else Result.Error("Could not load offers", response.code())
     } catch (e: Exception) {
         Result.Error(e.localizedMessage ?: "Network error")
     } }
 
-    /** Accepting locks the price; the server returns the handover code once — keep it on the phone. */
+    /** Accepting locks the price; keeps the handover code's hash so the code can be checked offline. */
     suspend fun acceptOffer(lotId: String, offerId: String): Result<AcceptOfferResponse> = withContext(Dispatchers.IO) {
         try {
             val response = api.acceptOffer(lotId, offerId)
             val body = response.body()
             if (response.isSuccessful && body != null) {
-                lotDao.setHandoverOtp(lotId, body.handoverOtp)
+                body.lot.handoverOtpHash?.let { lotDao.setOtpHash(lotId, it) }
                 lotDao.setStatus(lotId, body.lot.status)
                 Result.Success(body)
             } else Result.Error(errorMessage(response.errorBody()?.string()) ?: "Could not accept offer", response.code())
@@ -237,7 +283,9 @@ private fun LotWithPhotos.toDomain() = Lot(
     priceRegion = lot.priceRegion,
     status     = lot.status,
     syncStatus = lot.syncStatus,
-    handoverOtp = lot.handoverOtp,
+    canCheckCode = lot.otpHash != null,
+    confirmedAt = lot.confirmedAt,
+    confirmPending = lot.confirmOtp != null,
     createdAt  = lot.createdAt,
     photos     = photos.map {
         CapturedPhoto(

@@ -106,4 +106,13 @@ val MIGRATION_5_6 = object : Migration(5, 6) {
     }
 }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+/** v6 → v7: vendor confirms the handover with the code shown on the recycler's phone. */
+val MIGRATION_6_7 = object : Migration(6, 7) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        if (!db.hasColumn("lots", "otpHash")) db.execSQL("ALTER TABLE `lots` ADD COLUMN `otpHash` TEXT")
+        if (!db.hasColumn("lots", "confirmOtp")) db.execSQL("ALTER TABLE `lots` ADD COLUMN `confirmOtp` TEXT")
+        if (!db.hasColumn("lots", "confirmedAt")) db.execSQL("ALTER TABLE `lots` ADD COLUMN `confirmedAt` INTEGER")
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)

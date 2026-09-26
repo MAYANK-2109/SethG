@@ -206,6 +206,7 @@ private fun LotCard(lot: Lot, onClick: () -> Unit) {
                         when (lot.status) {
                             "ACCEPTED"    -> R.string.status_accepted
                             "SCHEDULED"   -> R.string.status_scheduled
+                            "WEIGHED"     -> R.string.status_weighed
                             "HANDED_OVER" -> R.string.status_handed_over
                             else          -> R.string.status_listed
                         }

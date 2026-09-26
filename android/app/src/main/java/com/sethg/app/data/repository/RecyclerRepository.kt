@@ -6,7 +6,7 @@ import com.sethg.app.data.remote.model.HandoverRequest
 import com.sethg.app.data.remote.model.NearbyLotsResponse
 import com.sethg.app.data.remote.model.OfferRequest
 import com.sethg.app.data.remote.model.RecyclerProfileRequest
-import com.sethg.app.data.remote.model.RemoteHandover
+import com.sethg.app.data.remote.model.HandoverResponse
 import com.sethg.app.data.remote.model.RemoteTrip
 import com.sethg.app.domain.model.Result
 import kotlinx.coroutines.Dispatchers
@@ -44,12 +44,9 @@ class RecyclerRepository @Inject constructor(
             Result.Loading    -> Result.Loading
         }
 
-    suspend fun handover(lotId: String, request: HandoverRequest): Result<RemoteHandover> =
-        when (val r = call { api.handover(lotId, request) }) {
-            is Result.Success -> Result.Success(r.data.handover)
-            is Result.Error   -> r
-            Result.Loading    -> Result.Loading
-        }
+    /** Records weight + photos + GPS; the response carries the code the vendor must type in. */
+    suspend fun handover(lotId: String, request: HandoverRequest): Result<HandoverResponse> =
+        call { api.handover(lotId, request) }
 
     private suspend fun <T> call(block: suspend () -> Response<T>): Result<T> = withContext(Dispatchers.IO) {
         try {

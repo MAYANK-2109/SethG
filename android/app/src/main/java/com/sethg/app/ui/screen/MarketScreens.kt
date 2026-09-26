@@ -35,6 +35,7 @@ import com.sethg.app.R
 import com.sethg.app.data.remote.model.NearbyLot
 import com.sethg.app.data.remote.model.RemoteOffer
 import com.sethg.app.data.remote.model.RemoteTrip
+import com.sethg.app.data.repository.LotRepository
 import com.sethg.app.domain.model.MaterialCategory
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.HandoverViewModel
@@ -56,6 +57,7 @@ private fun statusLabel(status: String): String = when (status) {
     "LISTED"      -> stringResource(R.string.status_listed)
     "ACCEPTED"    -> stringResource(R.string.status_accepted)
     "SCHEDULED"   -> stringResource(R.string.status_scheduled)
+    "WEIGHED"     -> stringResource(R.string.status_weighed)
     "HANDED_OVER" -> stringResource(R.string.status_handed_over)
     else          -> status
 }
@@ -149,21 +151,14 @@ fun LotDetailScreen(onBack: () -> Unit, viewModel: LotDetailViewModel = hiltView
                 }
             }
 
-            // Stage 4 prep: the code the driver must enter
+            // Stage 4: vendor confirms with the code shown on the recycler's phone (works offline)
+            if (status in listOf("ACCEPTED", "SCHEDULED", "WEIGHED") && local != null) {
+                ConfirmHandoverCard(
+                    confirmedAt = local.confirmedAt, pending = local.confirmPending,
+                    canCheck = local.canCheckCode, result = state.codeCheck, onConfirm = viewModel::confirmHandover
+                )
+            }
             if (status == "ACCEPTED" || status == "SCHEDULED") {
-                local?.handoverOtp?.let { otp ->
-                    Card(colors = CardDefaults.cardColors(containerColor = GreenPrimary), shape = RoundedCornerShape(16.dp)) {
-                        Column(Modifier.fillMaxWidth().padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(stringResource(R.string.handover_code_title), color = Color.White)
-                            Text(
-                                otp.chunked(3).joinToString(" "), color = Color.White, fontSize = 40.sp,
-                                fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace
-                            )
-                            Text(stringResource(R.string.handover_code_hint), color = Color.White.copy(alpha = 0.85f),
-                                fontSize = 12.sp, textAlign = TextAlign.Center)
-                        }
-                    }
-                }
                 server?.offers?.firstOrNull { it.status == "ACCEPTED" }?.let { offer ->
                     Section(stringResource(R.string.accepted_offer)) {
                         Text("${offer.recyclerName} · ₹${offer.ratePerKg.toInt()}/kg · ${rupees(offer.offerTotal)}", color = TextPrimary)
@@ -205,12 +200,53 @@ fun LotDetailScreen(onBack: () -> Unit, viewModel: LotDetailViewModel = hiltView
 
             // Stage 4: verified handover
             server?.handover?.let { h ->
-                Section(stringResource(R.string.handover_done)) {
+                Section(stringResource(if (h.confirmedAt != null) R.string.handover_done else R.string.status_weighed)) {
                     Text(h.id, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace, color = TextPrimary)
                     Text(stringResource(R.string.handover_summary, h.actualWeightKg, rupees(h.finalAmount)), color = TextPrimary)
                     if (h.weightFlagged) Text(stringResource(R.string.weight_flagged), color = OchreSecondary, fontSize = 12.sp)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun ConfirmHandoverCard(
+    confirmedAt: Long?, pending: Boolean, canCheck: Boolean,
+    result: LotRepository.CodeCheck?, onConfirm: (String) -> Unit
+) {
+    Section(stringResource(R.string.confirm_code_title)) {
+        if (confirmedAt != null) {
+            Text(stringResource(if (pending) R.string.confirmed_pending else R.string.confirmed_waiting_recycler),
+                color = GreenPrimary, fontWeight = FontWeight.SemiBold)
+            return@Section
+        }
+        var code by remember { mutableStateOf("") }
+        Text(stringResource(R.string.confirm_code_hint), color = TextSecondary, fontSize = 13.sp)
+        OutlinedTextField(code, { if (it.length <= 6 && it.all(Char::isDigit)) code = it }, singleLine = true,
+            textStyle = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Monospace, letterSpacing = 6.sp),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword), modifier = Modifier.fillMaxWidth())
+        when {
+            !canCheck -> Text(stringResource(R.string.code_not_available), color = OchreSecondary, fontSize = 12.sp)
+            result == LotRepository.CodeCheck.WRONG -> Text(stringResource(R.string.code_wrong), color = ErrorColor, fontSize = 13.sp)
+            result == LotRepository.CodeCheck.NOT_AVAILABLE -> Text(stringResource(R.string.code_not_available), color = OchreSecondary, fontSize = 12.sp)
+        }
+        Button(onClick = { onConfirm(code) }, enabled = code.length == 6 && canCheck, modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)) {
+            Text(stringResource(R.string.confirm_code_button), fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun HandoverCode(code: String, hint: Boolean = true) {
+    Card(colors = CardDefaults.cardColors(containerColor = GreenPrimary), shape = RoundedCornerShape(16.dp)) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(stringResource(R.string.code_for_vendor), color = Color.White)
+            Text(code.chunked(3).joinToString(" "), color = Color.White, fontSize = 36.sp,
+                fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace)
+            if (hint) Text(stringResource(R.string.code_for_vendor_hint), color = Color.White.copy(alpha = 0.85f),
+                fontSize = 12.sp, textAlign = TextAlign.Center)
         }
     }
 }
@@ -321,6 +357,15 @@ fun RecyclerMarketSection(onHandover: (lotId: String, declaredKg: Double) -> Uni
                     }
                 }
             }
+            if (state.awaitingVendor.isNotEmpty()) {
+                Section(stringResource(R.string.awaiting_vendor)) {
+                    state.awaitingVendor.forEach { l ->
+                        Text("${l.id} · ${categoryLabel(l.category)} ${l.weightKg} kg · ${l.collectorName}",
+                            color = TextSecondary, fontSize = 13.sp)
+                        HandoverCode(l.handoverOtp, hint = false)
+                    }
+                }
+            }
             if (state.trips.isEmpty()) Text(stringResource(R.string.no_trips), color = TextSecondary)
             state.trips.forEach { trip -> TripCard(trip, onHandover) { lat, lon ->
                 context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("geo:$lat,$lon?q=$lat,$lon")))
@@ -340,12 +385,14 @@ private fun TripCard(trip: RemoteTrip, onHandover: (String, Double) -> Unit, onN
                         fontWeight = FontWeight.SemiBold, color = TextPrimary)
                     Text("${categoryLabel(stop.category)} ${stop.weightKg} kg · ${statusLabel(stop.status)}" +
                         (stop.collectorPhone?.let { " · $it" } ?: ""), color = TextSecondary, fontSize = 12.sp)
+                    Text(stringResource(R.string.code_for_vendor) + ": " + stop.handoverOtp.chunked(3).joinToString(" "),
+                        color = GreenPrimary, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { onNavigate(stop.lat, stop.lon) }) {
                             Icon(Icons.Filled.Directions, null, Modifier.size(16.dp)); Spacer(Modifier.width(4.dp))
                             Text(stringResource(R.string.navigate))
                         }
-                        if (stop.status != "HANDED_OVER") Button(
+                        if (stop.status !in listOf("WEIGHED", "HANDED_OVER")) Button(
                             onClick = { onHandover(stop.lotId, stop.weightKg) },
                             colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
                         ) { Text(stringResource(R.string.do_handover)) }
@@ -457,7 +504,8 @@ fun HandoverScreen(onDone: () -> Unit, viewModel: HandoverViewModel = hiltViewMo
         ) {
             val done = state.done
             if (done != null) {
-                Section(stringResource(R.string.handover_done)) {
+                state.code?.let { HandoverCode(it) }
+                Section(stringResource(R.string.handover_recorded)) {
                     Text(done.id, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold, fontFamily = FontFamily.Monospace, color = GreenPrimary)
                     Text(stringResource(R.string.handover_summary, done.actualWeightKg, rupees(done.finalAmount)), color = TextPrimary)
                     if (done.weightFlagged) Text(stringResource(R.string.weight_flagged), color = OchreSecondary)
@@ -488,12 +536,6 @@ fun HandoverScreen(onDone: () -> Unit, viewModel: HandoverViewModel = hiltViewMo
                     ) { Icon(Icons.Filled.PhotoCamera, null, tint = GreenPrimary, modifier = Modifier.size(32.dp)) }
                 }
                 Text(stringResource(R.string.handover_photos_hint), color = TextSecondary, fontSize = 12.sp)
-            }
-            Section("3. " + stringResource(R.string.enter_code)) {
-                OutlinedTextField(state.otp, viewModel::setOtp, singleLine = true,
-                    textStyle = MaterialTheme.typography.headlineMedium.copy(fontFamily = FontFamily.Monospace, letterSpacing = 6.sp),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword), modifier = Modifier.fillMaxWidth())
-                Text(stringResource(R.string.enter_code_hint), color = TextSecondary, fontSize = 12.sp)
             }
             Text("📍 " + stringResource(R.string.gps_auto), color = TextSecondary, fontSize = 12.sp)
             state.error?.let { Text(if (it == "LOCATION") stringResource(R.string.location_unavailable) else it, color = ErrorColor) }

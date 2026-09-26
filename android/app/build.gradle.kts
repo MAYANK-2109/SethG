@@ -18,7 +18,7 @@ android {
         // Bump on every build that changes the DB schema or ships to testers:
         // Android refuses to install a lower versionCode over a higher one,
         // so a stale checkout can't silently replace a newer app.
-        versionCode = 6      // matches DB version 6 (vendor txns + recycler purchases)
+        versionCode = 7      // matches DB version 7 (vendor confirms handover with recycler's code)
         versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -39,7 +39,10 @@ data class LotEntity(
     val priceRegion: String? = null,  // "Raipur" | zone name | "India" — whose rates priced it
     val lat: Double? = null,          // where the material is — used for 3–5 km recycler matching
     val lon: Double? = null,
-    val handoverOtp: String? = null,  // 6-digit code from the server on acceptance; shown to the driver
+    val handoverOtp: String? = null,  // unused since v7: the code now lives on the recycler's phone
+    val otpHash: String? = null,      // sha256("lotId:code") — checks the recycler's code offline
+    val confirmOtp: String? = null,   // code the vendor entered, waiting to be sent to the server
+    val confirmedAt: Long? = null,    // when the vendor entered the right code
     val status: String,               // "LISTED" → … → "PAID"
     val syncStatus: String,           // "PENDING" until uploaded
     val createdAt: Long = System.currentTimeMillis()
@@ -171,8 +174,14 @@ interface LotDao {
     @Query("UPDATE lots SET lat = :lat, lon = :lon WHERE lotId = :lotId")
     suspend fun setLocation(lotId: String, lat: Double, lon: Double)
 
-    @Query("UPDATE lots SET handoverOtp = :otp WHERE lotId = :lotId")
-    suspend fun setHandoverOtp(lotId: String, otp: String)
+    @Query("UPDATE lots SET otpHash = :hash WHERE lotId = :lotId")
+    suspend fun setOtpHash(lotId: String, hash: String)
+
+    @Query("UPDATE lots SET confirmOtp = :otp, confirmedAt = :at WHERE lotId = :lotId")
+    suspend fun setConfirmation(lotId: String, otp: String?, at: Long?)
+
+    @Query("SELECT * FROM lots WHERE confirmOtp IS NOT NULL")
+    suspend fun pendingConfirmations(): List<LotEntity>
 
     @Query("SELECT filePath FROM lot_photos")
     suspend fun allPhotoPaths(): List<String>
@@ -235,7 +244,7 @@ interface RecyclerPurchaseDao {
         VendorTransactionEntity::class,
         RecyclerPurchaseEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {
