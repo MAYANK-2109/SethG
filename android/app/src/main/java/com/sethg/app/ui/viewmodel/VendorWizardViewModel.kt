@@ -72,7 +72,7 @@ class VendorWizardViewModel @Inject constructor(
         val canProceedGrade   get() = grade != null
         val canProceedRunnable get() = isRunnable != null
         val canProceedWorking get() = isWorking != null
-        val canRecord         get() = customerName.isNotBlank() && (finalPrice.toDoubleOrNull() ?: 0.0) > 0
+        val canRecord         get() = (finalPrice.toDoubleOrNull() ?: 0.0) > 0
     }
 
     private val _uiState = MutableStateFlow(UiState())

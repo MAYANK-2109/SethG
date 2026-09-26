@@ -41,7 +41,7 @@ fun RegisterScreen(
     var password        by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var showPass        by remember { mutableStateOf(false) }
-    var selectedRole    by remember { mutableStateOf("recycler") }
+    var selectedRole    by remember { mutableStateOf(viewModel.regRole) }   // same value that gets sent
     var showLanguagePicker by remember { mutableStateOf(false) }
     val roles = listOf("recycler" to "Recycler", "vendor" to "Vendor")
 

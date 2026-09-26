@@ -45,7 +45,7 @@ class AuthViewModel @Inject constructor(
     var regPassword         = ""
     var regConfirmPassword  = ""
     var regLanguage         = "en"
-    var regRole             = "user"
+    var regRole             = "recycler"   // must match a role the server accepts (recycler | vendor)
 
     init {
         viewModelScope.launch {
@@ -62,9 +62,10 @@ class AuthViewModel @Inject constructor(
         }
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val phone = if (loginIdentifier.startsWith("+") || loginIdentifier.all { c -> c.isDigit() || c == '+' || c == '-' })
-                loginIdentifier else null
-            val email = if (phone == null) loginIdentifier else null
+            // "+91 91317 11386", "91317-11386" … are phone numbers too; the server normalizes the format
+            val id = loginIdentifier.trim()
+            val phone = if ('@' !in id && id.all { c -> c.isDigit() || c in "+- " }) id else null
+            val email = if (phone == null) id else null
             val result = authRepository.login(phone, email, loginPassword)
             _uiState.update { it.copy(isLoading = false) }
             when (result) {
@@ -85,8 +86,8 @@ class AuthViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true) }
             val result = authRepository.register(
                 regName.trim(),
-                regPhone.ifBlank { null },
-                regEmail.ifBlank { null },
+                regPhone.trim().ifBlank { null },
+                regEmail.trim().ifBlank { null },
                 regPassword,
                 regLanguage,
                 regRole

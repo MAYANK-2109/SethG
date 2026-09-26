@@ -14,6 +14,7 @@ import com.sethg.app.domain.model.EarningsSummary
 import com.sethg.app.domain.model.Result
 import com.sethg.app.domain.model.User
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -41,6 +42,7 @@ class AuthRepository @Inject constructor(
                 tokenStore.accessToken  = body.accessToken
                 tokenStore.refreshToken = body.refreshToken
                 val user = body.user.toDomain()
+                userDao.clearUser()                        // one cached account only
                 userDao.upsertUser(body.user.toEntity())
                 Result.Success(user)
             } else {
@@ -61,6 +63,7 @@ class AuthRepository @Inject constructor(
                 tokenStore.accessToken  = body.accessToken
                 tokenStore.refreshToken = body.refreshToken
                 val user = body.user.toDomain()
+                userDao.clearUser()                        // one cached account only
                 userDao.upsertUser(body.user.toEntity())
                 Result.Success(user)
             } else {
@@ -71,15 +74,15 @@ class AuthRepository @Inject constructor(
         }
     }
 
-    suspend fun logout() = withContext(Dispatchers.IO) {
-        try {
-            val rt = tokenStore.refreshToken
-            if (rt != null) {
-                api.logout(com.sethg.app.data.remote.model.RefreshRequest(rt))
-            }
-        } finally {
-            tokenStore.clearAll()
-            userDao.clearUser()
+    suspend fun logout() = withContext(Dispatchers.IO + NonCancellable) {
+        // Clear this phone first: the screen that started logout is destroyed right away,
+        // and a cancelled job used to skip clearUser(), leaving the old account (and its
+        // role) cached for whoever logged in next.
+        val rt = tokenStore.refreshToken
+        tokenStore.clearAll()
+        userDao.clearUser()
+        if (rt != null) {
+            runCatching { api.logout(com.sethg.app.data.remote.model.RefreshRequest(rt)) }
         }
     }
 }

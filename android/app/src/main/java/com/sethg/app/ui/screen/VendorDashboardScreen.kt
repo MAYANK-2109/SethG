@@ -134,7 +134,7 @@ fun VendorDashboardScreen(
                 containerColor = GreenPrimary,
                 contentColor   = Color.White,
                 icon = { Icon(Icons.Filled.PersonAdd, contentDescription = null) },
-                text = { Text("Add Customer", fontWeight = FontWeight.Bold) }
+                text = { Text("Add Lot", fontWeight = FontWeight.Bold) }
             )
         }
     ) { padding ->
@@ -227,7 +227,7 @@ fun VendorDashboardScreen(
                     Text("📦", fontSize = 56.sp)
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "No transactions yet.\nTap + Add Customer to begin.",
+                        "No lots yet.\nTap + Add Lot to begin.",
                         color = TextSecondary,
                         textAlign = TextAlign.Center,
                         style = MaterialTheme.typography.bodyLarge
@@ -331,7 +331,7 @@ private fun VendorTransactionCard(txn: VendorTransactionEntity) {
             }
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(txn.customerName, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(txn.customerName.ifBlank { txn.txnId }, color = TextPrimary, fontWeight = FontWeight.Bold)
                 Text(
                     "${txn.category.replace("_", " ")} · ${txn.weightKg} kg · qty ${txn.quantity}",
                     color = TextSecondary,
@@ -841,16 +841,6 @@ private fun WizardRecordStep(
             Text("📍 Location captured automatically at payment", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
         }
     }
-
-    Text("Customer Name / ग्राहक का नाम", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
-    OutlinedTextField(
-        value = state.customerName,
-        onValueChange = onSetCustomerName,
-        placeholder = { Text("Enter customer name") },
-        leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth()
-    )
 
     Text("Final Price (₹) / असली कीमत", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
     OutlinedTextField(

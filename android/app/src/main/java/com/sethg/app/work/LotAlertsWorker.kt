@@ -72,7 +72,7 @@ class LotAlertsWorker(context: Context, params: WorkerParameters) : CoroutineWor
 
         when (deps.userDao().getUser()?.role) {
             "recycler" -> recyclerAlerts(deps)
-            "user", null -> collectorAlerts(deps)
+            "vendor", "user", null -> collectorAlerts(deps)
         }
         return Result.success()
     }

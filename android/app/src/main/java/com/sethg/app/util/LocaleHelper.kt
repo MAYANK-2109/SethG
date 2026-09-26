@@ -1,7 +1,9 @@
 package com.sethg.app.util
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.res.Configuration
+import android.content.res.Resources
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -34,7 +36,9 @@ fun ProvideAppLocale(
     val context = LocalContext.current
     val (localizedContext, config) = remember(languageCode, context) {
         val cfg = LocaleHelper.updateLocale(context, languageCode)
-        val ctx = context.createConfigurationContext(cfg)
+        // Keep the Activity as the base (Hilt's hiltViewModel() needs to find it);
+        // only the resources come from the localized configuration.
+        val ctx = LocalizedContext(context, context.createConfigurationContext(cfg).resources)
         ctx to cfg
     }
 
@@ -43,4 +47,9 @@ fun ProvideAppLocale(
         LocalContext provides localizedContext,
         content = content
     )
+}
+
+/** Activity context whose strings/resources are in the selected language. */
+private class LocalizedContext(base: Context, private val localized: Resources) : ContextWrapper(base) {
+    override fun getResources(): Resources = localized
 }
