@@ -5,6 +5,9 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/user');
 const earningsRoutes = require('./routes/earnings');
+const lotRoutes = require('./routes/lots');
+const recyclerRoutes = require('./routes/recycler');
+const hubRoutes = require('./routes/hubs');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -17,6 +20,9 @@ app.use(express.json());
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use('/earnings', earningsRoutes);
+app.use('/lots', lotRoutes);
+app.use('/recycler', recyclerRoutes);
+app.use('/hubs', hubRoutes);
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'SethG API' }));

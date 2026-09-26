@@ -52,6 +52,100 @@ CREATE TABLE IF NOT EXISTS earnings (
 CREATE INDEX IF NOT EXISTS idx_earnings_user_id       ON earnings(user_id);
 CREATE INDEX IF NOT EXISTS idx_earnings_user_earned   ON earnings(user_id, earned_at DESC);
 
+-- ── Location + recycler profile ────────────────────────────────────────────
+-- Collectors: last known location. Recyclers: facility location, what they
+-- accept, and the smallest load worth sending a vehicle for.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lat                DOUBLE PRECISION;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS lon                DOUBLE PRECISION;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS accepted_materials TEXT[];      -- NULL = accepts all
+ALTER TABLE users ADD COLUMN IF NOT EXISTS vehicle_min_kg     NUMERIC(8,2) NOT NULL DEFAULT 100;
+
+-- ── Collection hubs (partner aggregators / kabadi shops) ───────────────────
+CREATE TABLE IF NOT EXISTS hubs (
+  id          UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  name        VARCHAR(120)  NOT NULL,
+  lat         DOUBLE PRECISION NOT NULL,
+  lon         DOUBLE PRECISION NOT NULL,
+  operator_id UUID          REFERENCES users(id) ON DELETE SET NULL,
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+
+-- ── Pickup trips (one vehicle run: single pickup, pooled milk-run, or hub) ─
+CREATE TABLE IF NOT EXISTS pickup_trips (
+  id             UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  recycler_id    UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  mode           VARCHAR(10)   NOT NULL CHECK (mode IN ('PICKUP', 'POOLED', 'HUB')),
+  hub_id         UUID          REFERENCES hubs(id),
+  scheduled_date DATE          NOT NULL,
+  total_kg       NUMERIC(10,3) NOT NULL,
+  status         VARCHAR(20)   NOT NULL DEFAULT 'SCHEDULED',   -- SCHEDULED | DONE
+  created_at     TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_trips_recycler ON pickup_trips(recycler_id, scheduled_date);
+
+-- ── Lots (synced from the collector app; id is the app's offline lot id) ──
+CREATE TABLE IF NOT EXISTS lots (
+  id                TEXT          PRIMARY KEY,                   -- e.g. SG-260926-7KQ4
+  collector_id      UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  category          VARCHAR(20)   NOT NULL,
+  weight_kg         NUMERIC(10,3) NOT NULL CHECK (weight_kg > 0),
+  estimate_low      INTEGER       NOT NULL,
+  estimate_high     INTEGER       NOT NULL,
+  price_region      TEXT,
+  lat               DOUBLE PRECISION NOT NULL,
+  lon               DOUBLE PRECISION NOT NULL,
+  photo_hashes      TEXT[],                                      -- signed in-app photos (files stay on phone)
+  status            VARCHAR(20)   NOT NULL DEFAULT 'LISTED',
+    -- LISTED → ACCEPTED → SCHEDULED → HANDED_OVER   (or CANCELLED)
+  accepted_offer_id UUID,
+  transport_mode    VARCHAR(10)   CHECK (transport_mode IN ('PICKUP', 'POOLED', 'HUB')),
+  hub_id            UUID          REFERENCES hubs(id),
+  trip_id           UUID          REFERENCES pickup_trips(id),
+  stop_seq          INTEGER,                                     -- order in the trip route
+  slot_start        TIMESTAMPTZ,
+  slot_end          TIMESTAMPTZ,
+  otp_hash          TEXT,                                        -- sha256(lot id + OTP); OTP only on collector's phone
+  created_at        TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_lots_collector ON lots(collector_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_lots_status    ON lots(status);
+CREATE INDEX IF NOT EXISTS idx_lots_trip      ON lots(trip_id);
+
+-- ── Offers (recycler → lot) ────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS offers (
+  id           UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  lot_id       TEXT          NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
+  recycler_id  UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rate_per_kg  NUMERIC(10,2) NOT NULL CHECK (rate_per_kg > 0),
+  pickup_date  DATE          NOT NULL,
+  note         TEXT,
+  distance_km  NUMERIC(6,2)  NOT NULL,
+  status       VARCHAR(20)   NOT NULL DEFAULT 'PENDING',       -- PENDING | ACCEPTED | REJECTED
+  created_at   TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
+  UNIQUE (lot_id, recycler_id)
+);
+CREATE INDEX IF NOT EXISTS idx_offers_recycler ON offers(recycler_id, created_at DESC);
+
+-- ── Handovers (verified custody transfer) ──────────────────────────────────
+CREATE TABLE IF NOT EXISTS handovers (
+  id                 TEXT          PRIMARY KEY,                  -- HR-2026-000456
+  lot_id             TEXT          NOT NULL UNIQUE REFERENCES lots(id),
+  recycler_id        UUID          NOT NULL REFERENCES users(id),
+  declared_weight_kg NUMERIC(10,3) NOT NULL,
+  actual_weight_kg   NUMERIC(10,3) NOT NULL CHECK (actual_weight_kg > 0),
+  weight_flagged     BOOLEAN       NOT NULL DEFAULT false,        -- >15% off the declared weight
+  rate_per_kg        NUMERIC(10,2) NOT NULL,                      -- locked at acceptance
+  final_amount       NUMERIC(12,2) NOT NULL,
+  lat                DOUBLE PRECISION NOT NULL,
+  lon                DOUBLE PRECISION NOT NULL,
+  distance_from_lot_km NUMERIC(6,2),
+  photo_hashes       TEXT[]        NOT NULL,                      -- material + scale reading
+  captured_at        TIMESTAMPTZ   NOT NULL,                      -- on-device time (may be offline)
+  created_at         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+CREATE SEQUENCE IF NOT EXISTS handover_seq;
+
 -- ── Trigger: auto-update updated_at on users ───────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -64,6 +158,11 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
 CREATE TRIGGER trg_users_updated_at
   BEFORE UPDATE ON users
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS trg_lots_updated_at ON lots;
+CREATE TRIGGER trg_lots_updated_at
+  BEFORE UPDATE ON lots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- ── Seed demo earnings for testing (idempotent) ────────────────────────────
