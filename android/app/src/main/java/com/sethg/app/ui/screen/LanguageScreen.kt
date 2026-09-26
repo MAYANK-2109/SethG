@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Autorenew
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Public
 import androidx.compose.material.icons.filled.Translate
@@ -45,19 +46,32 @@ val languageOptions = listOf(
 @Composable
 fun LanguageScreen(
     onLanguageConfirmed: () -> Unit,
+    onBack: (() -> Unit)? = null,
     viewModel: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(state.isLanguageAlreadySelected) {
-        if (state.isLanguageAlreadySelected) onLanguageConfirmed()
-    }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(LightBackground)
     ) {
+        if (onBack != null) {
+            IconButton(
+                onClick = onBack,
+                modifier = Modifier
+                    .statusBarsPadding()
+                    .padding(8.dp)
+                    .align(Alignment.TopStart)
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = TextPrimary
+                )
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,7 +80,7 @@ fun LanguageScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(if (onBack != null) 60.dp else 50.dp))
 
             // App icon / logo (Popped up executive badge)
             Surface(
@@ -130,7 +144,10 @@ fun LanguageScreen(
             Spacer(Modifier.height(32.dp))
 
             Button(
-                onClick  = { viewModel.confirmLanguage() },
+                onClick  = {
+                    viewModel.confirmLanguage()
+                    onLanguageConfirmed()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp)
@@ -221,4 +238,68 @@ internal fun LanguageCard(
             }
         }
     }
+}
+
+// ── Language Picker Dialog (can be opened anywhere in the app) ────────────────
+@Composable
+fun LanguagePickerDialog(
+    currentCode: String,
+    onDismiss: () -> Unit,
+    onConfirm: (code: String) -> Unit
+) {
+    var selected by remember { mutableStateOf(currentCode) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor   = LightSurface,
+        title = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Filled.Language,
+                    contentDescription = null,
+                    tint = GreenPrimary,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(Modifier.width(10.dp))
+                Text(
+                    stringResource(R.string.change_language),
+                    style      = MaterialTheme.typography.titleLarge,
+                    color      = TextPrimary,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier            = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                languageOptions.forEach { lang ->
+                    LanguageCard(
+                        option     = lang,
+                        isSelected = selected == lang.code,
+                        onClick    = { selected = lang.code }
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onConfirm(selected) },
+                colors  = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                shape   = RoundedCornerShape(12.dp)
+            ) {
+                Text(
+                    stringResource(R.string.continue_btn),
+                    color      = Color.White,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel), color = TextSecondary)
+            }
+        }
+    )
 }

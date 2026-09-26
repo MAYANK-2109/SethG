@@ -32,12 +32,15 @@ fun ProvideAppLocale(
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
-    val config = remember(languageCode, context) {
-        LocaleHelper.updateLocale(context, languageCode)
+    val (localizedContext, config) = remember(languageCode, context) {
+        val cfg = LocaleHelper.updateLocale(context, languageCode)
+        val ctx = context.createConfigurationContext(cfg)
+        ctx to cfg
     }
 
     CompositionLocalProvider(
         LocalConfiguration provides config,
+        LocalContext provides localizedContext,
         content = content
     )
 }

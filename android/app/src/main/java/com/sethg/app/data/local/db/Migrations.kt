@@ -64,4 +64,46 @@ val MIGRATION_4_5 = object : Migration(4, 5) {
     }
 }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+/** v5 → v6: vendor transaction ledger and recycler purchase ledger. */
+val MIGRATION_5_6 = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `vendor_transactions` (" +
+                "`txnId` TEXT NOT NULL, " +
+                "`customerName` TEXT NOT NULL, " +
+                "`photoPath` TEXT, " +
+                "`category` TEXT NOT NULL, " +
+                "`weightKg` REAL NOT NULL, " +
+                "`quantity` INTEGER NOT NULL, " +
+                "`grade` TEXT NOT NULL, " +
+                "`isRunnable` INTEGER NOT NULL, " +
+                "`isWorking` INTEGER NOT NULL, " +
+                "`estimateLow` INTEGER NOT NULL, " +
+                "`estimateHigh` INTEGER NOT NULL, " +
+                "`finalPrice` REAL NOT NULL, " +
+                "`vendorLat` REAL, " +
+                "`vendorLon` REAL, " +
+                "`isPaid` INTEGER NOT NULL DEFAULT 0, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`txnId`))"
+        )
+        db.execSQL(
+            "CREATE TABLE IF NOT EXISTS `recycler_purchases` (" +
+                "`purchaseId` TEXT NOT NULL, " +
+                "`vendorName` TEXT NOT NULL, " +
+                "`vendorPhone` TEXT, " +
+                "`vendorLat` REAL, " +
+                "`vendorLon` REAL, " +
+                "`material` TEXT NOT NULL, " +
+                "`weightKg` REAL NOT NULL, " +
+                "`quantity` INTEGER NOT NULL, " +
+                "`grade` TEXT NOT NULL, " +
+                "`amountPaid` REAL NOT NULL, " +
+                "`notes` TEXT, " +
+                "`createdAt` INTEGER NOT NULL, " +
+                "PRIMARY KEY(`purchaseId`))"
+        )
+    }
+}
+
+val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)

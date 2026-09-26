@@ -2,6 +2,7 @@ package com.sethg.app.data.local.db
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 
 // ── Entities ──────────────────────────────────────────────────────────────────
 
@@ -72,6 +73,48 @@ data class LotWithPhotos(
     @Embedded val lot: LotEntity,
     @Relation(parentColumn = "lotId", entityColumn = "lotId")
     val photos: List<LotPhotoEntity>
+)
+
+// ── Vendor Transaction (vendor records a customer/e-waste purchase) ────────────
+// Grade: NEW_LIKE | GOOD | BAD | VERY_BAD
+// Each row = one completed customer interaction.
+
+@Entity(tableName = "vendor_transactions")
+data class VendorTransactionEntity(
+    @PrimaryKey val txnId: String,           // e.g. "VTX-260926-A1B2"
+    val customerName: String,
+    val photoPath: String?,                  // path to the e-waste photo
+    val category: String,                    // MaterialCategory.name
+    val weightKg: Double,
+    val quantity: Int,
+    val grade: String,                       // NEW_LIKE | GOOD | BAD | VERY_BAD
+    val isRunnable: Boolean,
+    val isWorking: Boolean,
+    val estimateLow: Int,
+    val estimateHigh: Int,
+    val finalPrice: Double,
+    val vendorLat: Double?,                  // vendor location at payment time
+    val vendorLon: Double?,
+    val isPaid: Boolean = false,
+    val createdAt: Long = System.currentTimeMillis()
+)
+
+// ── Recycler Purchase (recycler records buying from a vendor) ─────────────────
+
+@Entity(tableName = "recycler_purchases")
+data class RecyclerPurchaseEntity(
+    @PrimaryKey val purchaseId: String,      // e.g. "RCP-260926-C3D4"
+    val vendorName: String,
+    val vendorPhone: String?,
+    val vendorLat: Double?,                  // vendor location recorded when they sold
+    val vendorLon: Double?,
+    val material: String,                    // free text or MaterialCategory.name
+    val weightKg: Double,
+    val quantity: Int,
+    val grade: String,                       // NEW_LIKE | GOOD | BAD | VERY_BAD
+    val amountPaid: Double,
+    val notes: String?,
+    val createdAt: Long = System.currentTimeMillis()
 )
 
 // ── DAOs ──────────────────────────────────────────────────────────────────────
@@ -147,15 +190,58 @@ interface LotDao {
     }
 }
 
+// ── Vendor Transaction DAO ────────────────────────────────────────────────────
+
+@Dao
+interface VendorTransactionDao {
+    @Query("SELECT * FROM vendor_transactions ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<VendorTransactionEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(txn: VendorTransactionEntity)
+
+    @Query("DELETE FROM vendor_transactions WHERE txnId = :txnId")
+    suspend fun delete(txnId: String)
+
+    @Query("SELECT SUM(finalPrice) FROM vendor_transactions WHERE isPaid = 1")
+    fun totalRevenue(): Flow<Double?>
+}
+
+// ── Recycler Purchase DAO ─────────────────────────────────────────────────────
+
+@Dao
+interface RecyclerPurchaseDao {
+    @Query("SELECT * FROM recycler_purchases ORDER BY createdAt DESC")
+    fun observeAll(): Flow<List<RecyclerPurchaseEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(purchase: RecyclerPurchaseEntity)
+
+    @Query("DELETE FROM recycler_purchases WHERE purchaseId = :purchaseId")
+    suspend fun delete(purchaseId: String)
+
+    @Query("SELECT SUM(amountPaid) FROM recycler_purchases")
+    fun totalSpent(): Flow<Double?>
+}
+
 // ── Database ──────────────────────────────────────────────────────────────────
 
 @Database(
-    entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
-    version = 5,
+    entities = [
+        UserEntity::class,
+        EarningsEntity::class,
+        LotEntity::class,
+        LotPhotoEntity::class,
+        VendorTransactionEntity::class,
+        RecyclerPurchaseEntity::class
+    ],
+    version = 6,
     exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun earningsDao(): EarningsDao
     abstract fun lotDao(): LotDao
+    abstract fun vendorTransactionDao(): VendorTransactionDao
+    abstract fun recyclerPurchaseDao(): RecyclerPurchaseDao
 }

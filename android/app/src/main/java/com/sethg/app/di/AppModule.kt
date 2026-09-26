@@ -8,8 +8,10 @@ import com.sethg.app.data.local.SecureTokenStore
 import com.sethg.app.data.local.db.ALL_MIGRATIONS
 import com.sethg.app.data.local.db.EarningsDao
 import com.sethg.app.data.local.db.LotDao
+import com.sethg.app.data.local.db.RecyclerPurchaseDao
 import com.sethg.app.data.local.db.SethGDatabase
 import com.sethg.app.data.local.db.UserDao
+import com.sethg.app.data.local.db.VendorTransactionDao
 import com.sethg.app.data.remote.SethGApiService
 import com.sethg.app.data.remote.TokenAuthenticator
 import dagger.Module
@@ -89,4 +91,6 @@ object AppModule {
     @Provides fun provideUserDao(db: SethGDatabase): UserDao = db.userDao()
     @Provides fun provideEarningsDao(db: SethGDatabase): EarningsDao = db.earningsDao()
     @Provides fun provideLotDao(db: SethGDatabase): LotDao = db.lotDao()
+    @Provides fun provideVendorTransactionDao(db: SethGDatabase): VendorTransactionDao = db.vendorTransactionDao()
+    @Provides fun provideRecyclerPurchaseDao(db: SethGDatabase): RecyclerPurchaseDao = db.recyclerPurchaseDao()
 }

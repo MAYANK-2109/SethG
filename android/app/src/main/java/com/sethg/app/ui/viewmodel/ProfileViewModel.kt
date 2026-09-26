@@ -61,11 +61,12 @@ class ProfileViewModel @Inject constructor(
         language: String? = null,
         currentPassword: String? = null,
         newPassword: String? = null,
-        certificateUrl: String? = null
+        certificateUrl: String? = null,
+        role: String? = null
     ) {
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true) }
-            val result = userRepo.updateProfile(name, phone, email, language, currentPassword, newPassword, certificateUrl)
+            val result = userRepo.updateProfile(name, phone, email, language, currentPassword, newPassword, certificateUrl, role)
             _uiState.update { it.copy(isSaving = false) }
             when (result) {
                 is Result.Success -> {

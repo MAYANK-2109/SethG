@@ -47,8 +47,9 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     val authVm: AuthViewModel = hiltViewModel()
     val profileVm: ProfileViewModel = hiltViewModel()
     val profileState by profileVm.uiState.collectAsState()
-    // Only collectors create lots; recyclers work from their dashboard (nearby lots, trips)
-    val showLotsTab = profileState.user?.role != "recycler"
+    // Only the generic 'user' role creates lots via the lot flow.
+    // Vendors use their customer wizard; recyclers use the market / purchase ledger.
+    val showLotsTab = profileState.user?.role == "user" || profileState.user?.role == null
 
     // Alerts for new offers (collectors) and nearby lots (recyclers)
     val notificationPermission = rememberLauncherForActivityResult(
@@ -129,10 +130,14 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     ) { padding ->
         Box(Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> DashboardScreen(
-                    user = profileState.user,
-                    onUploadCertificate = { profileVm.updateProfile(certificateUrl = "mock_cert_url_123") }
-                )
+                0 -> when (profileState.user?.role) {
+                    "vendor"   -> VendorDashboardScreen()
+                    "recycler" -> RecyclerDashboardScreen()
+                    else       -> DashboardScreen(
+                        user = profileState.user,
+                        onUploadCertificate = { profileVm.updateProfile(certificateUrl = "mock_cert_url_123") }
+                    )
+                }
                 1 -> if (showLotsTab) LotsScreen(
                     onNewLot = { navController.navigate(Screen.NewLot.route) },
                     onOpenLot = { navController.navigate(Screen.LotDetail.of(it)) }
@@ -821,71 +826,6 @@ private fun EditProfileDialog(
             ) {
                 if (isSaving) CircularProgressIndicator(Modifier.size(16.dp), color = Color.White, strokeWidth = 2.dp)
                 else Text(stringResource(R.string.save), color = Color.White, fontWeight = FontWeight.Bold)
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel), color = TextSecondary)
-            }
-        }
-    )
-}
-
-// ── Language Picker Dialog (reused from LanguageScreen) ───────────────────────
-
-@Composable
-private fun LanguagePickerDialog(
-    currentCode: String,
-    onDismiss: () -> Unit,
-    onConfirm: (code: String) -> Unit
-) {
-    var selected by remember { mutableStateOf(currentCode) }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        containerColor   = LightSurface,
-        title = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Filled.Language,
-                    contentDescription = null,
-                    tint = GreenPrimary,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    stringResource(R.string.change_language),
-                    style      = MaterialTheme.typography.titleLarge,
-                    color      = TextPrimary,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        },
-        text = {
-            Column(
-                modifier            = Modifier.verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                languageOptions.forEach { lang ->
-                    LanguageCard(
-                        option     = lang,
-                        isSelected = selected == lang.code,
-                        onClick    = { selected = lang.code }
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = { onConfirm(selected) },
-                colors  = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
-                shape   = RoundedCornerShape(12.dp)
-            ) {
-                Text(
-                    stringResource(R.string.continue_btn),
-                    color      = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
             }
         },
         dismissButton = {

@@ -58,7 +58,8 @@ data class UpdateProfileRequest(
     @SerializedName("photo_url") val photoUrl: String? = null,
     val currentPassword: String? = null,
     val newPassword: String? = null,
-    @SerializedName("certificate_url") val certificateUrl: String? = null
+    @SerializedName("certificate_url") val certificateUrl: String? = null,
+    val role: String? = null
 )
 
 data class UserProfileResponse(

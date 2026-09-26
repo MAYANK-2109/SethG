@@ -23,19 +23,23 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sethg.app.R
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.AuthViewModel
+import com.sethg.app.ui.viewmodel.LanguageViewModel
 
 @Composable
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    languageVm: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val langState by languageVm.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var identifier by remember { mutableStateOf("") }
     var password   by remember { mutableStateOf("") }
     var showPass   by remember { mutableStateOf(false) }
+    var showLanguagePicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -56,6 +60,37 @@ fun LoginScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            // Language switcher button
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 16.dp, end = 20.dp)
+                    .clickable { showLanguagePicker = true },
+                shape = RoundedCornerShape(20.dp),
+                color = LightSurface,
+                border = BorderStroke(1.dp, LightBorder),
+                shadowElevation = 2.dp
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Language,
+                        contentDescription = null,
+                        tint = GreenPrimary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        text = languageOptions.find { it.code == langState.selectedLanguage }?.nativeName ?: "Language",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -191,6 +226,18 @@ fun LoginScreen(
                 Spacer(Modifier.height(40.dp))
             }
         }
+    }
+
+    if (showLanguagePicker) {
+        LanguagePickerDialog(
+            currentCode = langState.selectedLanguage,
+            onDismiss   = { showLanguagePicker = false },
+            onConfirm   = { code ->
+                languageVm.selectLanguage(code)
+                languageVm.confirmLanguage()
+                showLanguagePicker = false
+            }
+        )
     }
 }
 

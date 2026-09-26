@@ -8,11 +8,13 @@ import com.sethg.app.domain.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import com.sethg.app.data.local.AppPreferences
 import javax.inject.Inject
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val prefs: AppPreferences
 ) : ViewModel() {
 
     sealed class UiEvent {
@@ -44,6 +46,14 @@ class AuthViewModel @Inject constructor(
     var regConfirmPassword  = ""
     var regLanguage         = "en"
     var regRole             = "user"
+
+    init {
+        viewModelScope.launch {
+            prefs.languageFlow.collect { lang ->
+                regLanguage = lang
+            }
+        }
+    }
 
     fun login() {
         if (loginIdentifier.isBlank() || loginPassword.isBlank()) {

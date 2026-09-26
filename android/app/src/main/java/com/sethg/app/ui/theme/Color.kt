@@ -26,6 +26,7 @@ val AmethystContainer   = Color(0xFFEDE9FE)
 val TextPrimary         = Color(0xFF0F172A)   // High-contrast slate charcoal
 val TextSecondary       = Color(0xFF475569)   // Medium slate subtext
 val TextMuted           = Color(0xFF94A3B8)   // Muted label text
+val GrayMuted           = TextMuted
 
 val ErrorColor          = Color(0xFFDC2626)   // Clear error red
 val ErrorContainer      = Color(0xFFFEE2E2)

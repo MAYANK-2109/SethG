@@ -19,15 +19,18 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.sethg.app.R
 import com.sethg.app.ui.theme.*
 import com.sethg.app.ui.viewmodel.AuthViewModel
+import com.sethg.app.ui.viewmodel.LanguageViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
-    viewModel: AuthViewModel = hiltViewModel()
+    viewModel: AuthViewModel = hiltViewModel(),
+    languageVm: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val langState by languageVm.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     var name            by remember { mutableStateOf("") }
@@ -37,6 +40,7 @@ fun RegisterScreen(
     var confirmPassword by remember { mutableStateOf("") }
     var showPass        by remember { mutableStateOf(false) }
     var selectedRole    by remember { mutableStateOf("recycler") }
+    var showLanguagePicker by remember { mutableStateOf(false) }
     val roles = listOf("recycler" to "Recycler", "vendor" to "Vendor")
 
     LaunchedEffect(Unit) {
@@ -58,6 +62,30 @@ fun RegisterScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateToLogin) {
                         Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = TextPrimary)
+                    }
+                },
+                actions = {
+                    Surface(
+                        modifier = Modifier
+                            .padding(end = 12.dp)
+                            .clickable { showLanguagePicker = true },
+                        shape = RoundedCornerShape(20.dp),
+                        color = LightSurface,
+                        border = BorderStroke(1.dp, LightBorder)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Filled.Language, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = languageOptions.find { it.code == langState.selectedLanguage }?.nativeName ?: "Language",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -213,5 +241,17 @@ fun RegisterScreen(
                 Spacer(Modifier.height(40.dp))
             }
         }
+    }
+
+    if (showLanguagePicker) {
+        LanguagePickerDialog(
+            currentCode = langState.selectedLanguage,
+            onDismiss   = { showLanguagePicker = false },
+            onConfirm   = { code ->
+                languageVm.selectLanguage(code)
+                languageVm.confirmLanguage()
+                showLanguagePicker = false
+            }
+        )
     }
 }

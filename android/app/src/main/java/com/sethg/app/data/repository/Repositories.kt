@@ -114,13 +114,18 @@ class UserRepository @Inject constructor(
     suspend fun updateProfile(
         name: String? = null, phone: String? = null, email: String? = null,
         language: String? = null, currentPassword: String? = null, newPassword: String? = null,
-        certificateUrl: String? = null
+        certificateUrl: String? = null, role: String? = null
     ): Result<User> = withContext(Dispatchers.IO) {
         try {
+            // Optimistic local update for role so the dashboard shows immediately
+            if (role != null) {
+                val cached = userDao.getUser()
+                if (cached != null) userDao.upsertUser(cached.copy(role = role))
+            }
             val response = api.updateProfile(
                 UpdateProfileRequest(name, phone, email, language,
                     currentPassword = currentPassword, newPassword = newPassword,
-                    certificateUrl = certificateUrl)
+                    certificateUrl = certificateUrl, role = role)
             )
             if (response.isSuccessful) {
                 val user = response.body()!!.user
