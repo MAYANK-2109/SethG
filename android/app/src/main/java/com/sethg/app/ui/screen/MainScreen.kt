@@ -616,6 +616,7 @@ fun ProfileScreen(
                         showChevron = true,
                         onClick = { showLanguagePicker = true }
                     )
+                    AccountTypeRow(role = user.role)
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -782,6 +783,100 @@ private fun ProfileInfoRow(
                     tint = GreenPrimary,
                     modifier = Modifier.size(22.dp)
                 )
+            }
+        }
+    }
+}
+
+// ── Account Type Row ─────────────────────────────────────────────────────────
+
+@Composable
+private fun AccountTypeRow(role: String) {
+    val isVendor   = role.equals("vendor", ignoreCase = true)
+    val isRecycler = role.equals("recycler", ignoreCase = true)
+
+    val icon         = when {
+        isVendor   -> Icons.Filled.Store
+        isRecycler -> Icons.Filled.Recycling
+        else       -> Icons.Filled.Person
+    }
+    val label        = "Account Type"
+    val displayName  = when {
+        isVendor   -> "Vendor"
+        isRecycler -> "Recycler"
+        else       -> role.replaceFirstChar { it.uppercaseChar() }
+    }
+    val accentColor  = when {
+        isVendor   -> SapphireAccent
+        isRecycler -> GreenPrimary
+        else       -> Color(0xFF4A5568)
+    }
+    val badgeBg      = when {
+        isVendor   -> SapphireContainer
+        isRecycler -> GreenContainer
+        else       -> LightSurfaceVariant
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 6.dp)
+            .shadow(4.dp, RoundedCornerShape(16.dp), ambientColor = Color(0x0A000000), spotColor = Color(0x14000000))
+            .border(1.dp, accentColor.copy(alpha = 0.25f), RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        color = LightSurface
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icon container
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = badgeBg,
+                modifier = Modifier.size(40.dp)
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = accentColor,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.labelLarge,
+                    color = TextPrimary.copy(alpha = 0.85f)
+                )
+                Spacer(Modifier.height(4.dp))
+                // Colored pill badge
+                Surface(
+                    shape = RoundedCornerShape(20.dp),
+                    color = badgeBg
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            displayName,
+                            style = MaterialTheme.typography.labelLarge,
+                            color = accentColor,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
