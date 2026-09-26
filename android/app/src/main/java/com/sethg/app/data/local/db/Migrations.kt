@@ -31,8 +31,19 @@ val MIGRATION_1_2 = object : Migration(1, 2) {
 /** v2 → v3: remember which city/zone's rates priced each lot. */
 val MIGRATION_2_3 = object : Migration(2, 3) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE `lots` ADD COLUMN `priceRegion` TEXT")
+        // An older build (DB v1) can reset the version number but leaves our lot tables
+        // untouched, so on the way back up the column may already exist.
+        if (!db.hasColumn("lots", "priceRegion")) {
+            db.execSQL("ALTER TABLE `lots` ADD COLUMN `priceRegion` TEXT")
+        }
     }
 }
+
+private fun SupportSQLiteDatabase.hasColumn(table: String, column: String): Boolean =
+    query("PRAGMA table_info(`$table`)").use { cursor ->
+        val nameIndex = cursor.getColumnIndexOrThrow("name")
+        generateSequence { if (cursor.moveToNext()) cursor.getString(nameIndex) else null }
+            .any { it == column }
+    }
 
 val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)

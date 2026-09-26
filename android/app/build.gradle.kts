@@ -15,8 +15,11 @@ android {
         applicationId = "com.sethg.app"
         minSdk = 23          // Android 6.0+ — covers ~97% of active devices
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        // Bump on every build that changes the DB schema or ships to testers:
+        // Android refuses to install a lower versionCode over a higher one,
+        // so a stale checkout can't silently replace a newer app.
+        versionCode = 3      // matches DB version 3 (lots + zone prices)
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
