@@ -82,8 +82,8 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                         selectedIconColor   = GreenPrimary,
                         selectedTextColor   = GreenPrimary,
                         indicatorColor      = GreenContainer,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
+                        unselectedIconColor = Color(0xFF4A5568),
+                        unselectedTextColor = Color(0xFF4A5568)
                     )
                 )
                 if (showLotsTab) {
@@ -120,8 +120,8 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                         selectedIconColor   = GreenPrimary,
                         selectedTextColor   = GreenPrimary,
                         indicatorColor      = GreenContainer,
-                        unselectedIconColor = TextSecondary,
-                        unselectedTextColor = TextSecondary
+                        unselectedIconColor = Color(0xFF4A5568),
+                        unselectedTextColor = Color(0xFF4A5568)
                     )
                 )
             }
@@ -207,8 +207,12 @@ fun DashboardScreen(
                                 stringResource(R.string.app_name),
                                 style = MaterialTheme.typography.headlineMedium,
                                 color = Color.White,
-                                fontWeight = FontWeight.ExtraBold
+                                fontWeight = FontWeight.ExtraBold,
+                                modifier = Modifier.weight(1f)
                             )
+                            IconButton(onClick = { viewModel.refresh() }) {
+                                Icon(Icons.Filled.Refresh, contentDescription = "Refresh", tint = Color.White)
+                            }
                         }
                         Spacer(Modifier.height(6.dp))
                         Text(
@@ -332,16 +336,23 @@ fun DashboardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                        .shadow(4.dp, RoundedCornerShape(16.dp))
+                        .clickable { /* TODO: Navigate to marketplace */ },
                     shape = RoundedCornerShape(16.dp),
                     color = LightSurface
                 ) {
-                    Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Filled.Store, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(32.dp))
-                        Spacer(Modifier.height(12.dp))
-                        Text("Vendor Operations", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                        Spacer(Modifier.height(8.dp))
-                        Text("Browse marketplace, place bids, and manage purchases here.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Icon(Icons.Filled.Store, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(32.dp))
+                            Spacer(Modifier.height(12.dp))
+                            Text("Vendor Operations", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(4.dp))
+                            Text("Browse marketplace, place bids, and manage purchases here.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                        }
+                        Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = GreenPrimary)
                     }
                 }
             } else {
@@ -349,42 +360,34 @@ fun DashboardScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 20.dp)
-                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                        .shadow(4.dp, RoundedCornerShape(16.dp))
+                        .clickable(enabled = user?.isVerified != true, onClick = onUploadCertificate),
                     shape = RoundedCornerShape(16.dp),
                     color = LightSurface
                 ) {
-                    Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        if (user?.isVerified == true) {
-                            Icon(Icons.Filled.Verified, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(36.dp))
-                            Spacer(Modifier.height(8.dp))
-                            Text("Verified Recycler", style = MaterialTheme.typography.titleMedium, color = GreenPrimary, fontWeight = FontWeight.Bold)
-                            Text("Your government certificate is approved.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
-                        } else {
-                            Icon(Icons.Outlined.Gavel, contentDescription = null, tint = OchreSecondary, modifier = Modifier.size(36.dp))
-                            Spacer(Modifier.height(8.dp))
-                            Text("Account Not Verified", style = MaterialTheme.typography.titleMedium, color = OchreSecondary, fontWeight = FontWeight.Bold)
-                            Spacer(Modifier.height(12.dp))
-                            Button(
-                                onClick = onUploadCertificate,
-                                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("Upload Government Certificate")
+                    Row(
+                        modifier = Modifier.padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            if (user?.isVerified == true) {
+                                Icon(Icons.Filled.Verified, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(36.dp))
+                                Spacer(Modifier.height(8.dp))
+                                Text("Verified Recycler", style = MaterialTheme.typography.titleMedium, color = GreenPrimary, fontWeight = FontWeight.Bold)
+                                Text("Your government certificate is approved.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                            } else {
+                                Icon(Icons.Outlined.Gavel, contentDescription = null, tint = OchreSecondary, modifier = Modifier.size(36.dp))
+                                Spacer(Modifier.height(8.dp))
+                                Text("Account Not Verified", style = MaterialTheme.typography.titleMedium, color = OchreSecondary, fontWeight = FontWeight.Bold)
+                                Spacer(Modifier.height(4.dp))
+                                Text("Tap to upload your government certificate.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                             }
+                        }
+                        if (user?.isVerified != true) {
+                            Icon(Icons.Filled.ChevronRight, contentDescription = null, tint = OchreSecondary)
                         }
                     }
                 }
-            }
-
-            // Pull-to-refresh hint
-            Spacer(Modifier.height(24.dp))
-            TextButton(
-                onClick  = { viewModel.refresh() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Icon(Icons.Filled.Refresh, contentDescription = null, tint = GreenPrimary)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.refresh), color = GreenPrimary, fontWeight = FontWeight.Bold)
             }
 
             Spacer(Modifier.height(24.dp))
@@ -459,7 +462,7 @@ private fun EarningsCard(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        "${summary.transactionCount}",
+                        "${summary.transactionCount} transactions",
                         style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary,
                         fontWeight = FontWeight.Medium
@@ -552,7 +555,7 @@ fun ProfileScreen(
                                     colors = listOf(Color(0xFF065F46), GreenPrimary, Color(0xFF047857))
                                 )
                             )
-                            .padding(vertical = 36.dp),
+                            .padding(top = 16.dp, bottom = 24.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -613,7 +616,7 @@ fun ProfileScreen(
                 Spacer(Modifier.height(24.dp))
 
                 // Edit Profile button
-                OutlinedButton(
+                Button(
                     onClick  = { showEditDialog = true },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -621,12 +624,11 @@ fun ProfileScreen(
                         .height(52.dp)
                         .shadow(4.dp, RoundedCornerShape(14.dp), spotColor = GreenPrimary.copy(alpha = 0.2f)),
                     shape    = RoundedCornerShape(14.dp),
-                    border   = BorderStroke(1.5.dp, GreenPrimary),
-                    colors   = ButtonDefaults.outlinedButtonColors(containerColor = LightSurface)
+                    colors   = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
                 ) {
-                    Icon(Icons.Filled.Edit, contentDescription = null, tint = GreenPrimary)
+                    Icon(Icons.Filled.Edit, contentDescription = null, tint = Color.White)
                     Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.edit_profile), color = GreenPrimary, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.edit_profile), color = Color.White, fontWeight = FontWeight.Bold)
                 }
 
                 Spacer(Modifier.height(16.dp))
@@ -765,7 +767,7 @@ private fun ProfileInfoRow(
             }
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(label, style = MaterialTheme.typography.labelLarge, color = if (onClick != null) GreenPrimary else TextSecondary)
+                Text(label, style = MaterialTheme.typography.labelLarge, color = if (onClick != null) GreenPrimary else TextPrimary.copy(alpha = 0.85f))
                 Text(value, style = MaterialTheme.typography.bodyLarge, color = TextPrimary, fontWeight = FontWeight.SemiBold)
             }
             if (showChevron) {

@@ -100,19 +100,8 @@ fun LotsScreen(
 ) {
     val lots by viewModel.lots.collectAsState()
 
-    Scaffold(
-        containerColor = LightBackground,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = onNewLot,
-                containerColor = GreenPrimary,
-                contentColor = Color.White,
-                icon = { Icon(Icons.Filled.AddAPhoto, contentDescription = null) },
-                text = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) }
-            )
-        }
-    ) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        Column(Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -154,6 +143,17 @@ fun LotsScreen(
                 }
             }
         }
+        
+        ExtendedFloatingActionButton(
+            onClick = onNewLot,
+            containerColor = GreenPrimary,
+            contentColor = Color.White,
+            icon = { Icon(Icons.Filled.AddAPhoto, contentDescription = null) },
+            text = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(end = 16.dp, bottom = 12.dp)
+        )
     }
 }
 
