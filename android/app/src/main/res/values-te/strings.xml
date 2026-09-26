@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Seth G</string>
+    <string name="select_language">మీ భాషను ఎంచుకోండి</string>
+    <string name="continue_btn">కొనసాగించండి</string>
+    <string name="login">లాగిన్</string>
+    <string name="register">కొత్త ఖాతా తెరవండి</string>
+    <string name="logout">లాగ్ అవుట్</string>
+    <string name="phone">ఫోన్ నంబర్</string>
+    <string name="email">ఈమెయిల్</string>
+    <string name="password">పాస్‌వర్డ్</string>
+    <string name="confirm_password">పాస్‌వర్డ్ మళ్ళీ</string>
+    <string name="full_name">పూర్తి పేరు</string>
+    <string name="today_earnings">ఈరోజు సంపాదన</string>
+    <string name="weekly_earnings">ఈ వారం సంపాదన</string>
+    <string name="monthly_earnings">ఈ నెల సంపాదన</string>
+    <string name="transactions">లావాదేవీలు</string>
+    <string name="refresh">రిఫ్రెష్</string>
+    <string name="offline_mode">ఆఫ్‌లైన్ మోడ్</string>
+    <string name="profile">ప్రొఫైల్</string>
+    <string name="edit_profile">ప్రొఫైల్ సవరించండి</string>
+    <string name="about_app">Seth G గురించి</string>
+    <string name="about_app_desc">Seth G అనధికారిక వ్యర్థ సేకరణదారుల కోసం డిజిటల్ ఆదాయ ట్రాకర్.</string>
+    <string name="save">సేవ్ చేయండి</string>
+    <string name="cancel">రద్దు చేయండి</string>
+    <string name="network_error">నెట్‌వర్క్ లోపం</string>
+    <string name="loading">లోడ్ అవుతోంది…</string>
+</resources>

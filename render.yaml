@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: sethg-backend
+    runtime: node
+    region: singapore          # closest to India
+    plan: free
+    rootDir: backend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: sethg-db
+          property: connectionString
+      - key: JWT_ACCESS_SECRET
+        generateValue: true     # Render auto-generates a secure random value
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: JWT_ACCESS_EXPIRES_IN
+        value: 15m
+      - key: JWT_REFRESH_EXPIRES_IN
+        value: 30d
+
+databases:
+  - name: sethg-db
+    databaseName: sethg_db
+    user: sethg_user
+    region: singapore
+    plan: free
