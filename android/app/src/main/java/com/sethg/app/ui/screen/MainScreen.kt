@@ -232,40 +232,53 @@ fun DashboardScreen(
 
             if (state.isLoading && state.today == null) {
                 // Initial loading skeleton
-                repeat(3) {
-                    LoadingEarningsCard()
-                    Spacer(Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    repeat(3) {
+                        LoadingEarningsCard(modifier = Modifier.width(150.dp))
+                    }
                 }
             } else {
-                // Popped-up Earnings cards with vibrant non-common accent themes
-                EarningsCard(
-                    icon           = Icons.Filled.WbSunny,
-                    title          = stringResource(R.string.today_earnings),
-                    summary        = state.today,
-                    accentColor    = GreenPrimary,
-                    containerColor = GreenContainer,
-                    iconTint       = Color(0xFF064E3B)
-                )
-                Spacer(Modifier.height(18.dp))
-
-                EarningsCard(
-                    icon           = Icons.Filled.DateRange,
-                    title          = stringResource(R.string.weekly_earnings),
-                    summary        = state.weekly,
-                    accentColor    = SapphireAccent,
-                    containerColor = SapphireContainer,
-                    iconTint       = Color(0xFF1E40AF)
-                )
-                Spacer(Modifier.height(18.dp))
-
-                EarningsCard(
-                    icon           = Icons.Filled.Star,
-                    title          = stringResource(R.string.monthly_earnings),
-                    summary        = state.monthly,
-                    accentColor    = AmethystAccent,
-                    containerColor = AmethystContainer,
-                    iconTint       = Color(0xFF5B21B6)
-                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 20.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    EarningsCard(
+                        modifier       = Modifier.width(150.dp),
+                        icon           = Icons.Filled.WbSunny,
+                        title          = stringResource(R.string.today_earnings),
+                        summary        = state.today,
+                        accentColor    = GreenPrimary,
+                        containerColor = GreenContainer,
+                        iconTint       = Color(0xFF064E3B)
+                    )
+                    EarningsCard(
+                        modifier       = Modifier.width(150.dp),
+                        icon           = Icons.Filled.DateRange,
+                        title          = stringResource(R.string.weekly_earnings),
+                        summary        = state.weekly,
+                        accentColor    = SapphireAccent,
+                        containerColor = SapphireContainer,
+                        iconTint       = Color(0xFF1E40AF)
+                    )
+                    EarningsCard(
+                        modifier       = Modifier.width(150.dp),
+                        icon           = Icons.Filled.Star,
+                        title          = stringResource(R.string.monthly_earnings),
+                        summary        = state.monthly,
+                        accentColor    = AmethystAccent,
+                        containerColor = AmethystContainer,
+                        iconTint       = Color(0xFF5B21B6)
+                    )
+                }
             }
 
             // Error state
@@ -307,6 +320,7 @@ fun DashboardScreen(
 
 @Composable
 private fun EarningsCard(
+    modifier: Modifier = Modifier,
     icon: ImageVector,
     title: String,
     summary: EarningsSummary?,
@@ -315,66 +329,64 @@ private fun EarningsCard(
     iconTint: Color
 ) {
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
+        modifier = modifier
             .shadow(
-                elevation = 8.dp,
-                shape = RoundedCornerShape(22.dp),
+                elevation = 6.dp,
+                shape = RoundedCornerShape(16.dp),
                 ambientColor = Color(0x0F000000),
                 spotColor = Color(0x1F000000)
             )
-            .border(1.dp, LightBorder, RoundedCornerShape(22.dp)),
-        shape = RoundedCornerShape(22.dp),
+            .border(1.dp, LightBorder, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
         color = LightSurface,
-        tonalElevation = 4.dp
+        tonalElevation = 2.dp
     ) {
-        Column(modifier = Modifier.padding(22.dp)) {
+        Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(
-                    shape = RoundedCornerShape(14.dp),
+                    shape = RoundedCornerShape(10.dp),
                     color = containerColor,
-                    modifier = Modifier.size(46.dp)
+                    modifier = Modifier.size(32.dp)
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             imageVector = icon,
                             contentDescription = null,
                             tint = iconTint,
-                            modifier = Modifier.size(26.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }
-                Spacer(Modifier.width(14.dp))
+                Spacer(Modifier.width(8.dp))
                 Text(
                     title,
-                    style = MaterialTheme.typography.titleMedium,
+                    style = MaterialTheme.typography.titleSmall,
                     color = TextPrimary,
                     fontWeight = FontWeight.Bold
                 )
             }
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(14.dp))
 
             if (summary != null) {
                 Text(
                     "₹ ${"%,.2f".format(summary.total)}",
-                    style      = MaterialTheme.typography.displayMedium,
+                    style      = MaterialTheme.typography.headlineSmall,
                     color      = TextPrimary,
                     fontWeight = FontWeight.ExtraBold
                 )
-                Spacer(Modifier.height(6.dp))
+                Spacer(Modifier.height(4.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         Icons.Filled.Receipt,
                         contentDescription = null,
                         tint = TextSecondary,
-                        modifier = Modifier.size(16.dp)
+                        modifier = Modifier.size(14.dp)
                     )
-                    Spacer(Modifier.width(6.dp))
+                    Spacer(Modifier.width(4.dp))
                     Text(
-                        "${summary.transactionCount} ${stringResource(R.string.transactions)}",
-                        style = MaterialTheme.typography.bodyMedium,
+                        "${summary.transactionCount}",
+                        style = MaterialTheme.typography.bodySmall,
                         color = TextSecondary,
                         fontWeight = FontWeight.Medium
                     )
@@ -382,7 +394,7 @@ private fun EarningsCard(
             } else {
                 Text(
                     "—",
-                    style = MaterialTheme.typography.displayMedium,
+                    style = MaterialTheme.typography.headlineSmall,
                     color = TextMuted
                 )
             }
@@ -391,7 +403,7 @@ private fun EarningsCard(
 }
 
 @Composable
-private fun LoadingEarningsCard() {
+private fun LoadingEarningsCard(modifier: Modifier = Modifier) {
     val infiniteTransition = rememberInfiniteTransition(label = "shimmer")
     val alpha by infiniteTransition.animateFloat(
         initialValue = 0.4f,
@@ -404,12 +416,10 @@ private fun LoadingEarningsCard() {
     )
 
     Surface(
-        modifier  = Modifier
-            .fillMaxWidth()
-            .height(140.dp)
-            .padding(horizontal = 20.dp)
-            .border(1.dp, LightBorder, RoundedCornerShape(22.dp)),
-        shape     = RoundedCornerShape(22.dp),
+        modifier  = modifier
+            .height(110.dp)
+            .border(1.dp, LightBorder, RoundedCornerShape(16.dp)),
+        shape     = RoundedCornerShape(16.dp),
         color     = LightSurfaceVariant.copy(alpha = alpha)
     ) {}
 }
