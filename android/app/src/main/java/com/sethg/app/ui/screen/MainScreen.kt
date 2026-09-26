@@ -129,15 +129,10 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     ) { padding ->
         Box(Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> {
-                    when (profileState.user?.role) {
-                        "recycler" -> RecyclerDashboardScreen(
-                            onHandover = { id, kg -> navController.navigate(Screen.Handover.of(id, kg)) }
-                        )
-                        "vendor" -> VendorDashboardScreen()
-                        else -> DashboardScreen()
-                    }
-                }
+                0 -> DashboardScreen(
+                    user = profileState.user,
+                    onUploadCertificate = { profileVm.updateProfile(certificateUrl = "mock_cert_url_123") }
+                )
                 1 -> if (showLotsTab) LotsScreen(
                     onNewLot = { navController.navigate(Screen.NewLot.route) },
                     onOpenLot = { navController.navigate(Screen.LotDetail.of(it)) }
@@ -157,6 +152,8 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
 
 @Composable
 fun DashboardScreen(
+    user: com.sethg.app.domain.model.User?,
+    onUploadCertificate: () -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -327,8 +324,60 @@ fun DashboardScreen(
                 }
             }
 
+            Spacer(Modifier.height(24.dp))
+            
+            // ── Role Specific Action Cards ──────────────────────────────────
+            if (user?.role == "vendor") {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    color = LightSurface
+                ) {
+                    Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Filled.Store, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(32.dp))
+                        Spacer(Modifier.height(12.dp))
+                        Text("Vendor Operations", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.height(8.dp))
+                        Text("Browse marketplace, place bids, and manage purchases here.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary, textAlign = TextAlign.Center)
+                    }
+                }
+            } else {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp)
+                        .shadow(4.dp, RoundedCornerShape(16.dp)),
+                    shape = RoundedCornerShape(16.dp),
+                    color = LightSurface
+                ) {
+                    Column(Modifier.padding(20.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        if (user?.isVerified == true) {
+                            Icon(Icons.Filled.Verified, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(36.dp))
+                            Spacer(Modifier.height(8.dp))
+                            Text("Verified Recycler", style = MaterialTheme.typography.titleMedium, color = GreenPrimary, fontWeight = FontWeight.Bold)
+                            Text("Your government certificate is approved.", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                        } else {
+                            Icon(Icons.Outlined.Gavel, contentDescription = null, tint = OchreSecondary, modifier = Modifier.size(36.dp))
+                            Spacer(Modifier.height(8.dp))
+                            Text("Account Not Verified", style = MaterialTheme.typography.titleMedium, color = OchreSecondary, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = onUploadCertificate,
+                                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("Upload Government Certificate")
+                            }
+                        }
+                    }
+                }
+            }
+
             // Pull-to-refresh hint
-            Spacer(Modifier.height(20.dp))
+            Spacer(Modifier.height(24.dp))
             TextButton(
                 onClick  = { viewModel.refresh() },
                 modifier = Modifier.fillMaxWidth()

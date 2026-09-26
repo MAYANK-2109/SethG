@@ -36,8 +36,8 @@ fun RegisterScreen(
     var password        by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var showPass        by remember { mutableStateOf(false) }
-    var selectedRole    by remember { mutableStateOf("user") }
-    val roles = listOf("user" to "User", "recycler" to "Recycler", "vendor" to "Vendor")
+    var selectedRole    by remember { mutableStateOf("recycler") }
+    val roles = listOf("recycler" to "Recycler", "vendor" to "Vendor")
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->

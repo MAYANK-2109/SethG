@@ -63,7 +63,7 @@ exports.registerValidation = [
     }),
   body('role')
     .optional()
-    .isIn(['user', 'recycler', 'vendor'])
+    .isIn(['recycler', 'vendor'])
     .withMessage('Invalid role specified'),
 ];
 
@@ -102,7 +102,7 @@ exports.register = async (req, res, next) => {
         `INSERT INTO users (name, phone, email, password_hash, language, role)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id, name, phone, email, language, role, is_verified, certificate_url, created_at`,
-        [name, phone || null, email || null, password_hash, language || 'en', role || 'user']
+        [name, phone || null, email || null, password_hash, language || 'en', role || 'recycler']
       );
       const user = rows[0];
 
