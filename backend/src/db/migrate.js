@@ -103,7 +103,7 @@ CREATE TABLE IF NOT EXISTS lots (
   lon               DOUBLE PRECISION NOT NULL,
   photo_hashes      TEXT[],                                      -- signed in-app photos (files stay on phone)
   status            VARCHAR(20)   NOT NULL DEFAULT 'LISTED',
-    -- LISTED → ACCEPTED → SCHEDULED → HANDED_OVER   (or CANCELLED)
+    -- LISTED → ACCEPTED → SCHEDULED → WEIGHED → HANDED_OVER   (or CANCELLED)
   accepted_offer_id UUID,
   transport_mode    VARCHAR(10)   CHECK (transport_mode IN ('PICKUP', 'POOLED', 'HUB')),
   hub_id            UUID          REFERENCES hubs(id),
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS lots (
   stop_seq          INTEGER,                                     -- order in the trip route
   slot_start        TIMESTAMPTZ,
   slot_end          TIMESTAMPTZ,
-  otp_hash          TEXT,                                        -- sha256(lot id + OTP); OTP only on collector's phone
+  otp_hash          TEXT,                                        -- unused: code is derived, see lib/handover.js
   created_at        TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at        TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
@@ -152,6 +152,12 @@ CREATE TABLE IF NOT EXISTS handovers (
   created_at         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
 CREATE SEQUENCE IF NOT EXISTS handover_seq;
+
+-- Two-sided handover: recycler records weight, vendor confirms with the code
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS vendor_confirmed_at TIMESTAMPTZ;   -- on-device time of the code entry
+ALTER TABLE handovers ADD COLUMN IF NOT EXISTS confirmed_at        TIMESTAMPTZ;   -- NULL until the vendor confirms
+UPDATE handovers h SET confirmed_at = h.created_at
+  FROM lots l WHERE l.id = h.lot_id AND l.status = 'HANDED_OVER' AND h.confirmed_at IS NULL;
 
 -- ── Trigger: auto-update updated_at on users ───────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()

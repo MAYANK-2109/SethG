@@ -9,5 +9,6 @@ router.post('/', ctrl.syncLotValidation, ctrl.syncLot);
 router.get('/mine', ctrl.myLots);
 router.post('/:id/offers/:offerId/accept', ctrl.acceptOffer);
 router.post('/:id/transport', ctrl.transportValidation, ctrl.chooseTransport);
+router.post('/:id/confirm', ctrl.confirmValidation, ctrl.confirmHandover);
 
 module.exports = router;

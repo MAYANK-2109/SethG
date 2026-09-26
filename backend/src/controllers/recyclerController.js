@@ -1,15 +1,13 @@
-const crypto = require('crypto');
 const { body, query, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { ELIGIBLE_RECYCLER, ACCEPTS, LOT_RADIUS_SQL } = require('../lib/matching');
 const { haversineKm, haversineSql } = require('../lib/geo');
 const { planTrips } = require('../lib/pooling');
+const { otpFor, finalize } = require('../lib/handover');
 
 const CATEGORIES = ['CABLE', 'CHARGER', 'PCB', 'MOBILE', 'BATTERY', 'MOTOR',
   'SWITCH', 'LCD', 'CRT', 'PLASTIC', 'OTHER'];
 const WEIGHT_FLAG_RATIO = 0.15;
-
-const otpHash = (lotId, otp) => crypto.createHash('sha256').update(`${lotId}:${otp}`).digest('hex');
 
 function invalid(req, res) {
   const errors = validationResult(req);
@@ -130,11 +128,17 @@ exports.makeOffer = async (req, res, next) => {
   }
 };
 
+/** Adds the handover code the vendor must type in; kept on the recycler's phone for offline use. */
+function withCode(row, lotId) {
+  const { accepted_offer_id: offerId, ...rest } = row;
+  return { ...rest, handover_otp: otpFor(lotId, offerId) };
+}
+
 // ── GET /recycler/lots/accepted — lots won, with collector contact + place ──
 exports.acceptedLots = async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT l.id, l.category, l.weight_kg, l.status, l.transport_mode, l.lat, l.lon,
+      `SELECT l.id, l.accepted_offer_id, l.category, l.weight_kg, l.status, l.transport_mode, l.lat, l.lon,
               l.trip_id, l.stop_seq, l.slot_start, l.slot_end,
               o.rate_per_kg, o.pickup_date, ROUND(o.rate_per_kg * l.weight_kg) AS expected_amount,
               c.name AS collector_name, c.phone AS collector_phone, h.name AS hub_name
@@ -142,9 +146,9 @@ exports.acceptedLots = async (req, res, next) => {
        JOIN offers o ON o.id = l.accepted_offer_id
        JOIN users c ON c.id = l.collector_id
        LEFT JOIN hubs h ON h.id = l.hub_id
-       WHERE o.recycler_id = $1 AND l.status IN ('ACCEPTED', 'SCHEDULED')
+       WHERE o.recycler_id = $1 AND l.status IN ('ACCEPTED', 'SCHEDULED', 'WEIGHED')
        ORDER BY l.slot_start NULLS LAST, l.updated_at DESC`, [req.userId]);
-    return res.json({ lots: rows });
+    return res.json({ lots: rows.map((l) => withCode(l, l.id)) });
   } catch (err) {
     next(err);
   }
@@ -161,11 +165,11 @@ exports.trips = async (req, res, next) => {
        ORDER BY t.scheduled_date, t.created_at`, [req.userId]);
     for (const trip of trips) {
       const { rows: stops } = await pool.query(
-        `SELECT l.id AS lot_id, l.stop_seq, l.slot_start, l.slot_end, l.category, l.weight_kg, l.status,
+        `SELECT l.id AS lot_id, l.accepted_offer_id, l.stop_seq, l.slot_start, l.slot_end, l.category, l.weight_kg, l.status,
                 l.lat, l.lon, c.name AS collector_name, c.phone AS collector_phone
          FROM lots l JOIN users c ON c.id = l.collector_id
          WHERE l.trip_id = $1 ORDER BY l.stop_seq`, [trip.id]);
-      trip.stops = stops;
+      trip.stops = stops.map((st) => withCode(st, st.lot_id));
     }
     return res.json({ trips });
   } catch (err) {
@@ -173,7 +177,9 @@ exports.trips = async (req, res, next) => {
   }
 };
 
-// ── POST /recycler/lots/:id/handover — weigh, photograph, OTP, GPS ─────────
+// ── POST /recycler/lots/:id/handover — weigh, photograph, GPS ──────────────
+// Then the vendor confirms by typing the code shown on this recycler's phone
+// (POST /lots/:id/confirm). Payment is booked once both are in, in either order.
 exports.handoverValidation = [
   body('actual_weight_kg').isFloat({ gt: 0, max: 100000 }),
   body('lat').isFloat({ min: -90, max: 90 }),
@@ -181,7 +187,6 @@ exports.handoverValidation = [
   body('captured_at').isISO8601(),
   body('photo_hashes').isArray({ min: 1, max: 5 }),
   body('photo_hashes.*').matches(/^[a-f0-9]{64}$/),
-  body('otp').matches(/^\d{6}$/),
 ];
 
 exports.handover = async (req, res, next) => {
@@ -201,13 +206,6 @@ exports.handover = async (req, res, next) => {
       await client.query('ROLLBACK');
       return res.status(409).json({ error: `Lot is ${lot.status}` });
     }
-    const expected = Buffer.from(lot.otp_hash, 'hex');
-    const given = Buffer.from(otpHash(lot.id, req.body.otp), 'hex');
-    if (!crypto.timingSafeEqual(expected, given)) {
-      await client.query('ROLLBACK');
-      return res.status(403).json({ error: 'Wrong handover code — ask the collector for the 6-digit code' });
-    }
-
     const { actual_weight_kg: actual, lat, lon, captured_at: capturedAt, photo_hashes: photos } = req.body;
     const declared = Number(lot.weight_kg);
     const flagged = Math.abs(actual - declared) / declared > WEIGHT_FLAG_RATIO;
@@ -221,18 +219,19 @@ exports.handover = async (req, res, next) => {
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13) RETURNING *`,
       [handoverId, lot.id, req.userId, declared, actual, flagged, lot.rate_per_kg, amount, lat, lon,
        haversineKm(lot.lat, lot.lon, lat, lon).toFixed(2), photos, capturedAt]);
-    await client.query(`UPDATE lots SET status = 'HANDED_OVER', otp_hash = NULL WHERE id = $1`, [lot.id]);
-    // Feeds the collector's existing earnings dashboard
-    await client.query(
-      `INSERT INTO earnings (user_id, amount, material, weight_kg, note) VALUES ($1, $2, $3, $4, $5)`,
-      [lot.collector_id, amount, lot.category.toLowerCase(), actual, `${handoverId} · lot ${lot.id}`]);
+    await client.query(`UPDATE lots SET status = 'WEIGHED' WHERE id = $1`, [lot.id]);
+    if (lot.vendor_confirmed_at) {                  // vendor's confirmation synced first
+      await finalize(client, lot, handover, lot.vendor_confirmed_at);
+      handover.confirmed_at = lot.vendor_confirmed_at;
+    }
     if (lot.trip_id) {
       await client.query(
         `UPDATE pickup_trips SET status = 'DONE' WHERE id = $1
-           AND NOT EXISTS (SELECT 1 FROM lots WHERE trip_id = $1 AND status <> 'HANDED_OVER')`, [lot.trip_id]);
+           AND NOT EXISTS (SELECT 1 FROM lots WHERE trip_id = $1 AND status NOT IN ('WEIGHED', 'HANDED_OVER'))`,
+        [lot.trip_id]);
     }
     await client.query('COMMIT');
-    return res.status(201).json({ handover });
+    return res.status(201).json({ handover, handover_otp: otpFor(lot.id, lot.accepted_offer_id) });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     next(err);

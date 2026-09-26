@@ -1,14 +1,12 @@
-const crypto = require('crypto');
 const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
 const { recyclersForLot } = require('../lib/matching');
 const { planTrips } = require('../lib/pooling');
 const { MAX_MATCH_KM, haversineSql } = require('../lib/geo');
+const { otpFor, otpHash, otpMatches, finalize } = require('../lib/handover');
 
 const CATEGORIES = ['CABLE', 'CHARGER', 'PCB', 'MOBILE', 'BATTERY', 'MOTOR',
   'SWITCH', 'LCD', 'CRT', 'PLASTIC', 'OTHER'];
-
-const otpHash = (lotId, otp) => crypto.createHash('sha256').update(`${lotId}:${otp}`).digest('hex');
 
 function invalid(req, res) {
   const errors = validationResult(req);
@@ -39,6 +37,8 @@ async function collectorLotView(db, lotId, collectorId) {
   );
   const { rows: [handover] } = await db.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lotId]);
   delete lot.otp_hash;
+  // Hash only: lets the vendor's phone check the recycler's code offline
+  lot.handover_otp_hash = lot.accepted_offer_id ? otpHash(lot.id, otpFor(lot.id, lot.accepted_offer_id)) : null;
   return { ...lot, offers, handover: handover || null };
 }
 
@@ -95,7 +95,7 @@ exports.myLots = async (req, res, next) => {
   }
 };
 
-// ── POST /lots/:id/offers/:offerId/accept — locks the price, issues the OTP ─
+// ── POST /lots/:id/offers/:offerId/accept — locks the price, fixes the handover code ─
 exports.acceptOffer = async (req, res, next) => {
   const client = await pool.connect();
   try {
@@ -112,12 +112,10 @@ exports.acceptOffer = async (req, res, next) => {
        WHERE o.id = $1 AND o.lot_id = $2 AND o.status = 'PENDING'`, [req.params.offerId, lot.id]);
     if (!offer) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Offer not found' }); }
 
-    // 6-digit handover code. Only its hash is stored; the collector's phone keeps
-    // the code and shows it to the driver at pickup (works offline).
-    const otp = String(crypto.randomInt(0, 1_000_000)).padStart(6, '0');
+    // The 6-digit handover code now exists (derived from lot + offer): the recycler
+    // sees it in their trips, the vendor's phone gets its hash in the lot view.
     await client.query(
-      `UPDATE lots SET status = 'ACCEPTED', accepted_offer_id = $1, otp_hash = $2 WHERE id = $3`,
-      [offer.id, otpHash(lot.id, otp), lot.id]);
+      `UPDATE lots SET status = 'ACCEPTED', accepted_offer_id = $1 WHERE id = $2`, [offer.id, lot.id]);
     await client.query(`UPDATE offers SET status = 'ACCEPTED' WHERE id = $1`, [offer.id]);
     await client.query(
       `UPDATE offers SET status = 'REJECTED' WHERE lot_id = $1 AND id <> $2`, [lot.id, offer.id]);
@@ -128,7 +126,6 @@ exports.acceptOffer = async (req, res, next) => {
        FROM hubs ORDER BY distance_km LIMIT 5`, [lot.lat, lot.lon]);
     return res.json({
       lot: await collectorLotView(pool, lot.id, req.userId),
-      handover_otp: otp,
       transport_options: {
         pickup_allowed: Number(lot.weight_kg) >= Number(offer.vehicle_min_kg),
         vehicle_min_kg: Number(offer.vehicle_min_kg),
@@ -178,5 +175,43 @@ exports.chooseTransport = async (req, res, next) => {
     return res.json({ lot: await collectorLotView(pool, lot.id, req.userId) });
   } catch (err) {
     next(err);
+  }
+};
+
+// ── POST /lots/:id/confirm — vendor enters the code shown on the recycler's phone ──
+// The phone checks the code offline against the hash and sends it here at sync.
+exports.confirmValidation = [
+  body('otp').matches(/^\d{6}$/),
+  body('confirmed_at').isISO8601(),
+];
+
+exports.confirmHandover = async (req, res, next) => {
+  if (invalid(req, res)) return;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: [lot] } = await client.query(
+      `SELECT * FROM lots WHERE id = $1 AND collector_id = $2 FOR UPDATE`, [req.params.id, req.userId]);
+    if (!lot || !lot.accepted_offer_id) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Accepted lot not found' });
+    }
+    if (!otpMatches(lot.id, lot.accepted_offer_id, req.body.otp)) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ error: "Wrong code — enter the code shown on the recycler's phone" });
+    }
+    if (lot.status !== 'HANDED_OVER') {
+      const confirmedAt = lot.vendor_confirmed_at || req.body.confirmed_at;
+      await client.query(`UPDATE lots SET vendor_confirmed_at = $1 WHERE id = $2`, [confirmedAt, lot.id]);
+      const { rows: [handover] } = await client.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lot.id]);
+      if (handover) await finalize(client, lot, handover, confirmedAt);   // else: done when the recycler's record arrives
+    }
+    await client.query('COMMIT');
+    return res.json({ lot: await collectorLotView(pool, lot.id, req.userId) });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    next(err);
+  } finally {
+    client.release();
   }
 };
