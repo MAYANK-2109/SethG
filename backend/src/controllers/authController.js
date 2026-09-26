@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const { body, validationResult } = require('express-validator');
 const pool = require('../db/pool');
+const { normalizePhone, PHONE_SQL } = require('../lib/phone');
 
 const SALT_ROUNDS = 12;
 const ACCESS_EXPIRES_IN  = process.env.JWT_ACCESS_EXPIRES_IN  || '15m';
@@ -47,6 +48,7 @@ exports.registerValidation = [
   body('name').trim().notEmpty().withMessage('Name is required'),
   body('phone')
     .optional({ nullable: true, checkFalsy: true })
+    .customSanitizer(normalizePhone)
     .isMobilePhone()
     .withMessage('Invalid phone number'),
   body('email')
@@ -79,7 +81,8 @@ exports.register = async (req, res, next) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { name, phone, email, password, language, role } = req.body;
+    const { name, email, password, language, role } = req.body;
+    const phone = normalizePhone(req.body.phone);
 
     if (!phone && !email) {
       return res.status(422).json({ errors: [{ msg: 'Provide phone or email' }] });
@@ -89,7 +92,7 @@ exports.register = async (req, res, next) => {
     try {
       // Check duplicates
       const dup = await client.query(
-        `SELECT id FROM users WHERE phone = $1 OR email = $2`,
+        `SELECT id FROM users WHERE (phone IS NOT NULL AND ${PHONE_SQL} = $1) OR email = $2`,
         [phone || null, email || null]
       );
       if (dup.rowCount > 0) {
@@ -127,14 +130,15 @@ exports.login = async (req, res, next) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { phone, email, password } = req.body;
+    const { email, password } = req.body;
+    const phone = normalizePhone(req.body.phone);
 
     if (!phone && !email) {
       return res.status(422).json({ errors: [{ msg: 'Provide phone or email' }] });
     }
 
     const { rows } = await pool.query(
-      `SELECT * FROM users WHERE phone = $1 OR email = $2`,
+      `SELECT * FROM users WHERE (phone IS NOT NULL AND ${PHONE_SQL} = $1) OR email = $2`,
       [phone || null, email || null]
     );
 
