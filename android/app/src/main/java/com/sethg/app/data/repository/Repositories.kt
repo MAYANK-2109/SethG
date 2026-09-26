@@ -30,11 +30,11 @@ class AuthRepository @Inject constructor(
 
     suspend fun register(
         name: String, phone: String?, email: String?,
-        password: String, language: String
+        password: String, language: String, role: String
     ): Result<User> = withContext(Dispatchers.IO) {
         try {
             val response = api.register(
-                RegisterRequest(name, phone, email, password, password, language)
+                RegisterRequest(name, phone, email, password, password, language, role)
             )
             if (response.isSuccessful) {
                 val body = response.body()!!
@@ -113,12 +113,14 @@ class UserRepository @Inject constructor(
 
     suspend fun updateProfile(
         name: String? = null, phone: String? = null, email: String? = null,
-        language: String? = null, currentPassword: String? = null, newPassword: String? = null
+        language: String? = null, currentPassword: String? = null, newPassword: String? = null,
+        certificateUrl: String? = null
     ): Result<User> = withContext(Dispatchers.IO) {
         try {
             val response = api.updateProfile(
                 UpdateProfileRequest(name, phone, email, language,
-                    currentPassword = currentPassword, newPassword = newPassword)
+                    currentPassword = currentPassword, newPassword = newPassword,
+                    certificateUrl = certificateUrl)
             )
             if (response.isSuccessful) {
                 val user = response.body()!!.user
@@ -180,17 +182,26 @@ class EarningsRepository @Inject constructor(
 
 private fun com.sethg.app.data.remote.model.RemoteUser.toDomain() = User(
     id = id, name = name, phone = phone, email = email,
-    photoUrl = photoUrl, language = language
+    photoUrl = photoUrl, language = language,
+    role = role ?: "user",
+    certificateUrl = certificateUrl,
+    isVerified = isVerified ?: false
 )
 
 private fun com.sethg.app.data.remote.model.RemoteUser.toEntity() = UserEntity(
     id = id, name = name, phone = phone, email = email,
-    photoUrl = photoUrl, language = language
+    photoUrl = photoUrl, language = language,
+    role = role ?: "user",
+    certificateUrl = certificateUrl,
+    isVerified = isVerified ?: false
 )
 
 private fun UserEntity.toDomain() = User(
     id = id, name = name, phone = phone, email = email,
-    photoUrl = photoUrl, language = language
+    photoUrl = photoUrl, language = language,
+    role = role,
+    certificateUrl = certificateUrl,
+    isVerified = isVerified
 )
 
 private fun com.sethg.app.data.remote.model.EarningsSummary.toDomain() = EarningsSummary(

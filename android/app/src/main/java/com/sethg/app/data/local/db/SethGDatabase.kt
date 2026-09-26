@@ -13,6 +13,9 @@ data class UserEntity(
     val email: String?,
     val photoUrl: String?,
     val language: String,
+    val role: String,
+    val certificateUrl: String?,
+    val isVerified: Boolean,
     val updatedAt: Long = System.currentTimeMillis()
 )
 
@@ -126,7 +129,7 @@ interface LotDao {
 
 @Database(
     entities = [UserEntity::class, EarningsEntity::class, LotEntity::class, LotPhotoEntity::class],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 abstract class SethGDatabase : RoomDatabase() {

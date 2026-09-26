@@ -8,7 +8,7 @@ const SALT_ROUNDS = 12;
 exports.getProfile = async (req, res, next) => {
   try {
     const { rows } = await pool.query(
-      `SELECT id, name, phone, email, photo_url, language, created_at
+      `SELECT id, name, phone, email, photo_url, language, role, certificate_url, is_verified, created_at
        FROM users WHERE id = $1`,
       [req.userId]
     );
@@ -39,6 +39,9 @@ exports.updateProfileValidation = [
   body('currentPassword')
     .if(body('newPassword').exists({ checkFalsy: true }))
     .notEmpty().withMessage('Current password required to change password'),
+  body('certificate_url')
+    .optional()
+    .isString(),
 ];
 
 // ── PUT /user/profile ───────────────────────────────────────────────────────
@@ -49,7 +52,7 @@ exports.updateProfile = async (req, res, next) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { name, phone, email, language, photo_url, newPassword, currentPassword } = req.body;
+    const { name, phone, email, language, photo_url, newPassword, currentPassword, certificate_url } = req.body;
 
     const client = await pool.connect();
     try {
@@ -69,6 +72,11 @@ exports.updateProfile = async (req, res, next) => {
         password_hash = await bcrypt.hash(newPassword, SALT_ROUNDS);
       }
 
+      let is_verified = user.is_verified;
+      if (certificate_url && user.role === 'recycler') {
+        is_verified = true;
+      }
+
       const { rows } = await client.query(
         `UPDATE users
          SET name          = COALESCE($1, name),
@@ -76,9 +84,11 @@ exports.updateProfile = async (req, res, next) => {
              email         = COALESCE($3, email),
              language      = COALESCE($4, language),
              photo_url     = COALESCE($5, photo_url),
-             password_hash = $6
-         WHERE id = $7
-         RETURNING id, name, phone, email, language, photo_url, updated_at`,
+             password_hash = $6,
+             certificate_url = COALESCE($7, certificate_url),
+             is_verified   = $8
+         WHERE id = $9
+         RETURNING id, name, phone, email, language, photo_url, role, certificate_url, is_verified, updated_at`,
         [
           name       || null,
           phone      || null,
@@ -86,6 +96,8 @@ exports.updateProfile = async (req, res, next) => {
           language   || null,
           photo_url  || null,
           password_hash,
+          certificate_url || null,
+          is_verified,
           req.userId,
         ]
       );

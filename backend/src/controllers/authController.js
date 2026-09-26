@@ -61,6 +61,10 @@ exports.registerValidation = [
       if (value !== req.body.password) throw new Error('Passwords do not match');
       return true;
     }),
+  body('role')
+    .optional()
+    .isIn(['user', 'recycler', 'vendor'])
+    .withMessage('Invalid role specified'),
 ];
 
 exports.loginValidation = [
@@ -75,7 +79,7 @@ exports.register = async (req, res, next) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { name, phone, email, password, language } = req.body;
+    const { name, phone, email, password, language, role } = req.body;
 
     if (!phone && !email) {
       return res.status(422).json({ errors: [{ msg: 'Provide phone or email' }] });
@@ -95,10 +99,10 @@ exports.register = async (req, res, next) => {
       const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
       const { rows } = await client.query(
-        `INSERT INTO users (name, phone, email, password_hash, language)
-         VALUES ($1, $2, $3, $4, $5)
-         RETURNING id, name, phone, email, language, created_at`,
-        [name, phone || null, email || null, password_hash, language || 'en']
+        `INSERT INTO users (name, phone, email, password_hash, language, role)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, name, phone, email, language, role, is_verified, certificate_url, created_at`,
+        [name, phone || null, email || null, password_hash, language || 'en', role || 'user']
       );
       const user = rows[0];
 

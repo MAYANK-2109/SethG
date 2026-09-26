@@ -10,7 +10,8 @@ data class RegisterRequest(
     val email: String?,
     val password: String,
     @SerializedName("confirmPassword") val confirmPassword: String,
-    val language: String = "en"
+    val language: String = "en",
+    val role: String = "user"
 )
 
 data class LoginRequest(
@@ -43,6 +44,9 @@ data class RemoteUser(
     val email: String?,
     @SerializedName("photo_url") val photoUrl: String?,
     val language: String,
+    val role: String?,
+    @SerializedName("certificate_url") val certificateUrl: String?,
+    @SerializedName("is_verified") val isVerified: Boolean?,
     @SerializedName("created_at") val createdAt: String?
 )
 
@@ -53,7 +57,8 @@ data class UpdateProfileRequest(
     val language: String? = null,
     @SerializedName("photo_url") val photoUrl: String? = null,
     val currentPassword: String? = null,
-    val newPassword: String? = null
+    val newPassword: String? = null,
+    @SerializedName("certificate_url") val certificateUrl: String? = null
 )
 
 data class UserProfileResponse(

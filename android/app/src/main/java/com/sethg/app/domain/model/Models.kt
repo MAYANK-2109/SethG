@@ -8,7 +8,10 @@ data class User(
     val phone: String?,
     val email: String?,
     val photoUrl: String?,
-    val language: String
+    val language: String,
+    val role: String,
+    val certificateUrl: String?,
+    val isVerified: Boolean
 )
 
 data class EarningsSummary(

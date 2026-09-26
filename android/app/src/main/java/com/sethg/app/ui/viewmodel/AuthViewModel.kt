@@ -43,6 +43,7 @@ class AuthViewModel @Inject constructor(
     var regPassword         = ""
     var regConfirmPassword  = ""
     var regLanguage         = "en"
+    var regRole             = "user"
 
     fun login() {
         if (loginIdentifier.isBlank() || loginPassword.isBlank()) {
@@ -77,7 +78,8 @@ class AuthViewModel @Inject constructor(
                 regPhone.ifBlank { null },
                 regEmail.ifBlank { null },
                 regPassword,
-                regLanguage
+                regLanguage,
+                regRole
             )
             _uiState.update { it.copy(isLoading = false) }
             when (result) {

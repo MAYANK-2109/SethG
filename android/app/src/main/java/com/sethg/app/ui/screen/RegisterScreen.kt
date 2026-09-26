@@ -36,6 +36,8 @@ fun RegisterScreen(
     var password        by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
     var showPass        by remember { mutableStateOf(false) }
+    var selectedRole    by remember { mutableStateOf("user") }
+    val roles = listOf("user" to "User", "recycler" to "Recycler", "vendor" to "Vendor")
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -140,6 +142,32 @@ fun RegisterScreen(
                             showPassword = showPass,
                             onTogglePass = { showPass = !showPass }
                         )
+                        Spacer(Modifier.height(20.dp))
+                        Text("Select Role", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                        Spacer(Modifier.height(8.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            roles.forEach { (roleValue, roleLabel) ->
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.clickable {
+                                        selectedRole = roleValue
+                                        viewModel.regRole = roleValue
+                                    }
+                                ) {
+                                    RadioButton(
+                                        selected = (selectedRole == roleValue),
+                                        onClick = {
+                                            selectedRole = roleValue
+                                            viewModel.regRole = roleValue
+                                        }
+                                    )
+                                    Text(text = roleLabel, style = MaterialTheme.typography.bodyMedium)
+                                }
+                            }
+                        }
                     }
                 }
 

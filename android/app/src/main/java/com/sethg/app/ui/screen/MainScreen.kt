@@ -39,6 +39,8 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
     val authVm: AuthViewModel = hiltViewModel()
+    val profileVm: ProfileViewModel = hiltViewModel()
+    val profileState by profileVm.uiState.collectAsState()
 
     Scaffold(
         containerColor = LightBackground,
@@ -107,7 +109,13 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
     ) { padding ->
         Box(Modifier.padding(padding)) {
             when (selectedTab) {
-                0 -> DashboardScreen()
+                0 -> {
+                    when (profileState.user?.role) {
+                        "recycler" -> RecyclerDashboardScreen()
+                        "vendor" -> VendorDashboardScreen()
+                        else -> DashboardScreen()
+                    }
+                }
                 1 -> LotsScreen(onNewLot = { navController.navigate(Screen.NewLot.route) })
                 2 -> ProfileScreen(
                     onLogout  = {
