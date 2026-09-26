@@ -39,6 +39,7 @@ import java.util.*
 
 @Composable
 fun RecyclerDashboardScreen(
+    modifier: Modifier = Modifier,
     onHandover: (lotId: String, declaredKg: Double) -> Unit = { _, _ -> },
     profileVm: ProfileViewModel = hiltViewModel(),
     purchaseVm: RecyclerPurchaseViewModel = hiltViewModel(),

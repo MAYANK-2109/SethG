@@ -28,7 +28,8 @@ import com.sethg.app.ui.theme.*
 @Composable
 fun RoleSelectionScreen(
     onSelectVendor: () -> Unit,
-    onSelectRecycler: () -> Unit
+    onSelectRecycler: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     // Subtle entrance animation for the cards
     val infiniteTransition = rememberInfiniteTransition(label = "role_bg")
@@ -43,7 +44,7 @@ fun RoleSelectionScreen(
     )
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
@@ -147,7 +148,8 @@ private fun RoleCard(
     description: String,
     gradientColors: List<Color>,
     glowAlpha: Float,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var pressed by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(
@@ -157,7 +159,7 @@ private fun RoleCard(
     )
 
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .scale(scale)
             .shadow(

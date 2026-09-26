@@ -26,11 +26,13 @@ import com.sethg.app.ui.viewmodel.LanguageViewModel
 fun RegisterScreen(
     onNavigateToLogin: () -> Unit,
     onRegisterSuccess: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: AuthViewModel = hiltViewModel(),
     languageVm: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val langState by languageVm.uiState.collectAsState()
+    @Suppress("SpellCheckingInspection")
     val snackbarHostState = remember { SnackbarHostState() }
 
     var name            by remember { mutableStateOf("") }
@@ -54,6 +56,7 @@ fun RegisterScreen(
     }
 
     Scaffold(
+        modifier = modifier,
         containerColor = LightBackground,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {

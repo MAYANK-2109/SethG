@@ -402,13 +402,13 @@ fun DashboardScreen(
 
 @Composable
 private fun EarningsCard(
-    modifier: Modifier = Modifier,
     icon: ImageVector,
     title: String,
     summary: EarningsSummary?,
     accentColor: Color,
     containerColor: Color,
-    iconTint: Color
+    iconTint: Color,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier
@@ -516,6 +516,7 @@ fun ProfileScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val langState by languageVm.uiState.collectAsState()
+    @Suppress("SpellCheckingInspection")
     val snackbarHostState = remember { SnackbarHostState() }
     var showEditDialog by remember { mutableStateOf(false) }
     var showLanguagePicker by remember { mutableStateOf(false) }

@@ -46,6 +46,7 @@ import java.util.*
 
 @Composable
 fun VendorDashboardScreen(
+    modifier: Modifier = Modifier,
     viewModel: VendorWizardViewModel = hiltViewModel(),
     languageVm: LanguageViewModel = hiltViewModel()
 ) {
@@ -934,8 +935,8 @@ private fun YesNoCard(
     selected: Boolean,
     color: Color,
     bg: Color,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Surface(
         modifier = modifier

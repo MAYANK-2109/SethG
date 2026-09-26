@@ -10,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,11 +28,13 @@ import com.sethg.app.ui.viewmodel.LanguageViewModel
 fun LoginScreen(
     onNavigateToRegister: () -> Unit,
     onLoginSuccess: () -> Unit,
+    modifier: Modifier = Modifier,
     viewModel: AuthViewModel = hiltViewModel(),
     languageVm: LanguageViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
     val langState by languageVm.uiState.collectAsState()
+    @Suppress("SpellCheckingInspection")
     val snackbarHostState = remember { SnackbarHostState() }
 
     var identifier by remember { mutableStateOf("") }
@@ -52,6 +53,7 @@ fun LoginScreen(
     }
 
     Scaffold(
+        modifier = modifier,
         containerColor = LightBackground,
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
@@ -248,12 +250,12 @@ fun SethGTextField(
     value: String,
     onValueChange: (String) -> Unit,
     label: String,
+    modifier: Modifier = Modifier,
     leadingIcon: ImageVector? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     isPassword: Boolean = false,
     showPassword: Boolean = false,
-    onTogglePass: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onTogglePass: (() -> Unit)? = null
 ) {
     OutlinedTextField(
         value         = value,
