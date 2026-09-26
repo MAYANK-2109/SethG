@@ -1,0 +1,59 @@
+{
+ "version": 1,
+ "trained_on": "2026-09-26",
+ "features": {
+  "categories": [
+   "CABLE",
+   "CHARGER",
+   "PCB",
+   "MOBILE",
+   "BATTERY",
+   "MOTOR",
+   "SWITCH",
+   "LCD",
+   "CRT",
+   "PLASTIC",
+   "OTHER"
+  ],
+  "zones": [
+   "NORTH",
+   "WEST",
+   "SOUTH",
+   "EAST",
+   "CENTRAL",
+   "NORTHEAST"
+  ],
+  "category_alias": {
+   "CHARGER": "OTHER",
+   "SWITCH": "OTHER"
+  },
+  "lat_mean": 22.154652406417114,
+  "lat_std": 4.852875134566319,
+  "lon_mean": 78.0524064171123,
+  "lon_std": 4.088972660426189
+ },
+ "output": "log(INR per kg) at quantiles 0.1, 0.5, 0.9",
+ "training_rows": {
+  "market": 187,
+  "transaction": 0
+ },
+ "categories_with_data": [
+  "BATTERY",
+  "CABLE",
+  "CRT",
+  "LCD",
+  "MOBILE",
+  "MOTOR",
+  "OTHER",
+  "PCB",
+  "PLASTIC"
+ ],
+ "validation_leave_one_city_out": {
+  "cities_held_out": 18,
+  "test_rates": 187,
+  "ml_typical_error_pct": 48.1,
+  "lookup_typical_error_pct": 43.8,
+  "ml_range_contains_real_rate_pct": 58.3,
+  "lookup_range_contains_real_rate_pct": 31.0
+ }
+}

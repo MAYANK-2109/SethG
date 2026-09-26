@@ -449,7 +449,15 @@ fun NewLotScreen(
                             fontSize = 32.sp,
                             fontWeight = FontWeight.ExtraBold
                         )
-                        state.rate?.let { RateBasis(it, state.city) }
+                        val ml = state.mlPrediction
+                        if (ml != null && state.city != null) {
+                            Text(
+                                "🤖 " + stringResource(R.string.ml_price_basis, state.city!!.name, ml.trainingRows),
+                                color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Medium
+                            )
+                        } else {
+                            state.rate?.let { RateBasis(it, state.city) }
+                        }
                         Text(stringResource(R.string.price_range_note), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
                     }
                 }

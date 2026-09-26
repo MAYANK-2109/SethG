@@ -94,4 +94,5 @@
     <string name="zone_east">East India</string>
     <string name="zone_central">Central India</string>
     <string name="zone_northeast">Northeast India</string>
+    <string name="ml_price_basis">AI estimate for %1$s (model trained on %2$d market rates)</string>
 </resources>

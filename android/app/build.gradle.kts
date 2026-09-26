@@ -18,8 +18,8 @@ android {
         // Bump on every build that changes the DB schema or ships to testers:
         // Android refuses to install a lower versionCode over a higher one,
         // so a stale checkout can't silently replace a newer app.
-        versionCode = 3      // matches DB version 3 (lots + zone prices)
-        versionName = "1.2.0"
+        versionCode = 4      // matches DB version 4 (lots, zone prices, user roles)
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

@@ -39,7 +39,6 @@ val MIGRATION_2_3 = object : Migration(2, 3) {
     }
 }
 
-<<<<<<< Updated upstream
 private fun SupportSQLiteDatabase.hasColumn(table: String, column: String): Boolean =
     query("PRAGMA table_info(`$table`)").use { cursor ->
         val nameIndex = cursor.getColumnIndexOrThrow("name")
@@ -47,8 +46,6 @@ private fun SupportSQLiteDatabase.hasColumn(table: String, column: String): Bool
             .any { it == column }
     }
 
-val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
-=======
 /** v3 → v4: add role, certificateUrl, isVerified to cached_user. */
 val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -59,4 +56,3 @@ val MIGRATION_3_4 = object : Migration(3, 4) {
 }
 
 val ALL_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
->>>>>>> Stashed changes

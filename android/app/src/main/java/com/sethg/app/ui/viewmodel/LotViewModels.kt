@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.sethg.app.data.local.AppPreferences
 import com.sethg.app.data.local.City
 import com.sethg.app.data.local.LastLocation
+import com.sethg.app.data.local.PricePredictor
 import com.sethg.app.data.local.PriceRateRepository
 import com.sethg.app.data.local.ResolvedRate
 import com.sethg.app.data.repository.LotRepository
@@ -31,6 +32,7 @@ class LotsViewModel @Inject constructor(
 class NewLotViewModel @Inject constructor(
     private val lotRepo: LotRepository,
     private val rates: PriceRateRepository,
+    private val pricePredictor: PricePredictor,
     private val prefs: AppPreferences,
     private val lastLocation: LastLocation
 ) : ViewModel() {
@@ -45,7 +47,8 @@ class NewLotViewModel @Inject constructor(
         val category  : MaterialCategory? = null,
         val weightText: String = "",
         val city      : City? = null,          // whose scrap rates price this lot
-        val rate      : ResolvedRate? = null,  // rate actually used (city / zone / national)
+        val rate      : ResolvedRate? = null,  // rate-table rate (city / zone / national)
+        val mlPrediction: PricePredictor.Prediction? = null,  // on-device ML model, preferred when available
         val estimate  : PriceEstimate? = null,
         val isSealing : Boolean = false,
         val isSaving  : Boolean = false,
@@ -91,12 +94,22 @@ class NewLotViewModel @Inject constructor(
 
     private fun recomputeEstimate() {
         _uiState.update { state ->
-            val rate = state.category?.let { rates.rateFor(it, state.city) }
+            val category = state.category
+            val city = state.city
+            // ML model needs a location; the rate table is the fallback
+            val ml = if (category != null && city != null)
+                pricePredictor.predict(category, city.zone, city.lat, city.lon) else null
+            val rate = category?.let { rates.rateFor(it, city) }
             val kg = state.weightKg
             state.copy(
+                mlPrediction = ml,
                 rate = rate,
-                estimate = if (rate != null && kg != null)
-                    PriceEstimator.estimate(rate.range.low, rate.range.high, kg) else null
+                estimate = when {
+                    kg == null   -> null
+                    ml != null   -> PriceEstimator.estimate(ml.lowPerKg, ml.highPerKg, kg)
+                    rate != null -> PriceEstimator.estimate(rate.range.low, rate.range.high, kg)
+                    else         -> null
+                }
             )
         }
     }
@@ -163,7 +176,8 @@ class NewLotViewModel @Inject constructor(
         viewModelScope.launch {
             _uiState.update { it.copy(isSaving = true, error = null) }
             try {
-                lotRepo.createLot(state.lotId, category, weightKg, estimate, state.rate?.regionName, state.photos)
+                val region = if (state.mlPrediction != null) state.city?.name else state.rate?.regionName
+                lotRepo.createLot(state.lotId, category, weightKg, estimate, region, state.photos)
                 _uiState.update { it.copy(isSaving = false, savedLotId = state.lotId) }
             } catch (e: Exception) {
                 _uiState.update { it.copy(isSaving = false, error = e.localizedMessage ?: "Save error") }

@@ -94,4 +94,5 @@
     <string name="zone_east">తూర్పు భారతం</string>
     <string name="zone_central">మధ్య భారతం</string>
     <string name="zone_northeast">ఈశాన్య భారతం</string>
+    <string name="ml_price_basis">AI అంచనా: %1$s కోసం (%2$d మార్కెట్ ధరలపై శిక్షణ పొందిన మోడల్)</string>
 </resources>

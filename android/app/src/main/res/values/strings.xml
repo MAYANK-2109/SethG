@@ -94,4 +94,5 @@
     <string name="zone_east">पूर्व भारत</string>
     <string name="zone_central">मध्य भारत</string>
     <string name="zone_northeast">पूर्वोत्तर भारत</string>
+    <string name="ml_price_basis">AI अनुमान: %1$s के लिए (%2$d बाज़ार रेट से सीखा मॉडल)</string>
 </resources>
