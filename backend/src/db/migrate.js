@@ -52,6 +52,13 @@ CREATE TABLE IF NOT EXISTS earnings (
 CREATE INDEX IF NOT EXISTS idx_earnings_user_id       ON earnings(user_id);
 CREATE INDEX IF NOT EXISTS idx_earnings_user_earned   ON earnings(user_id, earned_at DESC);
 
+-- ── Roles (added after the users table already existed in production) ─────
+-- CREATE TABLE IF NOT EXISTS never alters an existing table, so new columns
+-- must also be added here or older databases never get them.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role            VARCHAR(20) NOT NULL DEFAULT 'user';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS certificate_url TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified     BOOLEAN     NOT NULL DEFAULT false;
+
 -- ── Location + recycler profile ────────────────────────────────────────────
 -- Collectors: last known location. Recyclers: facility location, what they
 -- accept, and the smallest load worth sending a vehicle for.
