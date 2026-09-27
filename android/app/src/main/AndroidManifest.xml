@@ -21,7 +21,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SethG"
         android:largeHeap="false"
-        android:hardwareAccelerated="true">
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
 
         <activity
             android:name=".MainActivity"

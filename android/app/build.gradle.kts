@@ -24,7 +24,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Replace with your actual backend base URL
-        buildConfigField("String", "BASE_URL", "\"https://sethg-backend.onrender.com/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:3000/\"")
     }
 
     buildTypes {
