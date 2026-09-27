@@ -348,21 +348,19 @@ exports.getMessages = async (req, res, next) => {
     }
 
     const { rows } = await pool.query(
-      `SELECT cm.id, cm.lot_id, cm.sender_id, cm.content_hash, cm.created_at, u.name AS sender_name
+      `SELECT cm.id, cm.lot_id, cm.sender_id, COALESCE(cm.content, cm.content_hash) AS msg_content, cm.created_at, u.name AS sender_name
        FROM chat_messages cm
        JOIN users u ON u.id = cm.sender_id
        WHERE cm.lot_id = $1 ORDER BY cm.created_at ASC`,
       [id]
     );
 
-    // Return messages — content_hash is the bcrypt hash; plaintext is not stored
-    // The app must display hashed content (server never stores plaintext after hashing)
     res.json(rows.map(r => ({
       id: r.id,
       lot_id: r.lot_id,
       sender_id: r.sender_id,
       sender_name: r.sender_name,
-      content: r.content_hash,   // bcrypt hash — treated as opaque on client
+      content: r.msg_content,
       created_at: r.created_at
     })));
   } catch (err) {
@@ -397,14 +395,15 @@ exports.postMessage = async (req, res, next) => {
       }
     }
 
-    // Store bcrypt hash of the plaintext — plaintext is NOT persisted
+    // Hash the message in bcrypt form for security/auditing
     const content_hash = await bcrypt.hash(content.trim(), CHAT_SALT_ROUNDS);
+    const trimmed = content.trim();
 
     const { rows } = await pool.query(
-      `INSERT INTO chat_messages (lot_id, sender_id, content_hash)
-       VALUES ($1, $2, $3)
-       RETURNING id, lot_id, sender_id, content_hash AS content, created_at`,
-      [id, sender_id, content_hash]
+      `INSERT INTO chat_messages (lot_id, sender_id, content, content_hash)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, lot_id, sender_id, content, created_at`,
+      [id, sender_id, trimmed, content_hash]
     );
     const msg = rows[0];
 
@@ -438,7 +437,7 @@ exports.getMyChats = async (req, res, next) => {
          ELSE
            l.collector_id
          END AS other_id,
-         (SELECT cm.content_hash FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_message,
+         (SELECT COALESCE(cm.content, cm.content_hash, '') FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_message,
          (SELECT cm.created_at   FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_message_at,
          (SELECT cm.sender_id    FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_sender_id,
          (SELECT COUNT(*) FROM chat_messages cm WHERE cm.lot_id = l.id) AS message_count

@@ -201,6 +201,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
   content    TEXT        NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content TEXT;
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content_hash TEXT;
 CREATE INDEX IF NOT EXISTS idx_chat_messages_lot_id     ON chat_messages(lot_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
 
