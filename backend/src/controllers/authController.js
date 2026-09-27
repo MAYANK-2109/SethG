@@ -67,6 +67,9 @@ exports.registerValidation = [
     .optional()
     .isIn(['recycler', 'vendor'])
     .withMessage('Invalid role specified'),
+  body('certificate_url')
+    .optional({ nullable: true })
+    .isString(),
 ];
 
 exports.loginValidation = [
@@ -81,7 +84,7 @@ exports.register = async (req, res, next) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { name, email, password, language, role } = req.body;
+    const { name, email, password, language, role, certificate_url } = req.body;
     const phone = normalizePhone(req.body.phone);
 
     if (!phone && !email) {
@@ -100,12 +103,13 @@ exports.register = async (req, res, next) => {
       }
 
       const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
+      const is_verified = Boolean(certificate_url && certificate_url.trim().length > 0);
 
       const { rows } = await client.query(
-        `INSERT INTO users (name, phone, email, password_hash, language, role)
-         VALUES ($1, $2, $3, $4, $5, $6)
+        `INSERT INTO users (name, phone, email, password_hash, language, role, certificate_url, is_verified)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          RETURNING id, name, phone, email, language, role, is_verified, certificate_url, created_at`,
-        [name, phone || null, email || null, password_hash, language || 'en', role || 'recycler']
+        [name, phone || null, email || null, password_hash, language || 'en', role || 'recycler', certificate_url || null, is_verified]
       );
       const user = rows[0];
 

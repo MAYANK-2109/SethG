@@ -225,9 +225,41 @@ private fun LotCard(lot: Lot, onClick: () -> Unit) {
                     "SCHEDULED"   -> stringResource(R.string.status_scheduled)
                     "WEIGHED"     -> stringResource(R.string.status_weighed)
                     "HANDED_OVER" -> stringResource(R.string.status_handed_over)
+                    "DISPUTED"    -> "🚨 DISPUTED"
                     else          -> "Listed"
                 }
-                SethGBadge(text = badgeText)
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    SethGBadge(text = badgeText)
+                    if (lot.status == "ACCEPTED" || lot.status == "SCHEDULED" || lot.status == "WEIGHED") {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFE8F5E9),
+                            border = BorderStroke(1.dp, Color(0xFF2E7D32))
+                        ) {
+                            Text(
+                                text = "🔒 Escrow HELD",
+                                color = Color(0xFF2E7D32),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+                    } else if (lot.status == "DISPUTED") {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFFFEBEE),
+                            border = BorderStroke(1.dp, Color(0xFFC62828))
+                        ) {
+                            Text(
+                                text = "❄️ Escrow FROZEN",
+                                color = Color(0xFFC62828),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
@@ -242,7 +274,7 @@ private fun LotCard(lot: Lot, onClick: () -> Unit) {
 
                 // Estimate or status note
                 Text(
-                    text = "${lot.estimate.format()} · Rate locked",
+                    text = "${lot.estimate.format()} · Razorpay Escrow Protected",
                     fontSize = 13.sp,
                     color = TextMuted
                 )

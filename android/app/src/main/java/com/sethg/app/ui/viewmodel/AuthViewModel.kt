@@ -46,6 +46,7 @@ class AuthViewModel @Inject constructor(
     var regConfirmPassword  = ""
     var regLanguage         = "en"
     var regRole             = "recycler"   // must match a role the server accepts (recycler | vendor)
+    var regCertificateUrl   = ""
 
     init {
         viewModelScope.launch {
@@ -90,7 +91,8 @@ class AuthViewModel @Inject constructor(
                 regEmail.trim().ifBlank { null },
                 regPassword,
                 regLanguage,
-                regRole
+                regRole,
+                regCertificateUrl.trim().ifBlank { null }
             )
             _uiState.update { it.copy(isLoading = false) }
             when (result) {

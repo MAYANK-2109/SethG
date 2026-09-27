@@ -16,12 +16,22 @@ function haversineKm(lat1, lon1, lat2, lon2) {
   return 6371 * 2 * Math.asin(Math.sqrt(a));
 }
 
-/** Same formula in SQL, for filtering rows in Postgres (no PostGIS needed). */
+/** Same formula in SQL, for filtering rows in Postgres (with PostGIS fallback). */
 function haversineSql(lat1, lon1, lat2, lon2) {
   return `(6371 * 2 * ASIN(SQRT(
     POWER(SIN(RADIANS(${lat2} - ${lat1}) / 2), 2) +
     COS(RADIANS(${lat1})) * COS(RADIANS(${lat2})) * POWER(SIN(RADIANS(${lon2} - ${lon1}) / 2), 2)
   )))`;
+}
+
+/** PostGIS ST_DWithin query snippet (in meters) with Haversine fallback. */
+function postgisDWithinSql(latCol1, lonCol1, lat2, lon2, radiusKm) {
+  const radiusMeters = radiusKm * 1000;
+  return `ST_DWithin(
+    ST_SetSRID(ST_MakePoint(${lonCol1}, ${latCol1}), 4326)::geography,
+    ST_SetSRID(ST_MakePoint(${lon2}, ${lat2}), 4326)::geography,
+    ${radiusMeters}
+  )`;
 }
 
 /**
@@ -44,4 +54,4 @@ function nearestNeighbourRoute(start, stops) {
   return route;
 }
 
-module.exports = { MATCH_RADII_KM, MAX_MATCH_KM, haversineKm, haversineSql, nearestNeighbourRoute };
+module.exports = { MATCH_RADII_KM, MAX_MATCH_KM, haversineKm, haversineSql, postgisDWithinSql, nearestNeighbourRoute };

@@ -4,6 +4,7 @@ const { recyclersForLot } = require('../lib/matching');
 const { planTrips } = require('../lib/pooling');
 const { MAX_MATCH_KM, haversineSql } = require('../lib/geo');
 const { otpFor, otpHash, otpMatches, finalize } = require('../lib/handover');
+const escrow = require('../lib/escrow');
 
 const CATEGORIES = ['CABLE', 'CHARGER', 'PCB', 'MOBILE', 'BATTERY', 'MOTOR',
   'SWITCH', 'LCD', 'CRT', 'PLASTIC', 'OTHER'];
@@ -36,10 +37,11 @@ async function collectorLotView(db, lotId, collectorId) {
     [lotId, lot.weight_kg]
   );
   const { rows: [handover] } = await db.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lotId]);
+  const { rows: disputes } = await db.query(`SELECT * FROM disputes WHERE lot_id = $1 ORDER BY created_at DESC`, [lotId]);
   delete lot.otp_hash;
   // Hash only: lets the vendor's phone check the recycler's code offline
   lot.handover_otp_hash = lot.accepted_offer_id ? otpHash(lot.id, otpFor(lot.id, lot.accepted_offer_id)) : null;
-  return { ...lot, offers, handover: handover || null };
+  return { ...lot, offers, handover: handover || null, disputes: disputes || [] };
 }
 
 // ── POST /lots — sync a lot created offline on the phone (idempotent) ──────
@@ -70,7 +72,12 @@ exports.syncLot = async (req, res, next) => {
     );
     if (lot.collector_id !== req.userId) return res.status(409).json({ error: 'Lot id already used' });
 
-    await pool.query(`UPDATE users SET lat = $1, lon = $2 WHERE id = $3`, [l.lat, l.lon, req.userId]);
+    await pool.query(
+      `UPDATE users SET lat = $1, lon = $2,
+              geom = ST_SetSRID(ST_MakePoint($2, $1), 4326) WHERE id = $3`,
+      [l.lat, l.lon, req.userId]
+    ).catch(() => pool.query(`UPDATE users SET lat = $1, lon = $2 WHERE id = $3`, [l.lat, l.lon, req.userId]));
+
     const match = await recyclersForLot(pool, lot);
     return res.status(201).json({
       lot: await collectorLotView(pool, lot.id, req.userId),
@@ -95,7 +102,7 @@ exports.myLots = async (req, res, next) => {
   }
 };
 
-// ── POST /lots/:id/offers/:offerId/accept — locks the price, fixes the handover code ─
+// ── POST /lots/:id/offers/:offerId/accept — locks the price, creates escrow hold ──
 exports.acceptOffer = async (req, res, next) => {
   const client = await pool.connect();
   try {
@@ -112,10 +119,16 @@ exports.acceptOffer = async (req, res, next) => {
        WHERE o.id = $1 AND o.lot_id = $2 AND o.status = 'PENDING'`, [req.params.offerId, lot.id]);
     if (!offer) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Offer not found' }); }
 
-    // The 6-digit handover code now exists (derived from lot + offer): the recycler
-    // sees it in their trips, the vendor's phone gets its hash in the lot view.
+    // Create Escrow Hold via Razorpay Sandbox adapter
+    const offerTotal = parseFloat(offer.rate_per_kg) * parseFloat(lot.weight_kg);
+    const escrowHold = await escrow.createEscrowHold(lot.id, offerTotal, offer.recycler_id);
+
     await client.query(
-      `UPDATE lots SET status = 'ACCEPTED', accepted_offer_id = $1 WHERE id = $2`, [offer.id, lot.id]);
+      `UPDATE lots SET status = 'ACCEPTED', accepted_offer_id = $1,
+              escrow_status = $2, escrow_tx_id = $3, escrow_amount = $4
+       WHERE id = $5`,
+      [offer.id, escrowHold.status, escrowHold.escrowTxId, escrowHold.amount, lot.id]
+    );
     await client.query(`UPDATE offers SET status = 'ACCEPTED' WHERE id = $1`, [offer.id]);
     await client.query(
       `UPDATE offers SET status = 'REJECTED' WHERE lot_id = $1 AND id <> $2`, [lot.id, offer.id]);
@@ -126,6 +139,7 @@ exports.acceptOffer = async (req, res, next) => {
        FROM hubs ORDER BY distance_km LIMIT 5`, [lot.lat, lot.lon]);
     return res.json({
       lot: await collectorLotView(pool, lot.id, req.userId),
+      escrow: escrowHold,
       transport_options: {
         pickup_allowed: Number(lot.weight_kg) >= Number(offer.vehicle_min_kg),
         vehicle_min_kg: Number(offer.vehicle_min_kg),
@@ -204,10 +218,103 @@ exports.confirmHandover = async (req, res, next) => {
       const confirmedAt = lot.vendor_confirmed_at || req.body.confirmed_at;
       await client.query(`UPDATE lots SET vendor_confirmed_at = $1 WHERE id = $2`, [confirmedAt, lot.id]);
       const { rows: [handover] } = await client.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lot.id]);
-      if (handover) await finalize(client, lot, handover, confirmedAt);   // else: done when the recycler's record arrives
+      if (handover) {
+        await finalize(client, lot, handover, confirmedAt);
+        // Release Digital Escrow to vendor if held
+        if (lot.escrow_tx_id && lot.escrow_status === 'HELD') {
+          const escrowResult = await escrow.releaseEscrow(lot.escrow_tx_id, lot.collector_id, handover.final_amount);
+          await client.query(`UPDATE lots SET escrow_status = $1 WHERE id = $2`, [escrowResult.status, lot.id]);
+        }
+      }
     }
     await client.query('COMMIT');
     return res.json({ lot: await collectorLotView(pool, lot.id, req.userId) });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    next(err);
+  } finally {
+    client.release();
+  }
+};
+
+// ── Disputes Management ──────────────────────────────────────────────────────
+exports.raiseDisputeValidation = [
+  body('reason').trim().notEmpty().withMessage('Reason for dispute is required'),
+];
+
+exports.raiseDispute = async (req, res, next) => {
+  if (invalid(req, res)) return;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: [lot] } = await client.query(`SELECT * FROM lots WHERE id = $1 FOR UPDATE`, [req.params.id]);
+    if (!lot) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Lot not found' }); }
+
+    const { rows: [handover] } = await client.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lot.id]);
+    const declaredWeight = lot.weight_kg;
+    const actualWeight = handover ? handover.actual_weight_kg : null;
+
+    const { rows: [dispute] } = await client.query(
+      `INSERT INTO disputes (lot_id, raised_by, reason, declared_weight_kg, actual_weight_kg)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [lot.id, req.userId, req.body.reason, declaredWeight, actualWeight]
+    );
+
+    // Freeze digital escrow hold
+    if (lot.escrow_tx_id) {
+      await escrow.holdEscrowForDispute(lot.escrow_tx_id, dispute.id);
+      await client.query(`UPDATE lots SET escrow_status = 'DISPUTED', status = 'DISPUTED' WHERE id = $1`, [lot.id]);
+    } else {
+      await client.query(`UPDATE lots SET status = 'DISPUTED' WHERE id = $1`, [lot.id]);
+    }
+
+    await client.query('COMMIT');
+    return res.status(201).json({ message: 'Dispute raised successfully. Escrow funds frozen.', dispute });
+  } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
+    next(err);
+  } finally {
+    client.release();
+  }
+};
+
+exports.getDispute = async (req, res, next) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT d.*, u.name AS raised_by_name FROM disputes d
+       JOIN users u ON u.id = d.raised_by
+       WHERE d.lot_id = $1 ORDER BY d.created_at DESC`,
+      [req.params.id]
+    );
+    return res.json({ disputes: rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.resolveDispute = async (req, res, next) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const { rows: [dispute] } = await client.query(`SELECT * FROM disputes WHERE id = $1 FOR UPDATE`, [req.params.disputeId]);
+    if (!dispute) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Dispute not found' }); }
+
+    const { status = 'RESOLVED', resolution_notes = 'Dispute resolved by mutual agreement' } = req.body;
+    await client.query(
+      `UPDATE disputes SET status = $1, resolution_notes = $2 WHERE id = $3`,
+      [status, resolution_notes, dispute.id]
+    );
+
+    const { rows: [lot] } = await client.query(`SELECT * FROM lots WHERE id = $1`, [dispute.lot_id]);
+    if (lot && lot.escrow_tx_id) {
+      const { rows: [handover] } = await client.query(`SELECT * FROM handovers WHERE lot_id = $1`, [lot.id]);
+      const payoutAmount = handover ? handover.final_amount : lot.escrow_amount;
+      await escrow.releaseEscrow(lot.escrow_tx_id, lot.collector_id, payoutAmount);
+      await client.query(`UPDATE lots SET escrow_status = 'RELEASED', status = 'HANDED_OVER' WHERE id = $1`, [lot.id]);
+    }
+
+    await client.query('COMMIT');
+    return res.json({ message: 'Dispute resolved and escrow released', dispute_id: dispute.id });
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     next(err);
@@ -228,7 +335,6 @@ exports.getMessages = async (req, res, next) => {
     next(err);
   }
 };
-
 
 exports.postMessage = async (req, res, next) => {
   try {

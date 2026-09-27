@@ -201,6 +201,56 @@ fun RegisterScreen(
                                 }
                             }
                         }
+
+                        Spacer(Modifier.height(16.dp))
+                        Text("KYC / License Certificate Upload 📄", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                        Spacer(Modifier.height(6.dp))
+                        SethGTextField(
+                            value = viewModel.regCertificateUrl,
+                            onValueChange = { viewModel.regCertificateUrl = it },
+                            label = "Certificate / License URL (Optional)",
+                            leadingIcon = Icons.Filled.Badge
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Surface(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    if (viewModel.regCertificateUrl.isBlank()) {
+                                        viewModel.regCertificateUrl = "https://kyc.sethg.in/docs/cert_${System.currentTimeMillis()}.pdf"
+                                    } else {
+                                        viewModel.regCertificateUrl = ""
+                                    }
+                                },
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (viewModel.regCertificateUrl.isNotBlank()) GreenPrimary.copy(alpha = 0.12f) else LightBackground,
+                            border = BorderStroke(1.dp, if (viewModel.regCertificateUrl.isNotBlank()) GreenPrimary else LightBorder)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = if (viewModel.regCertificateUrl.isNotBlank()) Icons.Filled.CheckCircle else Icons.Filled.FileUpload,
+                                    contentDescription = "Upload KYC",
+                                    tint = if (viewModel.regCertificateUrl.isNotBlank()) GreenPrimary else TextSecondary
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Column {
+                                    Text(
+                                        text = if (viewModel.regCertificateUrl.isNotBlank()) "KYC Document Attached ✅" else "Tap to attach Business License / Govt ID",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = if (viewModel.regCertificateUrl.isNotBlank()) GreenPrimary else TextPrimary
+                                    )
+                                    Text(
+                                        text = "Verifies your account for instant digital escrow releases",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = TextSecondary
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -373,13 +373,87 @@ private fun RecyclerPurchaseCard(purchase: RecyclerPurchaseEntity, onDelete: (St
                 Text("📝 ${purchase.notes}", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
             }
 
-            // Date
+            // Date & Dispute actions
             Spacer(Modifier.height(4.dp))
-            Text(
-                SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date(purchase.createdAt)),
-                color = TextMuted,
-                style = MaterialTheme.typography.labelSmall
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault()).format(Date(purchase.createdAt)),
+                    color = TextMuted,
+                    style = MaterialTheme.typography.labelSmall
+                )
+                
+                var showDisputeDialog by remember { mutableStateOf(false) }
+                var disputeReason by remember { mutableStateOf("") }
+                var disputeSubmitted by remember { mutableStateOf(false) }
+
+                if (disputeSubmitted) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFFFEBEE),
+                        border = BorderStroke(1.dp, ErrorColor)
+                    ) {
+                        Text(
+                            "🚨 Dispute Open",
+                            color = ErrorColor,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
+                        )
+                    }
+                } else {
+                    OutlinedButton(
+                        onClick = { showDisputeDialog = true },
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
+                        modifier = Modifier.height(30.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = ErrorColor),
+                        border = BorderStroke(1.dp, ErrorColor.copy(alpha = 0.6f))
+                    ) {
+                        Icon(Icons.Filled.Warning, contentDescription = null, modifier = Modifier.size(12.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("Raise Dispute", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                if (showDisputeDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showDisputeDialog = false },
+                        title = { Text("🚨 Raise Escrow & Grade Dispute", fontWeight = FontWeight.Bold) },
+                        text = {
+                            Column {
+                                Text("If physical weight or grade differs from declared values (>15% variance), raising a dispute will freeze digital escrow funds until resolved.", fontSize = 13.sp, color = TextSecondary)
+                                Spacer(Modifier.height(12.dp))
+                                OutlinedTextField(
+                                    value = disputeReason,
+                                    onValueChange = { disputeReason = it },
+                                    label = { Text("Reason (e.g. Weight variance 22% lower)") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    disputeSubmitted = true
+                                    showDisputeDialog = false
+                                },
+                                enabled = disputeReason.isNotBlank(),
+                                colors = ButtonDefaults.buttonColors(containerColor = ErrorColor)
+                            ) {
+                                Text("Freeze Escrow & Submit")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showDisputeDialog = false }) {
+                                Text("Cancel")
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 }

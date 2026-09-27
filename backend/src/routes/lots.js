@@ -4,9 +4,13 @@ const requireRole = require('../middleware/requireRole');
 const ctrl = require('../controllers/lotController');
 
 // Chat messages route (can be accessed by both vendor and recycler)
-// Note: In a real app we'd verify the recycler has access to this lot
 router.get('/:id/messages', authenticate, ctrl.getMessages);
 router.post('/:id/messages', authenticate, ctrl.postMessage);
+
+// Disputes routes (accessible by authenticated parties)
+router.get('/:id/dispute', authenticate, ctrl.getDispute);
+router.post('/:id/dispute', authenticate, ctrl.raiseDisputeValidation, ctrl.raiseDispute);
+router.post('/disputes/:disputeId/resolve', authenticate, ctrl.resolveDispute);
 
 // Collectors: kabadiwalas sign up as "vendor"; "user" is the older name for the same role
 router.use(authenticate, requireRole('vendor', 'user'));

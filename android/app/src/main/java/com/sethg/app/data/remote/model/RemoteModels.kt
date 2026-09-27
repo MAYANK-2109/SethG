@@ -11,7 +11,8 @@ data class RegisterRequest(
     val password: String,
     @SerializedName("confirmPassword") val confirmPassword: String,
     val language: String = "en",
-    val role: String = "user"
+    val role: String = "user",
+    @SerializedName("certificate_url") val certificateUrl: String? = null
 )
 
 data class LoginRequest(
@@ -273,4 +274,25 @@ data class ChatMessageResponse(
 
 data class PostMessageRequest(
     val content: String
+)
+
+// Dispute & Escrow
+data class DisputeRequest(
+    val reason: String
+)
+
+data class DisputeRemoteModel(
+    val id: String,
+    @SerializedName("lot_id") val lotId: String,
+    @SerializedName("raised_by") val raisedBy: String,
+    val reason: String,
+    @SerializedName("declared_weight_kg") val declaredWeightKg: Double?,
+    @SerializedName("actual_weight_kg") val actualWeightKg: Double?,
+    val status: String,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class DisputeResponse(
+    val message: String,
+    val dispute: DisputeRemoteModel?
 )

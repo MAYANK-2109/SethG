@@ -27,14 +27,31 @@ const LOT_RADIUS_SQL = `
 
 /** Eligible recyclers for one lot, nearest first, with distance. */
 async function recyclersForLot(db, lot) {
-  const { rows } = await db.query(
-    `SELECT r.id, r.name, ${haversineSql('$1::float8', '$2::float8', 'r.lat', 'r.lon')} AS distance_km
-     FROM users r
-     WHERE ${ELIGIBLE_RECYCLER}
-       AND (r.accepted_materials IS NULL OR $3 = ANY(r.accepted_materials))
-     ORDER BY distance_km`,
-    [lot.lat, lot.lon, lot.category]
-  );
+  let rows;
+  try {
+    const res = await db.query(
+      `SELECT r.id, r.name,
+              (ST_Distance(r.geom::geography, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography) / 1000.0) AS distance_km
+       FROM users r
+       WHERE ${ELIGIBLE_RECYCLER}
+         AND (r.accepted_materials IS NULL OR $3 = ANY(r.accepted_materials))
+         AND ST_DWithin(r.geom::geography, ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography, $4 * 1000)
+       ORDER BY distance_km`,
+      [lot.lat, lot.lon, lot.category, MATCH_RADII_KM[MATCH_RADII_KM.length - 1]]
+    );
+    rows = res.rows;
+  } catch (_e) {
+    // Fallback to Haversine formula if PostGIS extension is disabled
+    const res = await db.query(
+      `SELECT r.id, r.name, ${haversineSql('$1::float8', '$2::float8', 'r.lat', 'r.lon')} AS distance_km
+       FROM users r
+       WHERE ${ELIGIBLE_RECYCLER}
+         AND (r.accepted_materials IS NULL OR $3 = ANY(r.accepted_materials))
+       ORDER BY distance_km`,
+      [lot.lat, lot.lon, lot.category]
+    );
+    rows = res.rows;
+  }
   for (const radius of MATCH_RADII_KM) {
     const within = rows.filter((r) => r.distance_km <= radius);
     if (within.length) return { radiusKm: radius, recyclers: within };

@@ -307,6 +307,72 @@ async function runTests() {
     assert(socketConnected, '25. Real-Time Socket.io Connection & Room Join');
     socketClient.disconnect();
 
+    // 26. KYC Document Registration & Verification Test
+    const kycVendorPhone = `+9197${Math.floor(10000000 + Math.random() * 90000000)}`;
+    const regKycVendor = await request('/auth/register', {
+      method: 'POST',
+      body: {
+        name: 'Verified Collector Ramesh',
+        phone: kycVendorPhone,
+        password: 'Password123!',
+        confirmPassword: 'Password123!',
+        role: 'vendor',
+        language: 'hi',
+        certificate_url: 'https://kyc.sethg.in/docs/cert_test_123.pdf'
+      }
+    });
+    assert(regKycVendor.status === 201 && regKycVendor.data?.user?.is_verified === true, '26. Registration with KYC Certificate Document', JSON.stringify(regKycVendor.data));
+    const kycVendorToken = regKycVendor.data?.accessToken;
+
+    // 27. Dedicated KYC Document Upload API Endpoint
+    const uploadKycRes = await request('/user/kyc', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${vendorToken}` },
+      body: { certificate_url: 'https://kyc.sethg.in/docs/vendor_license_999.pdf' }
+    });
+    assert(uploadKycRes.status === 200 && uploadKycRes.data?.user?.is_verified === true, '27. Dedicated KYC Upload (POST /user/kyc)', JSON.stringify(uploadKycRes.data));
+
+    // 28. Digital Escrow & Dispute Lifecycle Test
+    const disputeLotId = `SG-260927-DISP`;
+    await request('/lots', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${kycVendorToken}` },
+      body: {
+        id: disputeLotId, category: 'BATTERY', weight_kg: 100.0, estimate_low: 1000, estimate_high: 2500,
+        price_region: 'Indore', lat: 22.72, lon: 75.86, photo_hashes: ['hash_disp_123']
+      }
+    });
+    const makeDispOffer = await request(`/recycler/lots/${disputeLotId}/offers`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${recyclerToken}` },
+      body: { rate_per_kg: 20.00, pickup_date: '2026-09-30', note: 'Heavy load' }
+    });
+    const dispOfferId = makeDispOffer.data?.offer?.id;
+
+    // Accept offer -> Holds Digital Escrow (Razorpay)
+    const acceptDispOffer = await request(`/lots/${disputeLotId}/offers/${dispOfferId}/accept`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${kycVendorToken}` }
+    });
+    assert(acceptDispOffer.status === 200 && acceptDispOffer.data?.lot?.escrow_status === 'HELD', '28. Razorpay Digital Escrow Hold on Offer Acceptance', JSON.stringify(acceptDispOffer.data));
+
+    // Raise dispute -> Freezes Escrow
+    const raiseDisputeRes = await request(`/lots/${disputeLotId}/dispute`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${recyclerToken}` },
+      body: { reason: 'Actual delivered weight 30% lower than declared weight' }
+    });
+    assert(raiseDisputeRes.status === 201 && raiseDisputeRes.data?.dispute?.id, '29a. Raise Escrow Dispute (POST /lots/:id/dispute)', JSON.stringify(raiseDisputeRes.data));
+    const disputeId = raiseDisputeRes.data?.dispute?.id;
+
+    // Resolve dispute -> Releases Escrow
+    const resolveDisputeRes = await request(`/lots/disputes/${disputeId}/resolve`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${kycVendorToken}` },
+      body: { status: 'RESOLVED', resolution_notes: 'Settled by mutual weight adjustment' }
+    });
+    assert(resolveDisputeRes.status === 200, '29b. Resolve Dispute & Release Escrow (POST /lots/disputes/:id/resolve)', JSON.stringify(resolveDisputeRes.data));
+
   } catch (err) {
     console.error('Test Execution Error:', err);
     failed++;

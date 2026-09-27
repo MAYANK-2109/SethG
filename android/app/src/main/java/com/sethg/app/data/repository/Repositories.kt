@@ -31,11 +31,12 @@ class AuthRepository @Inject constructor(
 
     suspend fun register(
         name: String, phone: String?, email: String?,
-        password: String, language: String, role: String
+        password: String, language: String, role: String,
+        certificateUrl: String? = null
     ): Result<User> = withContext(Dispatchers.IO) {
         try {
             val response = api.register(
-                RegisterRequest(name, phone, email, password, password, language, role)
+                RegisterRequest(name, phone, email, password, password, language, role, certificateUrl)
             )
             if (response.isSuccessful) {
                 val body = response.body()!!

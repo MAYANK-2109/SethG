@@ -80,4 +80,11 @@ interface SethGApiService {
 
     @POST("lots/{id}/messages")
     suspend fun postMessage(@Path("id") lotId: String, @Body request: com.sethg.app.data.remote.model.PostMessageRequest): Response<com.sethg.app.data.remote.model.ChatMessageResponse>
+
+    // Disputes & KYC
+    @POST("user/kyc")
+    suspend fun uploadKyc(@Body request: Map<String, String>): Response<UserProfileResponse>
+
+    @POST("lots/{id}/dispute")
+    suspend fun raiseDispute(@Path("id") lotId: String, @Body request: DisputeRequest): Response<DisputeResponse>
 }

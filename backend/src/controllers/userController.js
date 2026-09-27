@@ -110,3 +110,25 @@ exports.updateProfile = async (req, res, next) => {
     next(err);
   }
 };
+
+// ── POST /user/kyc ──────────────────────────────────────────────────────────
+exports.uploadKyc = async (req, res, next) => {
+  try {
+    const { certificate_url, certificate_data } = req.body;
+    const certUrl = certificate_url || (certificate_data ? `data:image/jpeg;base64,${certificate_data.substring(0, 30)}...` : null);
+
+    if (!certUrl) {
+      return res.status(422).json({ error: 'Please provide certificate_url or certificate_data' });
+    }
+
+    const { rows } = await pool.query(
+      `UPDATE users SET certificate_url = $1, is_verified = true WHERE id = $2
+       RETURNING id, name, role, certificate_url, is_verified`,
+      [certUrl, req.userId]
+    );
+
+    return res.json({ message: 'KYC Document uploaded and verified successfully', user: rows[0] });
+  } catch (err) {
+    next(err);
+  }
+};

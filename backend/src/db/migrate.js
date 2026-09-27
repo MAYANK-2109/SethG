@@ -8,8 +8,13 @@ require('dotenv').config();
 const pool = require('./pool');
 
 const schema = `
--- Enable UUID generation
+-- Enable UUID generation & PostGIS spatial extension (with fallback)
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+DO $$ BEGIN
+  CREATE EXTENSION IF NOT EXISTS postgis;
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'PostGIS extension not available or skipped';
+END $$;
 
 -- ── Users ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
@@ -156,6 +161,35 @@ CREATE SEQUENCE IF NOT EXISTS handover_seq;
 -- Two-sided handover: recycler records weight, vendor confirms with the code
 ALTER TABLE lots      ADD COLUMN IF NOT EXISTS vendor_confirmed_at TIMESTAMPTZ;   -- on-device time of the code entry
 ALTER TABLE handovers ADD COLUMN IF NOT EXISTS confirmed_at        TIMESTAMPTZ;   -- NULL until the vendor confirms
+
+-- Escrow & Dispute columns
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_status VARCHAR(20) DEFAULT 'NONE'; -- NONE | HELD | RELEASED | DISPUTED
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_tx_id  TEXT;
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_amount NUMERIC(12,2);
+
+-- PostGIS Geometry columns (with safe fallback for environments without PostGIS)
+DO $$ BEGIN
+  ALTER TABLE users ADD COLUMN IF NOT EXISTS geom GEOMETRY(Point, 4326);
+  ALTER TABLE lots  ADD COLUMN IF NOT EXISTS geom GEOMETRY(Point, 4326);
+  ALTER TABLE hubs  ADD COLUMN IF NOT EXISTS geom GEOMETRY(Point, 4326);
+EXCEPTION WHEN OTHERS THEN
+  RAISE NOTICE 'PostGIS GEOMETRY column creation skipped';
+END $$;
+
+-- ── Disputes (formal resolution for weight / price variance) ────────────────
+CREATE TABLE IF NOT EXISTS disputes (
+  id                 UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  lot_id             TEXT          NOT NULL REFERENCES lots(id) ON DELETE CASCADE,
+  raised_by          UUID          NOT NULL REFERENCES users(id),
+  reason             TEXT          NOT NULL,
+  declared_weight_kg NUMERIC(10,3),
+  actual_weight_kg   NUMERIC(10,3),
+  status             VARCHAR(20)   NOT NULL DEFAULT 'OPEN',       -- OPEN | RESOLVED | REJECTED
+  resolution_notes   TEXT,
+  created_at         TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_disputes_lot ON disputes(lot_id);
+
 UPDATE handovers h SET confirmed_at = h.created_at
   FROM lots l WHERE l.id = h.lot_id AND l.status = 'HANDED_OVER' AND h.confirmed_at IS NULL;
 
