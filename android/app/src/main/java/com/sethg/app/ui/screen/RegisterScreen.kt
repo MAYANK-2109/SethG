@@ -202,13 +202,17 @@ fun RegisterScreen(
                             }
                         }
 
+                        val isVendor = viewModel.regRole == "vendor"
                         Spacer(Modifier.height(16.dp))
-                        Text("KYC / License Certificate Upload 📄", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                        Text(
+                            text = if (isVendor) "KYC / Govt ID Upload 📄" else "KYC / License Certificate Upload 📄",
+                            style = MaterialTheme.typography.labelLarge, color = TextPrimary
+                        )
                         Spacer(Modifier.height(6.dp))
                         SethGTextField(
                             value = viewModel.regCertificateUrl,
                             onValueChange = { viewModel.regCertificateUrl = it },
-                            label = "Certificate / License URL (Optional)",
+                            label = if (isVendor) "Govt ID URL (Optional)" else "Certificate / License URL (Optional)",
                             leadingIcon = Icons.Filled.Badge
                         )
                         Spacer(Modifier.height(8.dp))
@@ -238,7 +242,9 @@ fun RegisterScreen(
                                 Spacer(Modifier.width(10.dp))
                                 Column {
                                     Text(
-                                        text = if (viewModel.regCertificateUrl.isNotBlank()) "KYC Document Attached ✅" else "Tap to attach Business License / Govt ID",
+                                        text = if (viewModel.regCertificateUrl.isNotBlank()) "KYC Document Attached ✅" 
+                                               else if (isVendor) "Tap to attach Govt ID"
+                                               else "Tap to attach Business License",
                                         style = MaterialTheme.typography.bodyMedium,
                                         fontWeight = FontWeight.SemiBold,
                                         color = if (viewModel.regCertificateUrl.isNotBlank()) GreenPrimary else TextPrimary

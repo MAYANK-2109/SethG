@@ -10,6 +10,9 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import com.sethg.app.data.local.AppPreferences
 import javax.inject.Inject
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
@@ -35,18 +38,18 @@ class AuthViewModel @Inject constructor(
     val events: SharedFlow<UiEvent> = _events.asSharedFlow()
 
     // Login fields
-    var loginIdentifier = ""    // phone or email
-    var loginPassword   = ""
+    var loginIdentifier by mutableStateOf("")    // phone or email
+    var loginPassword   by mutableStateOf("")
 
     // Register fields
-    var regName             = ""
-    var regPhone            = ""
-    var regEmail            = ""
-    var regPassword         = ""
-    var regConfirmPassword  = ""
-    var regLanguage         = "en"
-    var regRole             = "recycler"   // must match a role the server accepts (recycler | vendor)
-    var regCertificateUrl   = ""
+    var regName             by mutableStateOf("")
+    var regPhone            by mutableStateOf("")
+    var regEmail            by mutableStateOf("")
+    var regPassword         by mutableStateOf("")
+    var regConfirmPassword  by mutableStateOf("")
+    var regLanguage         by mutableStateOf("en")
+    var regRole             by mutableStateOf("recycler")   // must match a role the server accepts (recycler | vendor)
+    var regCertificateUrl   by mutableStateOf("")
 
     init {
         viewModelScope.launch {
