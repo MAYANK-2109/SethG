@@ -185,6 +185,33 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                             unselectedTextColor = TextMuted
                         )
                     )
+
+                    // 5. Chat (both roles — Vendor can only reply)
+                    NavigationBarItem(
+                        selected = selectedTab == 5,
+                        onClick  = { navController.navigate(Screen.ChatInbox.route) },
+                        icon     = {
+                            Icon(
+                                if (selectedTab == 5) Icons.Filled.Chat else Icons.Outlined.ChatBubble,
+                                contentDescription = "Chats",
+                                modifier = Modifier.size(24.dp)
+                            )
+                        },
+                        label    = {
+                            Text(
+                                "Chats",
+                                fontWeight = if (selectedTab == 5) FontWeight.Bold else FontWeight.Medium,
+                                fontSize = 12.sp
+                            )
+                        },
+                        colors   = NavigationBarItemDefaults.colors(
+                            selectedIconColor   = GreenPrimary,
+                            selectedTextColor   = GreenPrimary,
+                            indicatorColor      = Color.Transparent,
+                            unselectedIconColor = TextMuted,
+                            unselectedTextColor = TextMuted
+                        )
+                    )
                 }
             }
         }
@@ -196,6 +223,9 @@ fun MainScreen(navController: NavController, onLogout: () -> Unit) {
                         "recycler" -> RecyclerDashboardScreen(
                             onHandover = { lotId, declaredKg ->
                                 navController.navigate(Screen.Handover.of(lotId, declaredKg))
+                            },
+                            onChat = { lotId, vendorName ->
+                                navController.navigate(Screen.Chat.of(lotId, vendorName))
                             },
                             onNavigateToNotifications = { navController.navigate(Screen.Notifications.route) },
                             onProfileClick = { selectedTab = 4 }

@@ -21,6 +21,10 @@ sealed class Screen(val route: String) {
         fun of(id: String, declaredKg: Double) = "handover/$id/$declaredKg"
     }
     object Notifications : Screen("notifications")
+    object Chat : Screen("chat/{lotId}/{vendorName}") {
+        fun of(lotId: String, vendorName: String) = "chat/$lotId/${java.net.URLEncoder.encode(vendorName, "UTF-8")}"
+    }
+    object ChatInbox : Screen("chat_inbox")
 }
 
 @Composable
@@ -159,6 +163,28 @@ fun SethGNavHost() {
 
         composable(Screen.Notifications.route) {
             NotificationsScreen(onBack = { navController.popBackStack() })
+        }
+
+        // ── Chat (Recycler → Vendor, initiated from feed card) ─────────────────
+        composable(Screen.Chat.route) { backStackEntry ->
+            val lotId     = backStackEntry.arguments?.getString("lotId") ?: ""
+            val vendorName = backStackEntry.arguments?.getString("vendorName")
+                ?.let { java.net.URLDecoder.decode(it, "UTF-8") } ?: "Vendor"
+            ChatScreen(
+                vendorName = vendorName,
+                lotId      = lotId,
+                onBack     = { navController.popBackStack() }
+            )
+        }
+
+        // ── Chat Inbox (both roles) ─────────────────────────────────────────────
+        composable(Screen.ChatInbox.route) {
+            ChatInboxScreen(
+                onOpenChat = { lotId, vendorName ->
+                    navController.navigate(Screen.Chat.of(lotId, vendorName))
+                },
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }

@@ -44,6 +44,7 @@ import java.util.*
 fun RecyclerDashboardScreen(
     modifier: Modifier = Modifier,
     onHandover: (lotId: String, declaredKg: Double) -> Unit = { _, _ -> },
+    onChat: (lotId: String, vendorName: String) -> Unit = { _, _ -> },
     onNavigateToNotifications: () -> Unit = {},
     onProfileClick: () -> Unit = {},
     profileVm: ProfileViewModel = hiltViewModel(),
@@ -157,7 +158,7 @@ fun RecyclerDashboardScreen(
 
             // Market (nearby lots, trips, handover)
             if (profileState.user?.isVerified == true) {
-                item { RecyclerMarketSection(onHandover = onHandover) }
+                item { RecyclerMarketSection(onHandover = onHandover, onChat = onChat) }
             }
             item {
                 Text(

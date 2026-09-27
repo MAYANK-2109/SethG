@@ -8,11 +8,19 @@ async function migrate() {
                 id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
                 lot_id VARCHAR(30) REFERENCES lots(id) ON DELETE CASCADE,
                 sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
-                content TEXT NOT NULL,
+                content_hash TEXT NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             );
             CREATE INDEX IF NOT EXISTS idx_chat_messages_lot_id ON chat_messages(lot_id);
             CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
+            -- Migrate any existing plaintext content columns
+            DO $$
+            BEGIN
+              IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='chat_messages' AND column_name='content') THEN
+                ALTER TABLE chat_messages RENAME COLUMN content TO content_hash;
+              END IF;
+            END
+            $$;
         `);
         console.log("chat_messages table created successfully.");
     } catch (err) {

@@ -5,6 +5,9 @@ const { planTrips } = require('../lib/pooling');
 const { MAX_MATCH_KM, haversineSql } = require('../lib/geo');
 const { otpFor, otpHash, otpMatches, finalize } = require('../lib/handover');
 const escrow = require('../lib/escrow');
+const bcrypt = require('bcrypt');
+
+const CHAT_SALT_ROUNDS = 10;
 
 const CATEGORIES = ['CABLE', 'CHARGER', 'PCB', 'MOBILE', 'BATTERY', 'MOTOR',
   'SWITCH', 'LCD', 'CRT', 'PLASTIC', 'OTHER'];
@@ -326,11 +329,42 @@ exports.resolveDispute = async (req, res, next) => {
 exports.getMessages = async (req, res, next) => {
   try {
     const { id } = req.params;
+    const userId = req.userId;
+
+    // Security: only the lot's collector or an invited recycler (who has made an offer) may read messages
+    const { rows: [lot] } = await pool.query(
+      `SELECT l.id, l.collector_id,
+              (SELECT recycler_id FROM offers WHERE lot_id = l.id AND status = 'ACCEPTED' LIMIT 1) AS accepted_recycler_id
+       FROM lots l WHERE l.id = $1`, [id]
+    );
+    if (!lot) return res.status(404).json({ error: 'Lot not found' });
+    const isParty = lot.collector_id === userId || lot.accepted_recycler_id === userId;
+    if (!isParty) {
+      // Allow any recycler who submitted an offer to read (pre-acceptance chat)
+      const { rows: [offer] } = await pool.query(
+        `SELECT id FROM offers WHERE lot_id = $1 AND recycler_id = $2 LIMIT 1`, [id, userId]
+      );
+      if (!offer) return res.status(403).json({ error: 'Access denied' });
+    }
+
     const { rows } = await pool.query(
-      "SELECT id, lot_id, sender_id, content, created_at FROM chat_messages WHERE lot_id = $1 ORDER BY created_at ASC",
+      `SELECT cm.id, cm.lot_id, cm.sender_id, cm.content_hash, cm.created_at, u.name AS sender_name
+       FROM chat_messages cm
+       JOIN users u ON u.id = cm.sender_id
+       WHERE cm.lot_id = $1 ORDER BY cm.created_at ASC`,
       [id]
     );
-    res.json(rows);
+
+    // Return messages — content_hash is the bcrypt hash; plaintext is not stored
+    // The app must display hashed content (server never stores plaintext after hashing)
+    res.json(rows.map(r => ({
+      id: r.id,
+      lot_id: r.lot_id,
+      sender_id: r.sender_id,
+      sender_name: r.sender_name,
+      content: r.content_hash,   // bcrypt hash — treated as opaque on client
+      created_at: r.created_at
+    })));
   } catch (err) {
     next(err);
   }
@@ -341,13 +375,86 @@ exports.postMessage = async (req, res, next) => {
     const { id } = req.params;
     const { content } = req.body;
     const sender_id = req.userId;
-    const { rows } = await pool.query(
-      "INSERT INTO chat_messages (lot_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, lot_id, sender_id, content, created_at",
-      [id, sender_id, content]
+
+    if (!content || content.trim() === '') return res.status(422).json({ error: 'Message content required' });
+
+    // Determine the other party
+    const { rows: [lot] } = await pool.query(
+      `SELECT l.collector_id,
+              (SELECT recycler_id FROM offers WHERE lot_id = l.id AND status = 'ACCEPTED' LIMIT 1) AS accepted_recycler_id
+       FROM lots l WHERE l.id = $1`, [id]
     );
-    res.status(201).json(rows[0]);
+    if (!lot) return res.status(404).json({ error: 'Lot not found' });
+
+    // A vendor/collector CANNOT initiate — they can only reply if a recycler has already messaged
+    const isVendor = lot.collector_id === sender_id;
+    if (isVendor) {
+      const { rows: [firstMsg] } = await pool.query(
+        `SELECT id FROM chat_messages WHERE lot_id = $1 LIMIT 1`, [id]
+      );
+      if (!firstMsg) {
+        return res.status(403).json({ error: 'Vendor cannot initiate a chat. Recycler must message first.' });
+      }
+    }
+
+    // Store bcrypt hash of the plaintext — plaintext is NOT persisted
+    const content_hash = await bcrypt.hash(content.trim(), CHAT_SALT_ROUNDS);
+
+    const { rows } = await pool.query(
+      `INSERT INTO chat_messages (lot_id, sender_id, content_hash)
+       VALUES ($1, $2, $3)
+       RETURNING id, lot_id, sender_id, content_hash AS content, created_at`,
+      [id, sender_id, content_hash]
+    );
+    const msg = rows[0];
+
+    // Broadcast via Socket.io if available
+    const io = req.app.get('io');
+    if (io) io.to(id).emit('new_message', { ...msg, sender_name: req.userName });
+
+    res.status(201).json(msg);
   } catch (err) {
     next(err);
   }
 };
 
+/** GET /user/chats — returns all lot conversations the calling user is party to */
+exports.getMyChats = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { rows } = await pool.query(
+      `SELECT DISTINCT ON (l.id)
+         l.id   AS lot_id,
+         l.category,
+         l.status,
+         CASE WHEN l.collector_id = $1 THEN 'vendor' ELSE 'recycler' END AS my_role,
+         CASE WHEN l.collector_id = $1 THEN
+           (SELECT u.name FROM users u JOIN offers o ON o.recycler_id = u.id WHERE o.lot_id = l.id ORDER BY o.created_at LIMIT 1)
+         ELSE
+           (SELECT u.name FROM users u WHERE u.id = l.collector_id LIMIT 1)
+         END AS other_name,
+         CASE WHEN l.collector_id = $1 THEN
+           (SELECT o.recycler_id FROM offers o WHERE o.lot_id = l.id ORDER BY o.created_at LIMIT 1)
+         ELSE
+           l.collector_id
+         END AS other_id,
+         (SELECT cm.content_hash FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_message,
+         (SELECT cm.created_at   FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_message_at,
+         (SELECT cm.sender_id    FROM chat_messages cm WHERE cm.lot_id = l.id ORDER BY cm.created_at DESC LIMIT 1) AS last_sender_id,
+         (SELECT COUNT(*) FROM chat_messages cm WHERE cm.lot_id = l.id) AS message_count
+       FROM lots l
+       WHERE l.id IN (
+         SELECT DISTINCT lot_id FROM chat_messages
+       )
+       AND (
+         l.collector_id = $1
+         OR EXISTS (SELECT 1 FROM offers o WHERE o.lot_id = l.id AND o.recycler_id = $1)
+       )
+       ORDER BY l.id, last_message_at DESC NULLS LAST`,
+      [userId]
+    );
+    res.json({ chats: rows });
+  } catch (err) {
+    next(err);
+  }
+};

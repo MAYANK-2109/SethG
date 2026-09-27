@@ -276,6 +276,24 @@ data class PostMessageRequest(
     val content: String
 )
 
+// Chat Inbox
+data class ChatConversation(
+    @SerializedName("lot_id")         val lotId: String,
+    @SerializedName("category")       val category: String,
+    @SerializedName("status")         val status: String,
+    @SerializedName("my_role")        val myRole: String,        // "vendor" or "recycler"
+    @SerializedName("other_name")     val otherName: String?,
+    @SerializedName("other_id")       val otherId: String?,
+    @SerializedName("last_message")   val lastMessage: String?,  // bcrypt hash (display as "🔒 Encrypted")
+    @SerializedName("last_message_at")val lastMessageAt: String?,
+    @SerializedName("last_sender_id") val lastSenderId: String?,
+    @SerializedName("message_count") val messageCount: Int
+)
+
+data class MyChatsResponse(
+    val chats: List<ChatConversation>
+)
+
 // Dispute & Escrow
 data class DisputeRequest(
     val reason: String
