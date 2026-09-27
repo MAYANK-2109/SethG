@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.ui.res.stringResource
 import com.sethg.app.R
@@ -49,6 +50,9 @@ import java.util.*
 @Composable
 fun VendorDashboardScreen(
     modifier: Modifier = Modifier,
+    onNavigateToNotifications: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    onViewPriceGuide: () -> Unit = {},
     viewModel: VendorWizardViewModel = hiltViewModel(),
     languageVm: LanguageViewModel = hiltViewModel()
 ) {
@@ -153,132 +157,112 @@ fun VendorDashboardScreen(
         return
     }
 
-    // ── Dashboard ─────────────────────────────────────────────────────────────
-    Scaffold(
-        containerColor = LightBackground,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showWizard = true },
-                containerColor = GreenPrimary,
-                contentColor   = Color.White,
-                icon = { Icon(Icons.Filled.PersonAdd, contentDescription = null) },
-                text = { Text("Add Lot", fontWeight = FontWeight.Bold) }
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            // Header
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(Color(0xFF047857), Color(0xFF065F46))
-                        )
-                    )
-                    .padding(horizontal = 24.dp, vertical = 28.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Filled.ShoppingCart,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Spacer(Modifier.width(10.dp))
-                            Text(
-                                "Vendor Dashboard",
-                                style = MaterialTheme.typography.headlineSmall,
-                                color = Color.White,
-                                fontWeight = FontWeight.ExtraBold
-                            )
-                        }
+    // ── Clean Reference Dashboard Layout ──────────────────────────────────────────
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // Universal Top Header
+        SethGTopHeader(
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNavigateToNotifications,
+            onLanguageClick = { showLanguagePicker = true }
+        )
 
-                        // Quick language switcher pill
-                        Surface(
-                            modifier = Modifier.clickable { showLanguagePicker = true },
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color.White.copy(alpha = 0.2f)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Filled.Language,
-                                    contentDescription = "Language",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    text = languageOptions.find { it.code == langState.selectedLanguage }?.nativeName ?: "Language",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-                    Spacer(Modifier.height(12.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        VendorStat(
-                            label = "Total Revenue",
-                            value = "₹${"%,.0f".format(totalRevenue ?: 0.0)}",
-                            icon = Icons.Filled.CurrencyRupee
-                        )
-                        VendorStat(
-                            label = "Transactions",
-                            value = "${transactions.size}",
-                            icon = Icons.Filled.Receipt
-                        )
-                    }
+        // Mint Sub-Banner
+        SethGStatusBanner()
+
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Screen Title
+            item {
+                Text(
+                    text = stringResource(R.string.vendor_screen_title),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp,
+                        color = TextPrimary
+                    )
+                )
+            }
+
+            // Mint Hero Card
+            item {
+                SethGHeroCard(
+                    tag = "PUNE",
+                    title = stringResource(R.string.vendor_hero_title),
+                    description = stringResource(R.string.vendor_hero_desc),
+                    buttonText = stringResource(R.string.create_listing),
+                    onButtonClick = { showWizard = true }
+                )
+            }
+
+            // Local Price Guide Preview Section
+            item {
+                SethGSectionHeader(
+                    title = stringResource(R.string.local_price_guide),
+                    actionText = stringResource(R.string.see_all),
+                    onActionClick = onViewPriceGuide
+                )
+                SethGCard {
+                    PriceGuideRow(icon = Icons.Outlined.Smartphone, name = "Mobile phone", price = "₹140.00/kg")
+                    HorizontalDivider(color = LightBorder, thickness = 0.5.dp)
+                    PriceGuideRow(icon = Icons.Outlined.Laptop, name = "Laptop", price = "₹140.00/kg")
+                    HorizontalDivider(color = LightBorder, thickness = 0.5.dp)
+                    PriceGuideRow(icon = Icons.Outlined.TabletAndroid, name = "Tablet", price = "₹140.00/kg")
                 }
             }
 
-            if (transactions.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+            // Workspace Stats Section
+            item {
+                Text(
+                    text = stringResource(R.string.your_workspace),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("📦", fontSize = 56.sp)
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        "No lots yet.\nTap + Add Lot to begin.",
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge
+                    WorkspaceStatCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.active_lots),
+                        value = "${transactions.size}",
+                        icon = Icons.Outlined.Inventory2
+                    )
+                    WorkspaceStatCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.total_revenue),
+                        value = "₹${"%,.0f".format(totalRevenue ?: 0.0)}",
+                        icon = Icons.Outlined.AccountBalanceWallet
                     )
                 }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    item {
-                        Text(
-                            "Recent Transactions",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = TextPrimary,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-                    items(transactions, key = { it.txnId }) { txn ->
-                        VendorTransactionCard(txn)
-                    }
+            }
+
+            // Recent Transactions / Lots
+            if (transactions.isNotEmpty()) {
+                item {
+                    Text(
+                        text = stringResource(R.string.recent_transactions),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
                 }
+                items(transactions, key = { it.txnId }) { txn ->
+                    VendorTransactionCard(txn)
+                }
+            }
+
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -296,22 +280,41 @@ fun VendorDashboardScreen(
     }
 }
 
+
+
 @Composable
-private fun VendorStat(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+private fun WorkspaceStatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
     Surface(
-        shape = RoundedCornerShape(14.dp),
-        color = Color.White.copy(alpha = 0.18f)
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, LightBorder),
+        modifier = modifier
     ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Column {
-                Text(label, color = Color.White.copy(alpha = 0.75f), fontSize = 11.sp)
-                Text(value, color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-            }
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = GreenPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = value,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                color = TextSecondary
+            )
         }
     }
 }
@@ -326,10 +329,10 @@ private fun VendorTransactionCard(txn: VendorTransactionEntity) {
         else       -> TextMuted
     }
     val gradeLabel = when (txn.grade) {
-        "NEW_LIKE" -> "New-like"
-        "GOOD"     -> "Good"
-        "BAD"      -> "Bad"
-        "VERY_BAD" -> "Very Bad"
+        "NEW_LIKE" -> stringResource(R.string.grade_new_like)
+        "GOOD"     -> stringResource(R.string.grade_good)
+        "BAD"      -> stringResource(R.string.grade_bad)
+        "VERY_BAD" -> stringResource(R.string.grade_very_bad)
         else       -> txn.grade
     }
     Card(
@@ -374,7 +377,7 @@ private fun VendorTransactionCard(txn: VendorTransactionEntity) {
                         Spacer(Modifier.width(6.dp))
                         Surface(shape = RoundedCornerShape(6.dp), color = SapphireAccent.copy(alpha = 0.12f)) {
                             Text(
-                                if (txn.isWorking) "⚡ Working" else "🔇 Not Working",
+                                if (txn.isWorking) stringResource(R.string.yes_working_label) else stringResource(R.string.no_not_working_label),
                                 color = SapphireAccent,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
@@ -398,7 +401,7 @@ private fun VendorTransactionCard(txn: VendorTransactionEntity) {
                 )
                 if (txn.isPaid) {
                     Surface(shape = RoundedCornerShape(6.dp), color = GreenContainer) {
-                        Text("PAID", color = GreenOnContainer, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                        Text(stringResource(R.string.mark_as_paid_save), color = GreenOnContainer, fontSize = 10.sp, fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                     }
                 }
@@ -449,7 +452,7 @@ private fun VendorCustomerWizard(
                             style = MaterialTheme.typography.titleMedium
                         )
                         Text(
-                            "Step ${stepIndex + 1} of $totalSteps",
+                            stringResource(R.string.step_progress, stepIndex + 1, totalSteps),
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
@@ -487,7 +490,7 @@ private fun VendorCustomerWizard(
                             CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
                         } else {
                             Text(
-                                if (state.currentStep == VendorWizardStep.RECORD) "Mark as Paid & Save" else "Next →",
+                                if (state.currentStep == VendorWizardStep.RECORD) stringResource(R.string.mark_as_paid_save) else stringResource(R.string.next_btn),
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -539,15 +542,16 @@ private fun canProceed(state: VendorWizardViewModel.UiState) = when (state.curre
     VendorWizardStep.DONE            -> false
 }
 
+@Composable
 private fun wizardStepTitle(step: VendorWizardStep) = when (step) {
-    VendorWizardStep.PHOTO          -> "📷 Take E-Waste Photo"
-    VendorWizardStep.WEIGHT         -> "⚖️ Weight & Category"
-    VendorWizardStep.GRADE          -> "🏷️ Quality / Grade"
-    VendorWizardStep.RUNNABLE       -> "🔌 Is it Runnable?"
-    VendorWizardStep.WORKING        -> "✅ Is it Still Working?"
-    VendorWizardStep.PRICE_ESTIMATE -> "💰 Price Estimate"
-    VendorWizardStep.RECORD         -> "📋 Record Transaction"
-    VendorWizardStep.DONE           -> "✅ Done!"
+    VendorWizardStep.PHOTO          -> "📷 " + stringResource(R.string.wizard_take_photo)
+    VendorWizardStep.WEIGHT         -> "⚖️ " + stringResource(R.string.wizard_weight_title)
+    VendorWizardStep.GRADE          -> "🏷️ " + stringResource(R.string.wizard_grade_title)
+    VendorWizardStep.RUNNABLE       -> "🔌 " + stringResource(R.string.wizard_runnable_title)
+    VendorWizardStep.WORKING        -> "✅ " + stringResource(R.string.wizard_working_title)
+    VendorWizardStep.PRICE_ESTIMATE -> "💰 " + stringResource(R.string.wizard_price_title)
+    VendorWizardStep.RECORD         -> "📋 " + stringResource(R.string.wizard_record_title)
+    VendorWizardStep.DONE           -> "✅ " + stringResource(R.string.done)
 }
 
 // ── Step Screens ──────────────────────────────────────────────────────────────
@@ -556,8 +560,8 @@ private fun wizardStepTitle(step: VendorWizardStep) = when (step) {
 private fun WizardPhotoStep(state: VendorWizardViewModel.UiState, onTakePhoto: () -> Unit) {
     WizardStepCard(
         icon = "📷",
-        title = "Take a photo of the E-Waste",
-        subtitle = "ई-कचरे की फोटो लें"
+        title = stringResource(R.string.wizard_take_photo),
+        subtitle = ""
     )
 
     if (state.photoPath != null) {
@@ -579,7 +583,7 @@ private fun WizardPhotoStep(state: VendorWizardViewModel.UiState, onTakePhoto: (
         ) {
             Icon(Icons.Filled.Refresh, contentDescription = null, tint = GreenPrimary)
             Spacer(Modifier.width(8.dp))
-            Text("Retake Photo", color = GreenPrimary)
+            Text(stringResource(R.string.retake_photo), color = GreenPrimary)
         }
     } else {
         Column(
@@ -595,8 +599,7 @@ private fun WizardPhotoStep(state: VendorWizardViewModel.UiState, onTakePhoto: (
         ) {
             Icon(Icons.Filled.PhotoCamera, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(64.dp))
             Spacer(Modifier.height(12.dp))
-            Text("Tap to Open Camera", color = GreenPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
-            Text("कैमरा खोलने के लिए टैप करें", color = TextSecondary, fontSize = 13.sp)
+            Text(stringResource(R.string.tap_to_open_camera), color = GreenPrimary, fontWeight = FontWeight.Bold, fontSize = 16.sp)
         }
     }
 }
@@ -609,10 +612,10 @@ private fun WizardWeightStep(
     onIncrementQty: () -> Unit,
     onDecrementQty: () -> Unit
 ) {
-    WizardStepCard(icon = "⚖️", title = "Enter weight & select category", subtitle = "वज़न और प्रकार भरें")
+    WizardStepCard(icon = "⚖️", title = stringResource(R.string.wizard_weight_title), subtitle = "")
 
     // Category grid
-    Text("E-Waste Type", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+    Text(stringResource(R.string.ewaste_type), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
     MaterialCategory.entries.chunked(3).forEach { row ->
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             row.forEach { cat ->
@@ -647,7 +650,7 @@ private fun WizardWeightStep(
     }
 
     // Weight
-    Text("Weight (kg) · वज़न", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+    Text(stringResource(R.string.weight_label), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
     OutlinedTextField(
         value = state.weightText,
         onValueChange = onSetWeight,
@@ -660,7 +663,7 @@ private fun WizardWeightStep(
     )
 
     // Quantity
-    Text("Quantity · मात्रा", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+    Text(stringResource(R.string.quantity_label), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
         FilledIconButton(onClick = onDecrementQty, colors = IconButtonDefaults.filledIconButtonColors(containerColor = GreenContainer)) {
             Icon(Icons.Filled.Remove, contentDescription = null, tint = GreenPrimary)
@@ -679,7 +682,7 @@ private fun WizardWeightStep(
 
 @Composable
 private fun WizardGradeStep(state: VendorWizardViewModel.UiState, onSetGrade: (EWasteGrade) -> Unit) {
-    WizardStepCard(icon = "🏷️", title = "Select Quality Grade", subtitle = "क्वालिटी / दर्जा चुनें")
+    WizardStepCard(icon = "🏷️", title = stringResource(R.string.wizard_grade_title), subtitle = "")
 
     EWasteGrade.entries.forEach { grade ->
         val sel = state.grade == grade
@@ -715,17 +718,17 @@ private fun WizardGradeStep(state: VendorWizardViewModel.UiState, onSetGrade: (E
 
 @Composable
 private fun WizardRunnableStep(state: VendorWizardViewModel.UiState, onSetRunnable: (Boolean) -> Unit) {
-    WizardStepCard(icon = "🔌", title = "Is it a runnable device?", subtitle = "क्या यह चलने वाला उपकरण है?")
+    WizardStepCard(icon = "🔌", title = stringResource(R.string.wizard_runnable_title), subtitle = "")
 
     Text(
-        "A runnable device is something that has an on/off switch — like a phone, TV, computer, printer, mixer, etc.",
+        stringResource(R.string.wizard_runnable_desc),
         color = TextSecondary,
         style = MaterialTheme.typography.bodyMedium
     )
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
         YesNoCard(
-            label = "Yes · हाँ",
+            label = stringResource(R.string.yes_label),
             emoji = "✅",
             selected = state.isRunnable == true,
             color = GreenPrimary,
@@ -734,7 +737,7 @@ private fun WizardRunnableStep(state: VendorWizardViewModel.UiState, onSetRunnab
             onClick = { onSetRunnable(true) }
         )
         YesNoCard(
-            label = "No · नहीं",
+            label = stringResource(R.string.no_label),
             emoji = "❌",
             selected = state.isRunnable == false,
             color = ErrorColor,
@@ -752,7 +755,7 @@ private fun WizardRunnableStep(state: VendorWizardViewModel.UiState, onSetRunnab
             Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Filled.Info, contentDescription = null, tint = GreenPrimary)
                 Spacer(Modifier.width(10.dp))
-                Text("Non-runnable parts (cables, PCBs, batteries) will be priced by weight only.", color = TextPrimary, style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.non_runnable_hint), color = TextPrimary, style = MaterialTheme.typography.bodySmall)
             }
         }
     }
@@ -760,17 +763,17 @@ private fun WizardRunnableStep(state: VendorWizardViewModel.UiState, onSetRunnab
 
 @Composable
 private fun WizardWorkingStep(state: VendorWizardViewModel.UiState, onSetWorking: (Boolean) -> Unit) {
-    WizardStepCard(icon = "✅", title = "Is the device still working?", subtitle = "क्या उपकरण अभी भी काम करता है?")
+    WizardStepCard(icon = "✅", title = stringResource(R.string.wizard_working_title), subtitle = "")
 
     Text(
-        "Working devices command a significantly higher price — up to 25% premium.",
+        stringResource(R.string.wizard_working_desc),
         color = TextSecondary,
         style = MaterialTheme.typography.bodyMedium
     )
 
     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.fillMaxWidth()) {
         YesNoCard(
-            label = "Yes, Working · काम करता है",
+            label = stringResource(R.string.yes_working_label),
             emoji = "⚡",
             selected = state.isWorking == true,
             color = GreenPrimary,
@@ -779,7 +782,7 @@ private fun WizardWorkingStep(state: VendorWizardViewModel.UiState, onSetWorking
             onClick = { onSetWorking(true) }
         )
         YesNoCard(
-            label = "No, Not Working · काम नहीं करता",
+            label = stringResource(R.string.no_not_working_label),
             emoji = "🔇",
             selected = state.isWorking == false,
             color = ErrorColor,
@@ -792,7 +795,7 @@ private fun WizardWorkingStep(state: VendorWizardViewModel.UiState, onSetWorking
 
 @Composable
 private fun WizardPriceStep(state: VendorWizardViewModel.UiState) {
-    WizardStepCard(icon = "💰", title = "ML Price Estimate", subtitle = "अनुमानित कीमत (AI मॉडल)")
+    WizardStepCard(icon = "💰", title = stringResource(R.string.wizard_price_title), subtitle = "")
 
     val estimate = state.estimate
     if (estimate != null) {
@@ -802,7 +805,7 @@ private fun WizardPriceStep(state: VendorWizardViewModel.UiState) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Column(Modifier.padding(24.dp)) {
-                Text("Estimated Price Range", color = OchreOnContainer, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.est_price_range), color = OchreOnContainer, fontWeight = FontWeight.Bold)
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "₹${"%,d".format(estimate.low)} – ₹${"%,d".format(estimate.high)}",
@@ -811,30 +814,30 @@ private fun WizardPriceStep(state: VendorWizardViewModel.UiState) {
                     fontWeight = FontWeight.ExtraBold
                 )
                 Spacer(Modifier.height(4.dp))
-                Text("🤖 Based on location, category, grade & working status", color = OchreSecondary, fontSize = 13.sp)
+                Text("🤖 " + stringResource(R.string.price_basis_factors), color = OchreSecondary, fontSize = 13.sp)
             }
         }
 
         // Breakdown
         Surface(color = LightSurface, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("Inputs used:", color = TextSecondary, fontWeight = FontWeight.SemiBold)
-                PriceDetailRow("Category", state.category?.name?.replace("_", " ") ?: "—")
-                PriceDetailRow("Weight", "${state.weightText} kg × ${state.quantity} unit(s)")
-                PriceDetailRow("Grade", state.grade?.label?.split(" / ")?.first() ?: "—")
-                PriceDetailRow("Runnable?", if (state.isRunnable == true) "Yes" else "No")
-                if (state.isRunnable == true) PriceDetailRow("Working?", if (state.isWorking == true) "Yes (+25%)" else "No")
+                Text(stringResource(R.string.inputs_used), color = TextSecondary, fontWeight = FontWeight.SemiBold)
+                PriceDetailRow(stringResource(R.string.category_label), state.category?.name?.replace("_", " ") ?: "—")
+                PriceDetailRow(stringResource(R.string.weight_label), "${state.weightText} kg × ${state.quantity}")
+                PriceDetailRow(stringResource(R.string.grade_label), state.grade?.label?.split(" / ")?.first() ?: "—")
+                PriceDetailRow(stringResource(R.string.runnable_label), if (state.isRunnable == true) stringResource(R.string.yes_label) else stringResource(R.string.no_label))
+                if (state.isRunnable == true) PriceDetailRow(stringResource(R.string.working_label), if (state.isWorking == true) stringResource(R.string.yes_label) else stringResource(R.string.no_label))
             }
         }
 
         Text(
-            "Final price is negotiated with the customer. You can adjust it in the next step.",
+            stringResource(R.string.price_negotiate_hint),
             color = TextMuted,
             style = MaterialTheme.typography.bodySmall,
             textAlign = TextAlign.Center
         )
     } else {
-        Text("Could not estimate price. Please check location permissions and try again.", color = ErrorColor)
+        Text(stringResource(R.string.network_error), color = ErrorColor)
     }
 }
 
@@ -852,25 +855,25 @@ private fun WizardRecordStep(
     onSetCustomerName: (String) -> Unit,
     onSetFinalPrice: (String) -> Unit
 ) {
-    WizardStepCard(icon = "📋", title = "Record Transaction", subtitle = "लेन-देन दर्ज करें")
+    WizardStepCard(icon = "📋", title = stringResource(R.string.wizard_record_title), subtitle = "")
 
     // Transaction summary card
     Surface(color = GreenContainer, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text("Transaction Summary", color = GreenOnContainer, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.txn_summary), color = GreenOnContainer, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(4.dp))
-            Text("📦 ${state.category?.name?.replace("_", " ") ?: "—"} · ${state.weightText} kg · qty ${state.quantity}", color = TextPrimary)
-            Text("🏷️ Grade: ${state.grade?.label?.split("/")?.first()?.trim() ?: "—"}", color = TextPrimary)
-            Text("🔌 Runnable: ${if (state.isRunnable == true) "Yes" else "No"}" +
-                    if (state.isRunnable == true) " | Working: ${if (state.isWorking == true) "Yes" else "No"}" else "", color = TextPrimary)
+            Text("📦 ${state.category?.name?.replace("_", " ") ?: "—"} · ${state.weightText} kg · ${state.quantity}", color = TextPrimary)
+            Text("🏷️ ${stringResource(R.string.grade_label)}: ${state.grade?.label?.split("/")?.first()?.trim() ?: "—"}", color = TextPrimary)
+            Text("🔌 ${stringResource(R.string.runnable_label)}: ${if (state.isRunnable == true) stringResource(R.string.yes_label) else stringResource(R.string.no_label)}" +
+                    if (state.isRunnable == true) " | ${stringResource(R.string.working_label)}: ${if (state.isWorking == true) stringResource(R.string.yes_label) else stringResource(R.string.no_label)}" else "", color = TextPrimary)
             state.estimate?.let {
                 Text("💰 Estimate: ₹${"%,d".format(it.low)} – ₹${"%,d".format(it.high)}", color = GreenPrimary, fontWeight = FontWeight.Bold)
             }
-            Text("📍 Location captured automatically at payment", color = TextSecondary, style = MaterialTheme.typography.labelSmall)
+            Text("📍 " + stringResource(R.string.gps_auto_payment_note), color = TextSecondary, style = MaterialTheme.typography.labelSmall)
         }
     }
 
-    Text("Final Price (₹) / असली कीमत", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+    Text(stringResource(R.string.final_price_label), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
     OutlinedTextField(
         value = state.finalPrice,
         onValueChange = onSetFinalPrice,
@@ -887,7 +890,7 @@ private fun WizardRecordStep(
             Icon(Icons.Filled.LocationOn, contentDescription = null, tint = OchreSecondary)
             Spacer(Modifier.width(10.dp))
             Text(
-                "Your current GPS location will be captured and stored when you mark this as paid.",
+                stringResource(R.string.gps_auto_payment_note),
                 color = TextPrimary,
                 style = MaterialTheme.typography.bodySmall
             )
@@ -905,13 +908,11 @@ private fun WizardDoneScreen(state: VendorWizardViewModel.UiState, onDone: () ->
         ) {
             Text("✅", fontSize = 80.sp)
             Spacer(Modifier.height(16.dp))
-            Text("Transaction Recorded!", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
-            Spacer(Modifier.height(8.dp))
-            Text("लेन-देन दर्ज हो गया!", color = TextSecondary, fontSize = 16.sp)
+            Text(stringResource(R.string.txn_recorded_title), color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.ExtraBold)
             Spacer(Modifier.height(12.dp))
             Text("ID: ${state.savedTxnId ?: state.txnId}", color = TextMuted, style = MaterialTheme.typography.bodySmall)
             Spacer(Modifier.height(8.dp))
-            Text("📍 Location recorded · Payment marked ✓", color = GreenPrimary, fontWeight = FontWeight.SemiBold)
+            Text("📍 " + stringResource(R.string.location_recorded_note), color = GreenPrimary, fontWeight = FontWeight.SemiBold)
             Spacer(Modifier.height(32.dp))
             Button(
                 onClick = onDone,
@@ -919,7 +920,7 @@ private fun WizardDoneScreen(state: VendorWizardViewModel.UiState, onDone: () ->
                 shape = RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
             ) {
-                Text("Back to Dashboard", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.back_to_dashboard), fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

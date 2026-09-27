@@ -215,3 +215,33 @@ exports.confirmHandover = async (req, res, next) => {
     client.release();
   }
 };
+
+exports.getMessages = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query(
+      "SELECT id, lot_id, sender_id, content, created_at FROM chat_messages WHERE lot_id = $1 ORDER BY created_at ASC",
+      [id]
+    );
+    res.json(rows);
+  } catch (err) {
+    next(err);
+  }
+};
+
+
+exports.postMessage = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { content } = req.body;
+    const sender_id = req.userId;
+    const { rows } = await pool.query(
+      "INSERT INTO chat_messages (lot_id, sender_id, content) VALUES ($1, $2, $3) RETURNING id, lot_id, sender_id, content, created_at",
+      [id, sender_id, content]
+    );
+    res.status(201).json(rows[0]);
+  } catch (err) {
+    next(err);
+  }
+};
+

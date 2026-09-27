@@ -158,6 +158,7 @@ interface LotDao {
     @Query("SELECT * FROM lots ORDER BY createdAt DESC")
     fun observeLots(): Flow<List<LotWithPhotos>>
 
+    @Transaction
     @Query("SELECT * FROM lots WHERE lotId = :lotId")
     fun observeLot(lotId: String): Flow<LotWithPhotos?>
 

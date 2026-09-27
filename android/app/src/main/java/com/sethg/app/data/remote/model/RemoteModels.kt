@@ -261,3 +261,16 @@ data class HandoverResponse(
     val handover: RemoteHandover,
     @SerializedName("handover_otp") val handoverOtp: String
 )
+
+// Chat
+data class ChatMessageResponse(
+    val id: String,
+    @SerializedName("lot_id") val lotId: String,
+    @SerializedName("sender_id") val senderId: String,
+    val content: String,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class PostMessageRequest(
+    val content: String
+)

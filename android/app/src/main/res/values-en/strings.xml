@@ -171,4 +171,130 @@
     <string name="alert_pickup_body">Lot %1$s · %2$s</string>
     <string name="alert_new_lot_title">New lot %1$.1f km away</string>
     <string name="alert_new_lot_body">%1$s · %2$.1f kg · ₹%3$d–₹%4$d · %5$s</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_home">Home</string>
+    <string name="tab_listings">Listings</string>
+    <string name="tab_sell">Sell</string>
+    <string name="tab_prices">Prices</string>
+
+    <!-- Top Header & Banner -->
+    <string name="app_slogan">SCAN • SELL • RECYCLE</string>
+    <string name="status_offline_banner">Offline • drafts stay on this phone</string>
+    <string name="status_online_banner">Online • synced with server</string>
+    <string name="pending_sync_count">Pending sync: %1$d</string>
+
+    <!-- Role Selection -->
+    <string name="role_who_are_you">Who are you?</string>
+    <string name="role_who_desc">Choose your role to continue</string>
+    <string name="role_vendor_title">Vendor</string>
+    <string name="role_vendor_desc">I collect and sell e-waste.</string>
+    <string name="role_recycler_title">Recycler</string>
+    <string name="role_recycler_desc">I buy e-waste and recycle it.</string>
+    <string name="role_change_later">You can change your role later from Profile settings.</string>
+    <string name="select_role_label">Select Role</string>
+
+    <!-- Vendor Dashboard & Wizard -->
+    <string name="vendor_screen_title">Sell e-waste with clarity</string>
+    <string name="vendor_hero_title">Scan. Compare.\nSell with clarity.</string>
+    <string name="vendor_hero_desc">Photograph an item or enter it yourself. Your drafts stay with you, even offline.</string>
+    <string name="create_listing">Create listing</string>
+    <string name="local_price_guide">Local price guide</string>
+    <string name="see_all">See all ></string>
+    <string name="your_workspace">Your workspace</string>
+    <string name="active_lots">Active Lots</string>
+    <string name="total_revenue">Total Revenue</string>
+    <string name="recent_transactions">Recent Transactions</string>
+    <string name="step_progress">Step %1$d of %2$d</string>
+    <string name="wizard_take_photo">Take a photo of the E-Waste</string>
+    <string name="tap_to_open_camera">Tap to Open Camera</string>
+    <string name="wizard_weight_title">Enter weight &amp; select category</string>
+    <string name="ewaste_type">E-Waste Type</string>
+    <string name="weight_label">Weight (kg)</string>
+    <string name="quantity_label">Quantity</string>
+    <string name="wizard_grade_title">Select Quality Grade</string>
+    <string name="grade_new_like">New-like</string>
+    <string name="grade_good">Good</string>
+    <string name="grade_bad">Bad</string>
+    <string name="grade_very_bad">Very Bad</string>
+    <string name="wizard_runnable_title">Is it a runnable device?</string>
+    <string name="wizard_runnable_desc">A runnable device is something that has an on/off switch — like a phone, TV, computer, printer, mixer, etc.</string>
+    <string name="yes_label">Yes</string>
+    <string name="no_label">No</string>
+    <string name="non_runnable_hint">Non-runnable parts (cables, PCBs, batteries) will be priced by weight only.</string>
+    <string name="wizard_working_title">Is the device still working?</string>
+    <string name="wizard_working_desc">Working devices command a significantly higher price — up to 25% premium.</string>
+    <string name="yes_working_label">Yes, Working</string>
+    <string name="no_not_working_label">No, Not Working</string>
+    <string name="wizard_price_title">ML Price Estimate</string>
+    <string name="est_price_range">Estimated Price Range</string>
+    <string name="price_basis_factors">Based on location, category, grade &amp; working status</string>
+    <string name="inputs_used">Inputs used:</string>
+    <string name="category_label">Category</string>
+    <string name="grade_label">Grade</string>
+    <string name="runnable_label">Runnable?</string>
+    <string name="working_label">Working?</string>
+    <string name="price_negotiate_hint">Final price is negotiated with the customer. You can adjust it in the next step.</string>
+    <string name="wizard_record_title">Record Transaction</string>
+    <string name="txn_summary">Transaction Summary</string>
+    <string name="final_price_label">Final Price (₹)</string>
+    <string name="gps_auto_payment_note">Your current GPS location will be captured and stored when you mark this as paid.</string>
+    <string name="mark_as_paid_save">Mark as Paid &amp; Save</string>
+    <string name="next_btn">Next →</string>
+    <string name="txn_recorded_title">Transaction Recorded!</string>
+    <string name="back_to_dashboard">Back to Dashboard</string>
+    <string name="location_recorded_note">Location recorded · Payment marked ✓</string>
+
+    <!-- Recycler Dashboard -->
+    <string name="recycler_dashboard_title">Recycler command centre</string>
+    <string name="recycler_hero_title">Procure Scrap.\nVerified &amp; Direct.</string>
+    <string name="recycler_hero_desc">Find nearby e-waste lots, place competitive bids, and coordinate handovers.</string>
+    <string name="add_purchase">Add Purchase</string>
+    <string name="purchases_label">Purchases</string>
+    <string name="total_spent_label">Total Spent</string>
+    <string name="purchase_ledger">Purchase Ledger</string>
+    <string name="no_purchases_yet">No purchase records yet.\nTap + Add Purchase to log material bought from a vendor.</string>
+    <string name="verified_recycler_badge">VERIFIED RECYCLER</string>
+    <string name="recycler_workspace_badge">RECYCLER WORKSPACE</string>
+
+    <!-- Profile & Common -->
+    <string name="my_profile">My Profile</string>
+    <string name="account_type">Account Type</string>
+    <string name="role_vendor">Vendor</string>
+    <string name="role_recycler">Recycler</string>
+
+    <!-- Notifications & Chat & Prices -->
+    <string name="notifications_title">Notifications</string>
+    <string name="no_notifications_yet">No notifications yet</string>
+    <string name="online_status">Online</string>
+    <string name="type_message_hint">Type a message…</string>
+    <string name="provisional_guide_tag">PROVISIONAL PRICE GUIDE</string>
+    <string name="provisional_guide_desc">Provisional recycler rate cards. Final offers may differ after inspection.</string>
+    <string name="recycler_verification_title">Recycler Verification</string>
+    <string name="recycler_verification_desc">Upload government certificate to unlock bulk recycler bidding.</string>
+    <string name="recycler_certificate_approved">Your government certificate is approved.</string>
+
+    <!-- Recycler not verified, purchase form, marketplace -->
+    <string name="account_not_verified">Account Not Verified</string>
+    <string name="upload_cert_to_see_lots">Upload government certificate to see nearby lots.</string>
+    <string name="upload">Upload</string>
+    <string name="add_purchase_record_title">Add Purchase Record</string>
+    <string name="save_purchase_record">Save Purchase Record</string>
+    <string name="vendor_contact_section">Vendor Contact</string>
+    <string name="vendor_name_label">Vendor Name *</string>
+    <string name="vendor_phone_label">Vendor Phone (optional)</string>
+    <string name="vendor_location_note">Vendor location will be recorded from the location saved when they completed their sale.</string>
+    <string name="material_details_section">Material Details</string>
+    <string name="material_type_label">Material / E-Waste Type *</string>
+    <string name="material_placeholder">e.g. Mobile Phones, Cables, PCBs…</string>
+    <string name="weight_kg_label">Weight (kg) *</string>
+    <string name="quantity_short_label">Quantity</string>
+    <string name="payment_section">Payment</string>
+    <string name="amount_paid_label">Amount Paid (₹) *</string>
+    <string name="notes_optional_label">Notes (optional)</string>
+    <string name="marketplace_feed_title">Marketplace Feed</string>
+    <string name="sold_by_label">Sold by %1$s</string>
+    <string name="est_value_label">Est. Value</string>
+    <string name="chat_label">Chat</string>
+    <string name="bid_placed_label">You placed a bid of ₹%1$d/kg</string>
 </resources>

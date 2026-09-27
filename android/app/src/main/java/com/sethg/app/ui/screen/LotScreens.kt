@@ -96,142 +96,158 @@ private val Zone.labelRes: Int
 fun LotsScreen(
     onNewLot: () -> Unit,
     onOpenLot: (String) -> Unit = {},
+    onProfileClick: () -> Unit = {},
+    onNotificationClick: (() -> Unit)? = null,
     viewModel: LotsViewModel = hiltViewModel()
 ) {
     val lots by viewModel.lots.collectAsState()
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column(Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(GreenPrimary.copy(alpha = 0.8f), Color(0xFF1B5E20))
-                        )
-                    )
-                    .padding(horizontal = 24.dp, vertical = 28.dp)
-            ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        SethGTopHeader(
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNotificationClick
+        )
+        SethGStatusBanner()
+
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            item {
                 Text(
-                    stringResource(R.string.my_lots),
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.ExtraBold
+                    text = "Listings & orders",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp,
+                        color = TextPrimary
+                    ),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
+            item {
+                SethGPrimaryButton(
+                    text = "Create listing",
+                    onClick = onNewLot,
+                    showArrow = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            item {
+                SethGSecondaryButton(
+                    text = "Sync now",
+                    onClick = { /* sync handled automatically */ },
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
 
             if (lots.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxSize().padding(32.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("📦", fontSize = 56.sp)
-                    Spacer(Modifier.height(12.dp))
-                    Text(
-                        stringResource(R.string.no_lots_yet),
-                        color = TextSecondary,
-                        textAlign = TextAlign.Center
-                    )
+                item {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 48.dp),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("📦", fontSize = 56.sp)
+                        Spacer(Modifier.height(12.dp))
+                        Text(
+                            stringResource(R.string.no_lots_yet),
+                            color = TextSecondary,
+                            textAlign = TextAlign.Center,
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
                 }
             } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(lots, key = { it.lotId }) { LotCard(it, onClick = { onOpenLot(it.lotId) }) }
+                items(lots, key = { it.lotId }) { lot ->
+                    LotCard(lot, onClick = { onOpenLot(lot.lotId) })
                 }
             }
+
+            item {
+                Spacer(Modifier.height(80.dp))
+            }
         }
-        
-        ExtendedFloatingActionButton(
-            onClick = onNewLot,
-            containerColor = GreenPrimary,
-            contentColor = Color.White,
-            icon = { Icon(Icons.Filled.AddAPhoto, contentDescription = null) },
-            text = { Text(stringResource(R.string.new_lot), fontWeight = FontWeight.Bold) },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 16.dp, bottom = 12.dp)
-        )
     }
 }
 
 @Composable
 private fun LotCard(lot: Lot, onClick: () -> Unit) {
-    Card(
+    Surface(
         onClick = onClick,
-        colors = CardDefaults.cardColors(containerColor = LightSurface),
-        shape = RoundedCornerShape(16.dp)
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, LightBorder),
+        modifier = Modifier.fillMaxWidth()
     ) {
-        Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            AsyncImage(
-                model = lot.photos.firstOrNull()?.let { File(it.filePath) },
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Dark Teal accent bar at the top of the card
+            Box(
                 modifier = Modifier
-                    .size(72.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(LightSurfaceVariant)
+                    .fillMaxWidth()
+                    .height(3.dp)
+                    .background(GreenPrimary)
             )
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(lot.category.icon, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(6.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Text(
-                        "${stringResource(lot.category.labelRes)} · ${formatKg(lot.weightKg)} kg",
-                        color = TextPrimary,
-                        fontWeight = FontWeight.SemiBold
+                        text = stringResource(lot.category.labelRes),
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = TextPrimary
+                        )
                     )
                 }
-                Text(lot.estimate.format(), color = OchreSecondary, fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                lot.priceRegion?.let { region ->
-                    val zone = Zone.entries.firstOrNull { it.name == region }
-                    Text(
-                        "📍 ${if (zone != null) stringResource(zone.labelRes) else region}",
-                        color = TextSecondary,
-                        fontSize = 12.sp
-                    )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Pill Badge
+                val badgeText = when (lot.status) {
+                    "ACCEPTED"    -> stringResource(R.string.status_accepted)
+                    "SCHEDULED"   -> stringResource(R.string.status_scheduled)
+                    "WEIGHED"     -> stringResource(R.string.status_weighed)
+                    "HANDED_OVER" -> stringResource(R.string.status_handed_over)
+                    else          -> "Listed"
                 }
+                SethGBadge(text = badgeText)
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Weight and lot ID details
                 Text(
-                    "${lot.lotId} · ${SimpleDateFormat("dd MMM, HH:mm", Locale.getDefault()).format(Date(lot.createdAt))}",
-                    color = TextSecondary,
-                    style = MaterialTheme.typography.bodySmall
+                    text = "${formatKg(lot.weightKg)} kg  •  ${lot.lotId.take(8)}",
+                    fontSize = 14.sp,
+                    color = TextSecondary
                 )
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                StatusChip(
-                    stringResource(
-                        when (lot.status) {
-                            "ACCEPTED"    -> R.string.status_accepted
-                            "SCHEDULED"   -> R.string.status_scheduled
-                            "WEIGHED"     -> R.string.status_weighed
-                            "HANDED_OVER" -> R.string.status_handed_over
-                            else          -> R.string.status_listed
-                        }
-                    ),
-                    GreenPrimary
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Estimate or status note
+                Text(
+                    text = "${lot.estimate.format()} · Rate locked",
+                    fontSize = 13.sp,
+                    color = TextMuted
                 )
-                if (lot.syncStatus == "PENDING") {
-                    Spacer(Modifier.height(4.dp))
-                    StatusChip(stringResource(R.string.sync_pending), OchreSecondary)
-                }
             }
         }
-    }
-}
-
-@Composable
-private fun StatusChip(text: String, color: Color) {
-    Surface(shape = RoundedCornerShape(8.dp), color = color.copy(alpha = 0.2f)) {
-        Text(
-            text,
-            color = color,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-        )
     }
 }
 

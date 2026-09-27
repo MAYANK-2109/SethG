@@ -9,7 +9,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
+import androidx.compose.ui.res.stringResource
+import com.sethg.app.R
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,6 +44,8 @@ import java.util.*
 fun RecyclerDashboardScreen(
     modifier: Modifier = Modifier,
     onHandover: (lotId: String, declaredKg: Double) -> Unit = { _, _ -> },
+    onNavigateToNotifications: () -> Unit = {},
+    onProfileClick: () -> Unit = {},
     profileVm: ProfileViewModel = hiltViewModel(),
     purchaseVm: RecyclerPurchaseViewModel = hiltViewModel(),
     languageVm: LanguageViewModel = hiltViewModel()
@@ -70,129 +75,116 @@ fun RecyclerDashboardScreen(
         return
     }
 
-    Scaffold(
-        containerColor = LightBackground,
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { showAddSheet = true },
-                containerColor = SapphireAccent,
-                contentColor   = Color.White,
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text("Add Purchase", fontWeight = FontWeight.Bold) }
-            )
-        }
-    ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding)) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        // Universal Top Header
+        SethGTopHeader(
+            onProfileClick = onProfileClick,
+            onNotificationClick = onNavigateToNotifications,
+            onLanguageClick = { showLanguagePicker = true }
+        )
 
-            // ── Header ────────────────────────────────────────────────────────
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(
-                        Brush.horizontalGradient(
-                            colors = listOf(Color(0xFF1D4ED8), Color(0xFF1E3A8A))
-                        )
+        // Mint Sub-Banner
+        SethGStatusBanner()
+
+        LazyColumn(
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Screen Title
+            item {
+                Text(
+                    text = stringResource(R.string.recycler_dashboard_title),
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 26.sp,
+                        color = TextPrimary
                     )
-                    .padding(horizontal = 24.dp, vertical = 28.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Filled.Recycling, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                            Spacer(Modifier.width(10.dp))
-                            Text("Recycler Dashboard", style = MaterialTheme.typography.headlineSmall, color = Color.White, fontWeight = FontWeight.ExtraBold)
-                        }
+                )
+            }
 
-                        // Quick language switch button
-                        Surface(
-                            modifier = Modifier.clickable { showLanguagePicker = true },
-                            shape = RoundedCornerShape(20.dp),
-                            color = Color.White.copy(alpha = 0.2f)
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    Icons.Filled.Language,
-                                    contentDescription = "Language",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
-                                Text(
-                                    text = languageOptions.find { it.code == langState.selectedLanguage }?.nativeName ?: "Language",
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
+            // Mint Hero Card
+            item {
+                SethGHeroCard(
+                    tag = if (profileState.user?.isVerified == true) stringResource(R.string.verified_recycler_badge) else stringResource(R.string.recycler_workspace_badge),
+                    title = stringResource(R.string.recycler_hero_title),
+                    description = stringResource(R.string.recycler_hero_desc),
+                    buttonText = stringResource(R.string.add_purchase),
+                    onButtonClick = { showAddSheet = true }
+                )
+            }
 
-                    // Verification badge
-                    if (profileState.user?.isVerified == true) {
-                        Spacer(Modifier.height(8.dp))
-                        Surface(shape = RoundedCornerShape(10.dp), color = Color.White.copy(alpha = 0.2f)) {
-                            Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Filled.Verified, contentDescription = null, tint = Color(0xFF34D399), modifier = Modifier.size(16.dp))
-                                Spacer(Modifier.width(6.dp))
-                                Text("Verified Recycler", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-                            }
-                        }
-                    }
-
-                    Spacer(Modifier.height(14.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        RecyclerStat(label = "Total Spent", value = "₹${"%,.0f".format(totalSpent ?: 0.0)}", icon = Icons.Filled.CurrencyRupee)
-                        RecyclerStat(label = "Purchases", value = "${purchases.size}", icon = Icons.Filled.ShoppingBag)
-                    }
+            // Workspace Stats Section
+            item {
+                Text(
+                    text = stringResource(R.string.your_workspace),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    RecyclerWorkspaceCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.purchases_label),
+                        value = "${purchases.size}",
+                        icon = Icons.Outlined.ShoppingBag
+                    )
+                    RecyclerWorkspaceCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.total_spent_label),
+                        value = "₹${"%,.0f".format(totalSpent ?: 0.0)}",
+                        icon = Icons.Outlined.CurrencyRupee
+                    )
                 }
             }
 
-            // ── Verification gate for market section ─────────────────────────
+            // Verification gate for market section
             if (profileState.user?.isVerified != true) {
-                NotVerifiedBanner(onUpload = {
-                    profileVm.updateProfile(certificateUrl = "mock_cert_url_123")
-                })
+                item {
+                    NotVerifiedBanner(onUpload = {
+                        profileVm.updateProfile(certificateUrl = "mock_cert_url_123")
+                    })
+                }
             }
 
-            // ── Market (nearby lots, trips, handover) + purchase ledger ────────
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp, 16.dp, 16.dp, 96.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (profileState.user?.isVerified == true) {
-                    item { RecyclerMarketSection(onHandover = onHandover) }
-                }
+            // Market (nearby lots, trips, handover)
+            if (profileState.user?.isVerified == true) {
+                item { RecyclerMarketSection(onHandover = onHandover) }
+            }
+            item {
+                Text(
+                    stringResource(R.string.purchase_ledger),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextPrimary,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+            }
+            if (purchases.isEmpty()) {
                 item {
                     Text(
-                        "Purchase Ledger",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                        stringResource(R.string.no_purchases_yet),
+                        color = TextSecondary,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
                     )
                 }
-                if (purchases.isEmpty()) {
-                    item {
-                        Text(
-                            "No purchase records yet.\nTap + Add Purchase to log material bought from a vendor.",
-                            color = TextSecondary,
-                            textAlign = TextAlign.Center,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
-                        )
-                    }
-                } else {
-                    items(purchases, key = { it.purchaseId }) { purchase ->
-                        RecyclerPurchaseCard(purchase = purchase, onDelete = { purchaseVm.delete(it) })
-                    }
+            } else {
+                items(purchases, key = { it.purchaseId }) { purchase ->
+                    RecyclerPurchaseCard(purchase = purchase, onDelete = { purchaseVm.delete(it) })
                 }
+            }
+            item {
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
     }
@@ -211,8 +203,8 @@ fun RecyclerDashboardScreen(
 }
 
 @Composable
-private fun RecyclerStat(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Surface(shape = RoundedCornerShape(14.dp), color = Color.White.copy(alpha = 0.18f)) {
+private fun RecyclerStat(modifier: Modifier = Modifier, label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
+    Surface(modifier = modifier, shape = RoundedCornerShape(14.dp), color = Color.White.copy(alpha = 0.18f)) {
         Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
@@ -238,12 +230,49 @@ private fun NotVerifiedBanner(onUpload: () -> Unit) {
             Icon(Icons.Filled.Warning, contentDescription = null, tint = OchreSecondary)
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
-                Text("Account Not Verified", color = TextPrimary, fontWeight = FontWeight.Bold)
-                Text("Upload government certificate to see nearby lots.", color = TextSecondary, style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.account_not_verified), color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.upload_cert_to_see_lots), color = TextSecondary, style = MaterialTheme.typography.bodySmall)
             }
             TextButton(onClick = onUpload) {
-                Text("Upload", color = OchreSecondary, fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.upload), color = OchreSecondary, fontWeight = FontWeight.Bold)
             }
+        }
+    }
+}
+
+@Composable
+private fun RecyclerWorkspaceCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector
+) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, LightBorder),
+        modifier = modifier
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = GreenPrimary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.height(14.dp))
+            Text(
+                text = value,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = TextPrimary
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = title,
+                fontSize = 12.sp,
+                color = TextSecondary
+            )
         }
     }
 }
@@ -258,17 +287,18 @@ private fun RecyclerPurchaseCard(purchase: RecyclerPurchaseEntity, onDelete: (St
         else       -> TextMuted
     }
     val gradeLabel = when (purchase.grade) {
-        "NEW_LIKE" -> "New-like"
-        "GOOD"     -> "Good"
-        "BAD"      -> "Bad"
-        "VERY_BAD" -> "Very Bad"
+        "NEW_LIKE" -> stringResource(R.string.grade_new_like)
+        "GOOD"     -> stringResource(R.string.grade_good)
+        "BAD"      -> stringResource(R.string.grade_bad)
+        "VERY_BAD" -> stringResource(R.string.grade_very_bad)
         else       -> purchase.grade
     }
 
-    Card(
-        colors    = CardDefaults.cardColors(containerColor = LightSurface),
-        shape     = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    Surface(
+        shape  = RoundedCornerShape(16.dp),
+        color  = Color.White,
+        border = BorderStroke(1.dp, LightBorder),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -376,7 +406,7 @@ private fun AddPurchaseSheet(
         containerColor = LightBackground,
         topBar = {
             TopAppBar(
-                title = { Text("Add Purchase Record", fontWeight = FontWeight.Bold) },
+                title = { Text(stringResource(R.string.add_purchase_record_title), fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -399,7 +429,7 @@ private fun AddPurchaseSheet(
                     colors = ButtonDefaults.buttonColors(containerColor = SapphireAccent)
                 ) {
                     if (isSaving) CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp))
-                    else Text("Save Purchase Record", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    else Text(stringResource(R.string.save_purchase_record), fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -413,12 +443,12 @@ private fun AddPurchaseSheet(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Vendor details section
-            SectionHeader(icon = "👤", title = "Vendor Contact")
+            SectionHeader(icon = "👤", title = stringResource(R.string.vendor_contact_section))
 
             OutlinedTextField(
                 value = form.vendorName,
                 onValueChange = { v -> onUpdate { copy(vendorName = v) } },
-                label = { Text("Vendor Name *") },
+                label = { Text(stringResource(R.string.vendor_name_label)) },
                 leadingIcon = { Icon(Icons.Filled.Person, contentDescription = null) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
@@ -427,7 +457,7 @@ private fun AddPurchaseSheet(
             OutlinedTextField(
                 value = form.vendorPhone,
                 onValueChange = { v -> onUpdate { copy(vendorPhone = v) } },
-                label = { Text("Vendor Phone (optional)") },
+                label = { Text(stringResource(R.string.vendor_phone_label)) },
                 leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = null) },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
@@ -440,7 +470,7 @@ private fun AddPurchaseSheet(
                     Icon(Icons.Filled.LocationOn, contentDescription = null, tint = SapphireAccent)
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        "Vendor location will be recorded from the location saved when they completed their sale.",
+                        stringResource(R.string.vendor_location_note),
                         color = TextSecondary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -448,14 +478,14 @@ private fun AddPurchaseSheet(
             }
 
             // Material details
-            SectionHeader(icon = "📦", title = "Material Details")
+            SectionHeader(icon = "📦", title = stringResource(R.string.material_details_section))
 
             OutlinedTextField(
                 value = form.material,
                 onValueChange = { v -> onUpdate { copy(material = v) } },
-                label = { Text("Material / E-Waste Type *") },
+                label = { Text(stringResource(R.string.material_type_label)) },
                 leadingIcon = { Icon(Icons.Filled.Category, contentDescription = null) },
-                placeholder = { Text("e.g. Mobile Phones, Cables, PCBs...") },
+                placeholder = { Text(stringResource(R.string.material_placeholder)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -464,7 +494,7 @@ private fun AddPurchaseSheet(
                 OutlinedTextField(
                     value = form.weightText,
                     onValueChange = { v -> onUpdate { copy(weightText = v) } },
-                    label = { Text("Weight (kg) *") },
+                    label = { Text(stringResource(R.string.weight_kg_label)) },
                     suffix = { Text("kg") },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -473,7 +503,7 @@ private fun AddPurchaseSheet(
                 OutlinedTextField(
                     value = form.quantityText,
                     onValueChange = { v -> onUpdate { copy(quantityText = v) } },
-                    label = { Text("Quantity") },
+                    label = { Text(stringResource(R.string.quantity_short_label)) },
                     singleLine = true,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
@@ -481,7 +511,7 @@ private fun AddPurchaseSheet(
             }
 
             // Grade selector
-            Text("Quality / Grade", style = MaterialTheme.typography.labelLarge, color = TextSecondary)
+            Text(stringResource(R.string.wizard_grade_title), style = MaterialTheme.typography.labelLarge, color = TextSecondary)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 grades.forEach { (code, label) ->
                     val sel = form.grade == code
@@ -513,12 +543,12 @@ private fun AddPurchaseSheet(
             }
 
             // Amount
-            SectionHeader(icon = "💰", title = "Payment")
+            SectionHeader(icon = "💰", title = stringResource(R.string.payment_section))
 
             OutlinedTextField(
                 value = form.amountText,
                 onValueChange = { v -> onUpdate { copy(amountText = v) } },
-                label = { Text("Amount Paid (₹) *") },
+                label = { Text(stringResource(R.string.amount_paid_label)) },
                 prefix = { Text("₹") },
                 singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
@@ -529,7 +559,7 @@ private fun AddPurchaseSheet(
             OutlinedTextField(
                 value = form.notes,
                 onValueChange = { v -> onUpdate { copy(notes = v) } },
-                label = { Text("Notes (optional)") },
+                label = { Text(stringResource(R.string.notes_optional_label)) },
                 leadingIcon = { Icon(Icons.Filled.Notes, contentDescription = null) },
                 modifier = Modifier.fillMaxWidth(),
                 maxLines = 3

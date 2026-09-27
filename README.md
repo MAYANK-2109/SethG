@@ -313,3 +313,10 @@ Language is stored in DataStore. The user selects it on first launch and can cha
 ## License
 
 MIT © SIH 2026 — Seth G Team
+
+# From the project root directory
+cd android
+.\gradlew installDebug
+& "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" shell am start -n "com.sethg.app/.MainActivity"
+
+cd android && gradlew installDebug && %LOCALAPPDATA%\Android\Sdk\platform-tools\adb.exe shell am start -n com.sethg.app/.MainActivity

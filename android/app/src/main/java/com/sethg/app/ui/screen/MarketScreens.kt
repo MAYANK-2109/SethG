@@ -3,6 +3,7 @@ package com.sethg.app.ui.screen
 import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -287,6 +289,7 @@ private fun TransportButton(icon: androidx.compose.ui.graphics.vector.ImageVecto
 
 @Composable
 fun RecyclerMarketSection(onHandover: (lotId: String, declaredKg: Double) -> Unit,
+                          onChat: (lotId: String, vendorName: String) -> Unit = { _, _ -> },
                           viewModel: RecyclerViewModel = hiltViewModel()) {
     val state by viewModel.uiState.collectAsState()
     val context = LocalContext.current
@@ -331,21 +334,16 @@ fun RecyclerMarketSection(onHandover: (lotId: String, declaredKg: Double) -> Uni
         if (state.isLoading) LinearProgressIndicator(Modifier.fillMaxWidth(), color = GreenPrimary)
 
         if (tab == 0) {
-            if (state.nearby.isEmpty()) Text(stringResource(R.string.no_nearby_lots), color = TextSecondary)
-            state.nearby.forEach { lot ->
-                Card(colors = CardDefaults.cardColors(containerColor = LightSurface), shape = RoundedCornerShape(16.dp)) {
-                    Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Column(Modifier.weight(1f)) {
-                            Text("${categoryLabel(lot.category)} · ${lot.weightKg} kg", fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                            Text("${rupees(lot.estimateLow)} – ${rupees(lot.estimateHigh)}", color = OchreSecondary, fontWeight = FontWeight.Bold)
-                            Text(stringResource(R.string.nearby_meta, lot.distanceKm, lot.collectorFirstName, lot.offerCount),
-                                color = TextSecondary, fontSize = 12.sp)
-                            lot.myRatePerKg?.let { Text(stringResource(R.string.your_offer, it.toInt()), color = GreenPrimary, fontSize = 12.sp) }
-                        }
-                        Button(onClick = { offerFor = lot }, colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)) {
-                            Text(stringResource(if (lot.myRatePerKg == null) R.string.make_offer else R.string.revise_offer))
-                        }
-                    }
+            if (state.nearby.isEmpty()) {
+                Text(stringResource(R.string.no_nearby_lots), color = TextSecondary, modifier = Modifier.padding(16.dp))
+            } else {
+                Text(stringResource(R.string.marketplace_feed_title), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold, color = TextPrimary, modifier = Modifier.padding(vertical = 12.dp))
+                state.nearby.forEach { lot ->
+                    MarketListingCard(
+                        lot = lot,
+                        onOffer = { offerFor = lot },
+                        onChat = { onChat(lot.id, lot.collectorFirstName) }
+                    )
                 }
             }
         } else {
@@ -453,8 +451,16 @@ private fun FacilityDialog(onDismiss: () -> Unit, onSave: (List<String>?, Double
                 Text(stringResource(R.string.materials_accepted), fontWeight = FontWeight.SemiBold)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     MaterialCategory.entries.forEach { c ->
-                        FilterChip(c in selected, { selected = if (c in selected) selected - c else selected + c },
-                            label = { Text(stringResource(c.labelRes), fontSize = 12.sp) })
+                        val isSelected = c in selected
+                        FilterChip(
+                            selected = isSelected,
+                            onClick = { selected = if (isSelected) selected - c else selected + c },
+                            label = { Text(stringResource(c.labelRes), fontSize = 12.sp, color = if (isSelected) Color.White else TextPrimary) },
+                            colors = FilterChipDefaults.filterChipColors(
+                                selectedContainerColor = GreenPrimary,
+                                selectedLabelColor = Color.White
+                            )
+                        )
                     }
                 }
                 OutlinedTextField(minKg, { if (it.length <= 5 && it.all(Char::isDigit)) minKg = it },
@@ -471,6 +477,108 @@ private fun FacilityDialog(onDismiss: () -> Unit, onSave: (List<String>?, Double
         },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } }
     )
+}
+
+@Composable
+private fun MarketListingCard(lot: NearbyLot, onOffer: () -> Unit, onChat: () -> Unit) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp),
+        color = Color.White,
+        border = BorderStroke(1.dp, LightBorder),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(160.dp)
+                    .background(LightSurfaceVariant),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Filled.Category, contentDescription = null, tint = GreenPrimary.copy(alpha = 0.4f), modifier = Modifier.size(64.dp))
+                
+                Row(
+                    modifier = Modifier.align(Alignment.TopStart).padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Surface(color = GreenContainer, shape = RoundedCornerShape(8.dp)) {
+                        Text(categoryLabel(lot.category), color = GreenPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                    }
+                    Surface(color = Color.Black.copy(alpha = 0.7f), shape = RoundedCornerShape(8.dp)) {
+                        Text("${lot.weightKg} kg", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp))
+                    }
+                }
+                
+                Surface(
+                    color = Color.White,
+                    shape = RoundedCornerShape(8.dp),
+                    border = BorderStroke(1.dp, LightBorder),
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
+                        Icon(Icons.Filled.LocationOn, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(14.dp))
+                        Spacer(Modifier.width(4.dp))
+                        Text("${lot.distanceKm} km away", color = TextPrimary, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Column(Modifier.padding(16.dp)) {
+                Row(verticalAlignment = Alignment.Top) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Scrap ${categoryLabel(lot.category)} Lot", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.ExtraBold, color = TextPrimary)
+                        Spacer(Modifier.height(6.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Filled.Store, contentDescription = null, modifier = Modifier.size(14.dp), tint = TextSecondary)
+                            Spacer(Modifier.width(4.dp))
+                            Text(stringResource(R.string.sold_by_label, lot.collectorFirstName), color = TextSecondary, fontSize = 13.sp)
+                            Spacer(Modifier.width(10.dp))
+                            Icon(Icons.Filled.Star, contentDescription = null, tint = Color(0xFFFFB300), modifier = Modifier.size(14.dp))
+                            Text("4.8", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+                    Column(horizontalAlignment = Alignment.End) {
+                        Text(rupees(lot.estimateLow) + " - " + rupees(lot.estimateHigh), color = GreenPrimary, fontSize = 17.sp, fontWeight = FontWeight.ExtraBold)
+                        Text(stringResource(R.string.est_value_label), color = TextSecondary, fontSize = 12.sp)
+                    }
+                }
+                
+                Spacer(Modifier.height(20.dp))
+                
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    OutlinedButton(
+                        onClick = onChat,
+                        modifier = Modifier.weight(1f).height(48.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Filled.Chat, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(stringResource(R.string.chat_label), fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = onOffer,
+                        modifier = Modifier.weight(1.2f).height(48.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Filled.LocalOffer, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (lot.myRatePerKg == null) "Bid Now" else "Update Bid", fontWeight = FontWeight.Bold)
+                    }
+                }
+                
+                lot.myRatePerKg?.let { 
+                    Spacer(Modifier.height(16.dp))
+                    Surface(color = GreenContainer, shape = RoundedCornerShape(8.dp), modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(R.string.bid_placed_label, it.toInt()), color = GreenPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, modifier = Modifier.padding(12.dp))
+                    }
+                }
+            }
+        }
+    }
 }
 
 // ═════════════════════════ Recycler: handover ════════════════════════════════

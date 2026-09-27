@@ -73,4 +73,11 @@ interface SethGApiService {
 
     @POST("recycler/lots/{id}/handover")
     suspend fun handover(@Path("id") lotId: String, @Body request: HandoverRequest): Response<HandoverResponse>
+
+    // Chat
+    @GET("lots/{id}/messages")
+    suspend fun getMessages(@Path("id") lotId: String): Response<List<com.sethg.app.data.remote.model.ChatMessageResponse>>
+
+    @POST("lots/{id}/messages")
+    suspend fun postMessage(@Path("id") lotId: String, @Body request: com.sethg.app.data.remote.model.PostMessageRequest): Response<com.sethg.app.data.remote.model.ChatMessageResponse>
 }

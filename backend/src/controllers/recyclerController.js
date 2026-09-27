@@ -258,3 +258,12 @@ exports.createHub = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.listHubs = async (_req, res, next) => {
+  try {
+    const { rows } = await pool.query(`SELECT * FROM hubs ORDER BY created_at DESC LIMIT 100`);
+    return res.json({ hubs: rows });
+  } catch (err) {
+    next(err);
+  }
+};

@@ -43,7 +43,9 @@ fun RegisterScreen(
     var showPass        by remember { mutableStateOf(false) }
     var selectedRole    by remember { mutableStateOf(viewModel.regRole) }   // same value that gets sent
     var showLanguagePicker by remember { mutableStateOf(false) }
-    val roles = listOf("recycler" to "Recycler", "vendor" to "Vendor")
+    val recyclerTitle = stringResource(R.string.role_recycler_title)
+    val vendorTitle = stringResource(R.string.role_vendor_title)
+    val roles = listOf("recycler" to recyclerTitle, "vendor" to vendorTitle)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -174,7 +176,7 @@ fun RegisterScreen(
                             onTogglePass = { showPass = !showPass }
                         )
                         Spacer(Modifier.height(20.dp))
-                        Text("Select Role", style = MaterialTheme.typography.labelLarge, color = TextPrimary)
+                        Text(stringResource(R.string.select_role_label), style = MaterialTheme.typography.labelLarge, color = TextPrimary)
                         Spacer(Modifier.height(8.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),

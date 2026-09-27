@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   email         VARCHAR(254)  UNIQUE,
   password_hash TEXT          NOT NULL,
   photo_url     TEXT,
-  role          VARCHAR(20)   NOT NULL DEFAULT 'user',
+  role          VARCHAR(20)   NOT NULL DEFAULT 'vendor',
   certificate_url TEXT,
   is_verified   BOOLEAN       NOT NULL DEFAULT false,
   language      VARCHAR(10)   NOT NULL DEFAULT 'en',
@@ -55,7 +55,7 @@ CREATE INDEX IF NOT EXISTS idx_earnings_user_earned   ON earnings(user_id, earne
 -- ── Roles (added after the users table already existed in production) ─────
 -- CREATE TABLE IF NOT EXISTS never alters an existing table, so new columns
 -- must also be added here or older databases never get them.
-ALTER TABLE users ADD COLUMN IF NOT EXISTS role            VARCHAR(20) NOT NULL DEFAULT 'user';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role            VARCHAR(20) NOT NULL DEFAULT 'vendor';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS certificate_url TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_verified     BOOLEAN     NOT NULL DEFAULT false;
 
@@ -158,6 +158,17 @@ ALTER TABLE lots      ADD COLUMN IF NOT EXISTS vendor_confirmed_at TIMESTAMPTZ; 
 ALTER TABLE handovers ADD COLUMN IF NOT EXISTS confirmed_at        TIMESTAMPTZ;   -- NULL until the vendor confirms
 UPDATE handovers h SET confirmed_at = h.created_at
   FROM lots l WHERE l.id = h.lot_id AND l.status = 'HANDED_OVER' AND h.confirmed_at IS NULL;
+
+-- ── Chat messages ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  lot_id     VARCHAR(30) REFERENCES lots(id) ON DELETE CASCADE,
+  sender_id  UUID        REFERENCES users(id) ON DELETE CASCADE,
+  content    TEXT        NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_lot_id     ON chat_messages(lot_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
 
 -- ── Trigger: auto-update updated_at on users ───────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()

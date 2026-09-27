@@ -20,6 +20,7 @@ sealed class Screen(val route: String) {
     object Handover      : Screen("handover/{lotId}/{declaredKg}") {
         fun of(id: String, declaredKg: Double) = "handover/$id/$declaredKg"
     }
+    object Notifications : Screen("notifications")
 }
 
 @Composable
@@ -154,6 +155,10 @@ fun SethGNavHost() {
 
         composable(Screen.Handover.route) {
             HandoverScreen(onDone = { navController.popBackStack() })
+        }
+
+        composable(Screen.Notifications.route) {
+            NotificationsScreen(onBack = { navController.popBackStack() })
         }
     }
 }

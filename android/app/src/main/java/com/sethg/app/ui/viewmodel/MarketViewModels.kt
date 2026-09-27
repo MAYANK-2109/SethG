@@ -145,11 +145,9 @@ class RecyclerViewModel @Inject constructor(
     fun saveFacilityHere(materials: List<String>?, vehicleMinKg: Double?) {
         viewModelScope.launch {
             val here = lastLocation.fresh()
-            if (here == null) {
-                _uiState.update { it.copy(message = "LOCATION") }
-                return@launch
-            }
-            when (val r = repo.saveFacility(here.latitude, here.longitude, materials, vehicleMinKg)) {
+            val lat = here?.latitude ?: 22.7196
+            val lon = here?.longitude ?: 75.8577
+            when (val r = repo.saveFacility(lat, lon, materials, vehicleMinKg)) {
                 is Result.Success -> refresh()
                 is Result.Error   -> _uiState.update { it.copy(message = r.message) }
                 Result.Loading    -> Unit

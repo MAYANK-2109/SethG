@@ -2,31 +2,36 @@ package com.sethg.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// ── Light Theme — Non-common, Premium Emerald & Earth Color Palette ───────────
+// ── SethG Clean Teal & Mint Color Palette (Matched to Reference Design) ───────────
 
-val LightBackground     = Color(0xFFF6F8F6)   // Soft warm light sage/slate
-val LightSurface        = Color(0xFFFFFFFF)   // Pure white for crisp popped-up cards
-val LightSurfaceVariant = Color(0xFFEDF2EE)   // Soft mint tint for input fields
-val LightBorder         = Color(0xFFE2E8F0)   // Crisp subtle card border
+val LightBackground     = Color(0xFFFFFFFF)   // Pure clean white background
+val LightSurface        = Color(0xFFFFFFFF)   // Pure white for cards
+val LightSurfaceVariant = Color(0xFFF3F4F6)   // Subtle gray/mint tint for input fields
+val LightBorder         = Color(0xFFE5E7EB)   // Crisp subtle 1dp border
 
-val GreenPrimary        = Color(0xFF047857)   // Executive Emerald Forest Green
+val GreenPrimary        = Color(0xFF005A44)   // Signature Dark Forest Teal
+val GreenDark           = Color(0xFF004433)   // Deep Dark Teal
 val GreenOnPrimary      = Color(0xFFFFFFFF)
-val GreenContainer      = Color(0xFFD1FAE5)   // Light mint highlight container
-val GreenOnContainer    = Color(0xFF064E3B)
+val GreenContainer      = Color(0xFFE2F4EE)   // Soft Mint Hero & Card Container
+val GreenOnContainer    = Color(0xFF005A44)   // Dark Teal text for on-container
+val MintBackground      = GreenContainer
+
+val MintBannerBg        = Color(0xFFE5F6F0)   // Pale Mint for Top Status Banner
+val MintBannerText      = Color(0xFF0A503F)   // Dark Teal for Top Status Banner Text
 
 val OchreSecondary      = Color(0xFFD97706)   // Warm Ochre Amber accent
 val OchreContainer      = Color(0xFFFEF3C7)
 val OchreOnContainer    = Color(0xFF78350F)
 
-val SapphireAccent      = Color(0xFF2563EB)   // Sapphire Blue for weekly metrics
-val SapphireContainer   = Color(0xFFDBEAFE)
-val AmethystAccent      = Color(0xFF7C3AED)   // Amethyst Purple for monthly metrics
+val SapphireAccent      = Color(0xFF0284C7)   // Accent Blue
+val SapphireContainer   = Color(0xFFE0F2FE)
+val AmethystAccent      = Color(0xFF7C3AED)   // Accent Purple
 val AmethystContainer   = Color(0xFFEDE9FE)
 
-val TextPrimary         = Color(0xFF0F172A)   // High-contrast slate charcoal
-val TextSecondary       = Color(0xFF475569)   // Medium slate subtext
-val TextMuted           = Color(0xFF94A3B8)   // Muted label text
+val TextPrimary         = Color(0xFF111827)   // Clean deep charcoal
+val TextSecondary       = Color(0xFF4B5563)   // Readable slate gray
+val TextMuted           = Color(0xFF6B7280)   // Muted gray labels
 val GrayMuted           = TextMuted
 
-val ErrorColor          = Color(0xFFDC2626)   // Clear error red
+val ErrorColor          = Color(0xFFDC2626)   // Error red
 val ErrorContainer      = Color(0xFFFEE2E2)

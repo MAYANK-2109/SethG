@@ -96,4 +96,205 @@
     <string name="zone_central">మధ్య భారతం</string>
     <string name="zone_northeast">ఈశాన్య భారతం</string>
     <string name="ml_price_basis">AI అంచనా: %1$s కోసం (%2$d మార్కెట్ ధరలపై శిక్షణ పొందిన మోడల్)</string>
+
+    <!-- Offers, pickup, handover -->
+    <string name="status_accepted">ఆమోదించబడింది</string>
+    <string name="status_scheduled">పికప్ షెడ్యూల్ చేయబడింది</string>
+    <string name="status_handed_over">అప్పగించబడింది</string>
+    <string name="status_weighed">తూకం వేయబడింది — నిర్ధారణ పెండింగ్</string>
+    <string name="confirm_code_title">అప్పగింతను నిర్ధారించండి</string>
+    <string name="confirm_code_hint">బరువును తనిఖీ చేసి, రీసైక్లర్ ఫోన్‌లో చూపించిన 6 అంకెల కోడ్‌ను ఇక్కడ నమోదు చేయండి</string>
+    <string name="confirm_code_button">నిర్ధారించండి</string>
+    <string name="code_wrong">తప్పు కోడ్ — రీసైక్లర్ ఫోన్‌లోని కోడ్‌ను మళ్లీ తనిఖీ చేయండి</string>
+    <string name="code_not_available">కోడ్‌ని తనిఖీ చేయడానికి ఒకసారి ఇంటర్నెట్‌కి కనెక్ట్ అవ్వండి</string>
+    <string name="confirmed_pending">ధృవీకరించబడింది ✓ — ఆన్‌లైన్‌కి రాగానే పంపబడుతుంది</string>
+    <string name="confirmed_waiting_recycler">ధృవీకరించబడింది ✓ — రీసైక్లర్ బరువు రికార్డ్ కోసం వేచి ఉంది</string>
+    <string name="code_for_vendor">విక్రేత కోసం కోడ్</string>
+    <string name="code_for_vendor_hint">తూకం వేసిన తర్వాత విక్రేతకు ఈ కోడ్ చూపించండి — వారు తమ ఫోన్‌లో నమోదు చేసి నిర్ధారిస్తారు</string>
+    <string name="awaiting_vendor">విక్రేత నిర్ధారణ కోసం వేచి ఉంది</string>
+    <string name="handover_recorded">బరువు నమోదైంది ✓</string>
+    <string name="sent_to_recyclers">3–5 కి.మీ పరిధిలోని రీసైక్లర్లకు పంపబడింది</string>
+    <string name="accept_offer_title">ఈ ఆఫర్‌ను అంగీకరించాలా?</string>
+    <string name="accept_offer_body">%1$s ని %2$s కు. ధర లాక్ చేయబడుతుంది మరియు ఇతర ఆఫర్లు తిరస్కరించబడతాయి.</string>
+    <string name="accept">అంగీకరించు</string>
+    <string name="offers_title">ఆఫర్లు (%1$d)</string>
+    <string name="no_offers_yet">ఇంకా ఆఫర్లు లేవు. సమీపంలోని రీసైక్లర్లకు తెలియజేయబడింది.</string>
+    <string name="accepted_offer">అంగీకరించిన ఆఫర్</string>
+    <string name="price_locked_note">ధర లాక్ చేయబడింది — అసలు బరువు ఆధారంగా చెల్లింపు</string>
+    <string name="transport_title">సరుకు ఎలా తరలించబడుతుంది?</string>
+    <string name="mode_pickup">రీసైక్లర్ పికప్</string>
+    <string name="mode_pickup_desc">వాహనం మీ వద్దకు వస్తుంది</string>
+    <string name="mode_pickup_min">కనీసం %1$d కిలోలు ఉండాలి</string>
+    <string name="mode_pooled">ఉమ్మడి పికప్</string>
+    <string name="mode_pooled_desc">సమీపంలోని ఇతర సరుకులతో కలిపి ఒకే వాహనంలో</string>
+    <string name="mode_hub">కేంద్రం వద్ద ఇవ్వండి: %1$s</string>
+    <string name="km_away">%1$.1f కి.మీ దూరం</string>
+    <string name="pooled_waiting">వాహనం నిండడానికి వేచి ఉంది — తగినంత సరుకు చేరిన వెంటనే సమయం కేటాయించబడుతుంది</string>
+    <string name="pickup_scheduled">పికప్ సమయం</string>
+    <string name="drop_at_hub">కేంద్రం: %1$s</string>
+    <string name="handover_done">సరుకు అప్పగించబడింది ✓</string>
+    <string name="handover_summary">తూకం %1$.1f కిలోలు · చెల్లింపు %2$s</string>
+    <string name="weight_flagged">⚠ చెప్పిన బరువు కంటే 15% ఎక్కువ వ్యత్యాసం — సమీక్ష కోసం గుర్తించబడింది</string>
+    <string name="offer_meta">పికప్ %1$s · %2$.1f కి.మీ</string>
+    <string name="offer_sent">ఆఫర్ పంపబడింది ✓</string>
+    <string name="nearby_lots">సమీప సరుకులు (%1$d)</string>
+    <string name="my_trips">నా ట్రిప్పులు (%1$d)</string>
+    <string name="facility">నా కేంద్రం</string>
+    <string name="no_nearby_lots">3–5 కి.మీ లో ప్రస్తుతం సరుకు లేదు</string>
+    <string name="nearby_meta">%1$.1f కి.మీ · %2$s · %3$d ఆఫర్లు</string>
+    <string name="your_offer">మీ ఆఫర్: ₹%1$d/కిలో</string>
+    <string name="make_offer">ఆఫర్ ఇవ్వండి</string>
+    <string name="revise_offer">సవరించు</string>
+    <string name="waiting_for_pool">ఆమోదించబడింది, ట్రిప్ కోసం వేచి ఉంది</string>
+    <string name="no_trips">ఇంకా ట్రిప్పులు లేవు</string>
+    <string name="navigate">దారి చూపు</string>
+    <string name="do_handover">సరుకు స్వీకరించు</string>
+    <string name="rate_per_kg">ధర</string>
+    <string name="offer_total_preview">మొత్తం: %1$s</string>
+    <string name="pickup_day">పికప్ రోజు</string>
+    <string name="note_optional">గమనిక (ఐచ్ఛికం)</string>
+    <string name="send_offer">ఆఫర్ పంపు</string>
+    <string name="facility_hint">మీ ప్రస్తుత స్థానం కేంద్రంగా సేవ్ చేయబడుతుంది. దీనికి 3–5 కి.మీ లోపల ఉన్న సరుకులు మాత్రమే కనిపిస్తాయి.</string>
+    <string name="materials_accepted">మీరు తీసుకునే సరుకులు (ఏదీ ఎంచుకోకపోతే = అన్నీ)</string>
+    <string name="vehicle_min_kg">వాహనం పంపడానికి కనీస బరువు</string>
+    <string name="save_facility_here">ఇక్కడ సేవ్ చేయండి</string>
+    <string name="declared_weight">చెప్పిన బరువు %1$.1f కిలోలు</string>
+    <string name="measured_weight">కాటాపై అసలు బరువు</string>
+    <string name="handover_photos">ఫోటోలు: సరుకు + కాటా రీడింగ్</string>
+    <string name="handover_photos_hint">యాప్ కెమెరా ద్వారా మాత్రమే</string>
+    <string name="gps_auto">లొకేషన్ మరియు సమయం ఆటోమేటిక్‌గా నమోదు చేయబడతాయి</string>
+    <string name="confirm_handover">అప్పగింతను నిర్ధారించండి</string>
+    <string name="alert_channel">సరుకులు మరియు ఆఫర్లు</string>
+    <string name="alert_new_offer_title">కొత్త ఆఫర్: %1$s</string>
+    <string name="alert_new_offer_body">₹%1$d/కిలో → మొత్తం ₹%2$d · సరుకు %3$s</string>
+    <string name="alert_pickup_title">పికప్ సమయం ఖరారైంది</string>
+    <string name="alert_pickup_body">సరుకు %1$s · %2$s</string>
+    <string name="alert_new_lot_title">కొత్త సరుకు %1$.1f కి.మీ దూరంలో ఉంది</string>
+    <string name="alert_new_lot_body">%1$s · %2$.1f కిలోలు · ₹%3$d–₹%4$d · %5$s</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_home">హోమ్</string>
+    <string name="tab_listings">సరుకు జాబితా</string>
+    <string name="tab_sell">అమ్మండి</string>
+    <string name="tab_prices">ధరలు</string>
+
+    <!-- Top Header & Banner -->
+    <string name="app_slogan">స్కాన్ • అమ్మకం • రీసైక్లింగ్</string>
+    <string name="status_offline_banner">ఆఫ్‌లైన్ • డ్రాఫ్ట్‌లు ఈ ఫోన్‌లో ఉంటాయి</string>
+    <string name="status_online_banner">ఆన్‌లైన్ • సర్వర్‌తో సింక్ చేయబడింది</string>
+    <string name="pending_sync_count">సింక్ పెండింగ్: %1$d</string>
+
+    <!-- Role Selection -->
+    <string name="role_who_are_you">మీరు ఎవరు?</string>
+    <string name="role_who_desc">కొనసాగడానికి మీ పాత్రను ఎంచుకోండి</string>
+    <string name="role_vendor_title">విక్రేత (కబాడీవాలా)</string>
+    <string name="role_vendor_desc">నేను ఈ-వ్యర్థాలను సేకరించి అమ్ముతాను.</string>
+    <string name="role_recycler_title">రీసైక్లర్</string>
+    <string name="role_recycler_desc">నేను ఈ-వ్యర్థాలను కొనుగోలు చేసి రీసైకిల్ చేస్తాను.</string>
+    <string name="role_change_later">మీరు తర్వాత ప్రొఫైల్ సెట్టింగ్‌ల నుండి మీ పాత్రను మార్చుకోవచ్చు.</string>
+    <string name="select_role_label">పాత్రను ఎంచుకోండి</string>
+
+    <!-- Vendor Dashboard & Wizard -->
+    <string name="vendor_screen_title">స్పష్టతతో ఈ-వ్యర్థాలను అమ్మండి</string>
+    <string name="vendor_hero_title">స్కాన్ చేయండి. పోల్చండి.\nస్పష్టతతో అమ్మండి.</string>
+    <string name="vendor_hero_desc">వస్తువును ఫోటో తీయండి లేదా మీరే నమోదు చేయండి. మీ డ్రాఫ్ట్‌లు ఆఫ్‌లైన్‌లో కూడా ఉంటాయి.</string>
+    <string name="create_listing">జాబితాను సృష్టించండి</string>
+    <string name="local_price_guide">స్థానిక ధరల వివరాలు</string>
+    <string name="see_all">అన్నీ చూడండి ></string>
+    <string name="your_workspace">మీ వర్క్‌స్పేస్</string>
+    <string name="active_lots">యాక్టివ్ సరుకు</string>
+    <string name="total_revenue">మొత్తం ఆదాయం</string>
+    <string name="recent_transactions">ఇటీవలి లావాదేవీలు</string>
+    <string name="step_progress">దశ %1$d / %2$d</string>
+    <string name="wizard_take_photo">ఈ-వ్యర్థాల ఫోటో తీయండి</string>
+    <string name="tap_to_open_camera">కెమెరా తెరవడానికి నొక్కండి</string>
+    <string name="wizard_weight_title">బరువు మరియు రకాన్ని నమోదు చేయండి</string>
+    <string name="ewaste_type">ఈ-వ్యర్థం రకం</string>
+    <string name="weight_label">బరువు (kg)</string>
+    <string name="quantity_label">పరిమాణం</string>
+    <string name="wizard_grade_title">నాణ్యత గ్రేడ్ ఎంచుకోండి</string>
+    <string name="grade_new_like">కొత్తది లాంటిది</string>
+    <string name="grade_good">మంచిది</string>
+    <string name="grade_bad">పాడైంది</string>
+    <string name="grade_very_bad">చాలా పాడైంది</string>
+    <string name="wizard_runnable_title">ఇది పనిచేసే పరికరమా?</string>
+    <string name="wizard_runnable_desc">నడిచే పరికరం అంటే ఆన్/ఆఫ్ స్విచ్ ఉన్న పరికరం — ఫోన్, టీవీ, కంప్యూటర్, ప్రింటర్, మిక్సర్ మొదలైనవి.</string>
+    <string name="yes_label">అవును</string>
+    <string name="no_label">కాదు</string>
+    <string name="non_runnable_hint">నడవని భాగాలు (కేబుల్స్, PCBలు, బ్యాటరీలు) బరువు ఆధారంగా మాత్రమే ధర నిర్ణయించబడతాయి.</string>
+    <string name="wizard_working_title">పరికరం ఇంకా పనిచేస్తోందా?</string>
+    <string name="wizard_working_desc">పనిచేసే పరికరాలకు గణనీయంగా ఎక్కువ ధర లభిస్తుంది — 25% వరకు అదనం.</string>
+    <string name="yes_working_label">అవును, పనిచేస్తోంది</string>
+    <string name="no_not_working_label">లేదు, పనిచేయడం లేదు</string>
+    <string name="wizard_price_title">ధర అంచనా (AI మోడల్)</string>
+    <string name="est_price_range">అంచనా ధర పరిధి</string>
+    <string name="price_basis_factors">లొకేషన్, వర్గం, గ్రేడ్ మరియు స్థితి ఆధారంగా</string>
+    <string name="inputs_used">ఉపయోగించిన వివరాలు:</string>
+    <string name="category_label">వర్గం</string>
+    <string name="grade_label">గ్రేడ్</string>
+    <string name="runnable_label">పనిచేస్తుందా?</string>
+    <string name="working_label">బాగుందా?</string>
+    <string name="price_negotiate_hint">తుది ధర కస్టమర్‌తో నిర్ణయించబడుతుంది. తదుపరి దశలో మీరు మార్చవచ్చు.</string>
+    <string name="wizard_record_title">లావాదేవీ నమోదు చేయండి</string>
+    <string name="txn_summary">లావాదేవీ సారాంశం</string>
+    <string name="final_price_label">తుది ధర (₹)</string>
+    <string name="gps_auto_payment_note">చెల్లించినట్లు నమోదు చేసినప్పుడు మీ GPS లొకేషన్ నమోదు చేయబడుతుంది.</string>
+    <string name="mark_as_paid_save">చెల్లించినట్లు గుర్తించి సేవ్ చేయండి</string>
+    <string name="next_btn">తర్వాత →</string>
+    <string name="txn_recorded_title">లావాదేవీ నమోదైంది!</string>
+    <string name="back_to_dashboard">డ్యాష్‌బోర్డ్‌కి తిరిగి వెళ్లండి</string>
+    <string name="location_recorded_note">లొకేషన్ నమోదైంది · చెల్లింపు పూర్తయింది ✓</string>
+
+    <!-- Recycler Dashboard -->
+    <string name="recycler_dashboard_title">రీసైక్లర్ కమాండ్ సెంటర్</string>
+    <string name="recycler_hero_title">స్క్రాప్ సేకరించండి.\nధృవీకరించబడిన &amp; ప్రత్యక్ష.</string>
+    <string name="recycler_hero_desc">సమీపంలోని ఈ-వ్యర్థాల సరుకును కనుగొనండి, బిడ్లు వేయండి మరియు హ్యాండోవర్ సమన్వయం చేయండి.</string>
+    <string name="add_purchase">కొనుగోలును జోడించండి</string>
+    <string name="purchases_label">కొనుగోళ్లు</string>
+    <string name="total_spent_label">మొత్తం ఖర్చు</string>
+    <string name="purchase_ledger">కొనుగోలు లెడ్జర్</string>
+    <string name="no_purchases_yet">ఇంకా కొనుగోలు రికార్డులు లేవు.\nవిక్రేత నుండి కొన్న సరుకును నమోదు చేయడానికి + కొనుగోలు జోడించండి నొక్కండి.</string>
+    <string name="verified_recycler_badge">ధృవీకరించబడిన రీసైక్లర్</string>
+    <string name="recycler_workspace_badge">రీసైక్లర్ వర్క్‌స్పేస్</string>
+
+    <!-- Profile & Common -->
+    <string name="my_profile">నా ప్రొఫైల్</string>
+    <string name="account_type">ఖాతా రకం</string>
+    <string name="role_vendor">విక్రేత (కబాడీవాలా)</string>
+    <string name="role_recycler">రీసైక్లర్</string>
+
+    <!-- Notifications & Chat & Prices -->
+    <string name="notifications_title">నోటిఫికేషన్‌లు</string>
+    <string name="no_notifications_yet">ఇంకా నోటిఫికేషన్‌లు లేవు</string>
+    <string name="online_status">ఆన్‌లైన్</string>
+    <string name="type_message_hint">సందేశం టైప్ చేయండి…</string>
+    <string name="provisional_guide_tag">తాత్కాలిక ధరల గైడ్</string>
+    <string name="provisional_guide_desc">రీసైక్లర్ తాత్కాలిక రేట్ కార్డులు. పరిశీలన తర్వాత తుది ఆఫర్ మారవచ్చు.</string>
+    <string name="recycler_verification_title">రీసైక్లర్ ధృవీకరణ</string>
+    <string name="recycler_verification_desc">బల్క్ రీసైక్లర్ బిడ్డింగ్‌ను అన్‌లాక్ చేయడానికి ప్రభుత్వ ప్రమాణపత్రాన్ని అప్‌లోడ్ చేయండి.</string>
+    <string name="recycler_certificate_approved">మీ ప్రభుత్వ ధృవీకరణ పత్రం ఆమోదించబడింది.</string>
+
+    <!-- Recycler not verified, purchase form, marketplace -->
+    <string name="account_not_verified">ఖాతా ధృవీకరించబడలేదు</string>
+    <string name="upload_cert_to_see_lots">దగ్గరలోని సరుకు చూడాలంటే జారీ ధృవీకరణ పత్రం అప్‌లోడ్ చేయండి.</string>
+    <string name="upload">అప్‌లోడ్ చేయండి</string>
+    <string name="add_purchase_record_title">కొనుగోలు నమోదు చేయండి</string>
+    <string name="save_purchase_record">కొనుగోలు సేవ్ చేయండి</string>
+    <string name="vendor_contact_section">వెండర్ సంప్రదింపు</string>
+    <string name="vendor_name_label">వెండర్ పేరు *</string>
+    <string name="vendor_phone_label">వెండర్ ఫోన్ (ఐచ్ఛికం)</string>
+    <string name="vendor_location_note">వెండర్ అమ్మకం పూర్తి చేసినప్పుడు నమోదైన స్థానం నుండి వెండర్ స్థానం నమోదు అవుతుంది.</string>
+    <string name="material_details_section">సరుకు వివరాలు</string>
+    <string name="material_type_label">సరుకు / ఇ-వేస్ట్ రకం *</string>
+    <string name="material_placeholder">ఉదా. మొబైల్, కేబుల్స్, పీసీబీలు…</string>
+    <string name="weight_kg_label">బరువు (kg) *</string>
+    <string name="quantity_short_label">పరిమాణం</string>
+    <string name="payment_section">చెల్లింపు</string>
+    <string name="amount_paid_label">చెల్లించిన మొత్తం (₹) *</string>
+    <string name="notes_optional_label">నోట్స్ (ఐచ్ఛికం)</string>
+    <string name="marketplace_feed_title">మార్కెట్‌ప్లేస్</string>
+    <string name="sold_by_label">%1$s ద్వారా</string>
+    <string name="est_value_label">అంచనా విలువ</string>
+    <string name="chat_label">చాట్</string>
+    <string name="bid_placed_label">మీరు ₹%1$d/kg కి బిడ్ వేసారు</string>
 </resources>

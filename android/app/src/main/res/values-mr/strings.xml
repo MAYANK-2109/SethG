@@ -171,4 +171,130 @@
     <string name="alert_pickup_body">माल %1$s · %2$s</string>
     <string name="alert_new_lot_title">नवीन माल %1$.1f km दूर</string>
     <string name="alert_new_lot_body">%1$s · %2$.1f kg · ₹%3$d–₹%4$d · %5$s</string>
+
+    <!-- Navigation tabs -->
+    <string name="tab_home">होम</string>
+    <string name="tab_listings">माल यादी</string>
+    <string name="tab_sell">विक्री</string>
+    <string name="tab_prices">दर</string>
+
+    <!-- Top Header & Banner -->
+    <string name="app_slogan">स्कॅन • विक्री • पुनर्चक्रण</string>
+    <string name="status_offline_banner">ऑफलाइन • मसुदा या फोनवर सुरक्षित आहे</string>
+    <string name="status_online_banner">ऑनलाइन • सर्व्हरशी सिंक झाले</string>
+    <string name="pending_sync_count">सिंक बाकी: %1$d</string>
+
+    <!-- Role Selection -->
+    <string name="role_who_are_you">तुम्ही कोण आहात?</string>
+    <string name="role_who_desc">पुढे जाण्यासाठी तुमची भूमिका निवडा</string>
+    <string name="role_vendor_title">विक्रेता (कबाडी)</string>
+    <string name="role_vendor_desc">मी ई-कचरा गोळा करून विकतो.</string>
+    <string name="role_recycler_title">रिसायकलर</string>
+    <string name="role_recycler_desc">मी ई-कचरा खरेदी करून रिसायकल करतो.</string>
+    <string name="role_change_later">तुम्ही नंतर प्रोफाइल सेटिंग्जमधून तुमची भूमिका बदलू शकता.</string>
+    <string name="select_role_label">भूमिका निवडा</string>
+
+    <!-- Vendor Dashboard & Wizard -->
+    <string name="vendor_screen_title">पारदर्शकतेने ई-कचरा विका</string>
+    <string name="vendor_hero_title">स्कॅन करा. तुलना करा.\nपारदर्शकतेने विका.</string>
+    <string name="vendor_hero_desc">मालाचा फोटो घ्या किंवा स्वतः नोंदवा. तुमचा मसुदा ऑफलाइनही सुरक्षित राहील.</string>
+    <string name="create_listing">नवीन माल नोंदवा</string>
+    <string name="local_price_guide">स्थानिक दर सूची</string>
+    <string name="see_all">सर्व पहा ></string>
+    <string name="your_workspace">तुमची कार्यक्षेत्र</string>
+    <string name="active_lots">सक्रिय माल</string>
+    <string name="total_revenue">एकूण कमाई</string>
+    <string name="recent_transactions">अलीकडील व्यवहार</string>
+    <string name="step_progress">टप्पा %1$d / %2$d</string>
+    <string name="wizard_take_photo">ई-कचऱ्याचा फोटो घ्या</string>
+    <string name="tap_to_open_camera">कॅमेरा उघडण्यासाठी टॅप करा</string>
+    <string name="wizard_weight_title">वजन आणि प्रकार भरा</string>
+    <string name="ewaste_type">ई-कचरा प्रकार</string>
+    <string name="weight_label">वजन (kg)</string>
+    <string name="quantity_label">प्रमाण (नग)</string>
+    <string name="wizard_grade_title">दर्जा निवडा</string>
+    <string name="grade_new_like">नवीनसारखे</string>
+    <string name="grade_good">चांगले</string>
+    <string name="grade_bad">खराब</string>
+    <string name="grade_very_bad">अतिशय खराब</string>
+    <string name="wizard_runnable_title">हे चालणारे उपकरण आहे का?</string>
+    <string name="wizard_runnable_desc">चालणारे उपकरण म्हणजे ज्यामध्ये ऑन/ऑफ स्विच असतो — जसे की फोन, टीव्ही, कॉम्प्युटर, प्रिंटर, मिक्सर इत्यादी.</string>
+    <string name="yes_label">होय</string>
+    <string name="no_label">नाही</string>
+    <string name="non_runnable_hint">न चालणाऱ्या भागांची (केबल्स, पीसीबी, बॅटरी) किंमत फक्त वजनावर ठरेल.</string>
+    <string name="wizard_working_title">उपकरण अजूनही चालू आहे का?</string>
+    <string name="wizard_working_desc">चालू उपकरणांना जास्त किंमत मिळते — 25% पर्यंत जास्त.</string>
+    <string name="yes_working_label">होय, चालू आहे</string>
+    <string name="no_not_working_label">नाही, बंद आहे</string>
+    <string name="wizard_price_title">अंदाजे किंमत (AI मॉडेल)</string>
+    <string name="est_price_range">अंदाजे किंमत श्रेणी</string>
+    <string name="price_basis_factors">स्थान, श्रेणी, दर्जा आणि स्थितीवर आधारित</string>
+    <string name="inputs_used">वापरलेले इनपुट:</string>
+    <string name="category_label">श्रेणी</string>
+    <string name="grade_label">दर्जा</string>
+    <string name="runnable_label">चालणारे?</string>
+    <string name="working_label">चालू स्थिती?</string>
+    <string name="price_negotiate_hint">अंतिम किंमत ग्राहकाशी ठरवली जाते. तुम्ही पुढील टप्प्यात बदलू शकता.</string>
+    <string name="wizard_record_title">व्यवहार नोंदवा</string>
+    <string name="txn_summary">व्यवहार सारांश</string>
+    <string name="final_price_label">अंतिम किंमत (₹)</string>
+    <string name="gps_auto_payment_note">पैसे दिले म्हणून नोंदवताना तुमची GPS लोकेशन आपोआप नोंदवली जाईल.</string>
+    <string name="mark_as_paid_save">पैसे मिळाले व सेव्ह करा</string>
+    <string name="next_btn">पुढे →</string>
+    <string name="txn_recorded_title">व्यवहार नोंदवला गेला!</string>
+    <string name="back_to_dashboard">डॅशबोर्डवर परत जा</string>
+    <string name="location_recorded_note">लोकेशन नोंदवली · पैसे मिळाले ✓</string>
+
+    <!-- Recycler Dashboard -->
+    <string name="recycler_dashboard_title">रिसायकलर नियंत्रण केंद्र</string>
+    <string name="recycler_hero_title">भंगार खरेदी करा.\nसत्यापित आणि थेट.</string>
+    <string name="recycler_hero_desc">जवळचा ई-कचरा शोधा, स्पर्धात्मक बोली लावा आणि माल ताब्यात घ्या.</string>
+    <string name="add_purchase">खरेदी नोंदवा</string>
+    <string name="purchases_label">एकूण खरेदी</string>
+    <string name="total_spent_label">एकूण खर्च</string>
+    <string name="purchase_ledger">खरेदी खातेवही</string>
+    <string name="no_purchases_yet">अजून खरेदी नोंद नाही.\nविक्रेत्याकडून घेतलेला माल नोंदवण्यासाठी + खरेदी नोंदवा दाबा.</string>
+    <string name="verified_recycler_badge">सत्यापित रिसायकलर</string>
+    <string name="recycler_workspace_badge">रिसायकलर कार्यक्षेत्र</string>
+
+    <!-- Profile & Common -->
+    <string name="my_profile">माझी प्रोफाइल</string>
+    <string name="account_type">खात्याचा प्रकार</string>
+    <string name="role_vendor">विक्रेता (कबाडी)</string>
+    <string name="role_recycler">रिसायकलर</string>
+
+    <!-- Notifications & Chat & Prices -->
+    <string name="notifications_title">सूचना</string>
+    <string name="no_notifications_yet">अजून कोणत्याही सूचना नाहीत</string>
+    <string name="online_status">ऑनलाइन</string>
+    <string name="type_message_hint">संदेश लिहा…</string>
+    <string name="provisional_guide_tag">तात्पुरती दर सूची</string>
+    <string name="provisional_guide_desc">रिसायकलरचे तात्पुरते दर पत्रक. तपासणीनंतर अंतिम ऑफर वेगळी असू शकते.</string>
+    <string name="recycler_verification_title">रिसायकलर पडताळणी</string>
+    <string name="recycler_verification_desc">मोठ्या प्रमाणावर रिसायकलर बोली अनलॉक करण्यासाठी सरकारी प्रमाणपत्र अपलोड करा.</string>
+    <string name="recycler_certificate_approved">तुमचे सरकारी प्रमाणपत्र मंजूर झाले आहे.</string>
+
+    <!-- Recycler not verified, purchase form, marketplace -->
+    <string name="account_not_verified">खाते पडताळलेले नाही</string>
+    <string name="upload_cert_to_see_lots">जवळचे माल पाहण्यासाठी सरकारी प्रमाणपत्र अपलोड करा.</string>
+    <string name="upload">अपलोड करा</string>
+    <string name="add_purchase_record_title">खरेदी नोंद करा</string>
+    <string name="save_purchase_record">खरेदी सेव करा</string>
+    <string name="vendor_contact_section">विक्रेता संपर्क</string>
+    <string name="vendor_name_label">विक्रेत्याचे नाव *</string>
+    <string name="vendor_phone_label">विक्रेत्याचा फोन (पर्यायी)</string>
+    <string name="vendor_location_note">विक्रेत्याचे ठिकाण त्यांनी विक्री पूर्ण केल्यावर नोंदवलेल्या ठिकाणाहून नोंदवले जाईल.</string>
+    <string name="material_details_section">मालाचे तपशील</string>
+    <string name="material_type_label">माल / ई-कचरा प्रकार *</string>
+    <string name="material_placeholder">उदा. मोबाइल, तार, सर्किट बोर्ड…</string>
+    <string name="weight_kg_label">वजन (kg) *</string>
+    <string name="quantity_short_label">प्रमाण</string>
+    <string name="payment_section">देयक</string>
+    <string name="amount_paid_label">दिलेली रक्कम (₹) *</string>
+    <string name="notes_optional_label">नोंद (पर्यायी)</string>
+    <string name="marketplace_feed_title">मार्केटप्लेस</string>
+    <string name="sold_by_label">%1$s द्वारे</string>
+    <string name="est_value_label">अंदाजे मूल्य</string>
+    <string name="chat_label">चॅट</string>
+    <string name="bid_placed_label">तुम्ही ₹%1$d/kg ची बोली लावली</string>
 </resources>
