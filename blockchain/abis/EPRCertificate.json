@@ -1,0 +1,8 @@
+[
+  "event CertificateMinted(uint256 indexed tokenId, string indexed lotId, address indexed recycler, string materialCategory, uint256 actualWeightGrams, bytes32 scaleProofHash)",
+  "event CertificateRedeemed(uint256 indexed tokenId, address indexed auditor)",
+  "function mintCertificate(string calldata lotId, string calldata handoverId, string calldata materialCategory, uint256 actualWeightGrams, bytes32 collectorIdentityHash, address recyclerAddress, bytes32 scaleProofHash, string calldata ipfsMetadataUri) external returns (uint256)",
+  "function redeemCertificate(uint256 tokenId) external",
+  "function getCertificate(uint256 tokenId) external view returns (tuple(uint256 tokenId, string lotId, string handoverId, string materialCategory, uint256 actualWeightGrams, bytes32 collectorIdentityHash, address recyclerAddress, bytes32 scaleProofHash, uint256 issuedAt, bool isRedeemed, string ipfsMetadataUri))",
+  "function getCertificateByLotId(string calldata lotId) external view returns (tuple(uint256 tokenId, string lotId, string handoverId, string materialCategory, uint256 actualWeightGrams, bytes32 collectorIdentityHash, address recyclerAddress, bytes32 scaleProofHash, uint256 issuedAt, bool isRedeemed, string ipfsMetadataUri))"
+]

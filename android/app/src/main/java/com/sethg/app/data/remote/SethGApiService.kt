@@ -90,4 +90,8 @@ interface SethGApiService {
 
     @POST("lots/{id}/dispute")
     suspend fun raiseDispute(@Path("id") lotId: String, @Body request: DisputeRequest): Response<DisputeResponse>
+
+    // Blockchain & EPR Verification
+    @GET("lots/{id}/blockchain-proof")
+    suspend fun getBlockchainProof(@Path("id") lotId: String): Response<com.sethg.app.data.remote.model.BlockchainProofResponse>
 }

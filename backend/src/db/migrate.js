@@ -167,6 +167,13 @@ ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_status VARCHAR(20) DEFAULT
 ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_tx_id  TEXT;
 ALTER TABLE lots      ADD COLUMN IF NOT EXISTS escrow_amount NUMERIC(12,2);
 
+-- Blockchain & EPR Verifiable Ledger columns
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS blockchain_tx_hash    TEXT;
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS blockchain_proof_hash TEXT;
+ALTER TABLE lots      ADD COLUMN IF NOT EXISTS epr_token_id          BIGINT;
+ALTER TABLE handovers ADD COLUMN IF NOT EXISTS blockchain_proof_hash TEXT;
+ALTER TABLE handovers ADD COLUMN IF NOT EXISTS blockchain_tx_hash    TEXT;
+
 -- PostGIS Geometry columns (with safe fallback for environments without PostGIS)
 DO $$ BEGIN
   ALTER TABLE users ADD COLUMN IF NOT EXISTS geom GEOMETRY(Point, 4326);

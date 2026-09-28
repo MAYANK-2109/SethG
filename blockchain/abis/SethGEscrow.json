@@ -1,0 +1,11 @@
+[
+  "event EscrowHeld(string indexed lotId, address indexed recycler, address indexed collector, uint256 amount)",
+  "event EscrowReleased(string indexed lotId, address indexed collector, uint256 amount, bytes32 proofHash)",
+  "event EscrowDisputed(string indexed lotId, address indexed raisedBy, string reason)",
+  "event EscrowResolved(string indexed lotId, address indexed payoutRecipient, uint256 payoutAmount)",
+  "function lockEscrow(string calldata lotId, address payable collector) external payable",
+  "function releaseEscrow(string calldata lotId, bytes32 proofHash) external",
+  "function freezeForDispute(string calldata lotId, string calldata reason) external",
+  "function resolveDispute(string calldata lotId, address payable payoutRecipient, uint256 payoutAmount) external",
+  "function getEscrow(string calldata lotId) external view returns (address collector, address recycler, uint256 amount, uint8 status, bytes32 handoverProofHash, uint256 heldAt, uint256 settledAt)"
+]

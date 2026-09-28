@@ -12,6 +12,9 @@ router.get('/:id/dispute', authenticate, ctrl.getDispute);
 router.post('/:id/dispute', authenticate, ctrl.raiseDisputeValidation, ctrl.raiseDispute);
 router.post('/disputes/:disputeId/resolve', authenticate, ctrl.resolveDispute);
 
+// Public verifiable blockchain audit proof & EPR Certificate
+router.get('/:id/blockchain-proof', ctrl.getBlockchainProof);
+
 // Collectors: kabadiwalas sign up as "vendor"; "user" is the older name for the same role
 router.use(authenticate, requireRole('vendor', 'user'));
 router.post('/', ctrl.syncLotValidation, ctrl.syncLot);

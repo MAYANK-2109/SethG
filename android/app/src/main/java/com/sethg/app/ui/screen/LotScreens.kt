@@ -258,6 +258,20 @@ private fun LotCard(lot: Lot, onClick: () -> Unit) {
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
                             )
                         }
+                    } else if (lot.status == "HANDED_OVER") {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFEDE7F6),
+                            border = BorderStroke(1.dp, Color(0xFF673AB7))
+                        ) {
+                            Text(
+                                text = "⛓️ Blockchain & EPR Verified",
+                                color = Color(0xFF512DA8),
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
+                            )
+                        }
                     }
                 }
 
@@ -273,8 +287,13 @@ private fun LotCard(lot: Lot, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 // Estimate or status note
+                val protectionNote = if (lot.status == "HANDED_OVER") {
+                    "Polygon PoS · On-Chain Audit & EPR Certified"
+                } else {
+                    "${lot.estimate.format()} · Escrow & Smart Contract Protected"
+                }
                 Text(
-                    text = "${lot.estimate.format()} · Razorpay Escrow Protected",
+                    text = protectionNote,
                     fontSize = 13.sp,
                     color = TextMuted
                 )

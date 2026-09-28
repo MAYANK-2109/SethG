@@ -135,7 +135,9 @@ data class RemoteHandover(
     @SerializedName("final_amount") val finalAmount: Double,
     @SerializedName("weight_flagged") val weightFlagged: Boolean,
     @SerializedName("created_at") val createdAt: String,
-    @SerializedName("confirmed_at") val confirmedAt: String? = null   // null until the vendor enters the code
+    @SerializedName("confirmed_at") val confirmedAt: String? = null,
+    @SerializedName("blockchain_proof_hash") val blockchainProofHash: String? = null,
+    @SerializedName("blockchain_tx_hash") val blockchainTxHash: String? = null
 )
 
 data class RemoteLot(
@@ -150,7 +152,13 @@ data class RemoteLot(
     @SerializedName("slot_end") val slotEnd: String?,
     val offers: List<RemoteOffer> = emptyList(),
     val handover: RemoteHandover?,
-    @SerializedName("handover_otp_hash") val handoverOtpHash: String? = null  // sha256("lotId:code"), for the offline check
+    @SerializedName("handover_otp_hash") val handoverOtpHash: String? = null,
+    @SerializedName("escrow_status") val escrowStatus: String? = null,
+    @SerializedName("escrow_tx_id") val escrowTxId: String? = null,
+    @SerializedName("escrow_amount") val escrowAmount: Double? = null,
+    @SerializedName("blockchain_tx_hash") val blockchainTxHash: String? = null,
+    @SerializedName("blockchain_proof_hash") val blockchainProofHash: String? = null,
+    @SerializedName("epr_token_id") val eprTokenId: String? = null
 )
 
 data class SyncLotResponse(
@@ -313,4 +321,18 @@ data class DisputeRemoteModel(
 data class DisputeResponse(
     val message: String,
     val dispute: DisputeRemoteModel?
+)
+
+data class BlockchainProofResponse(
+    @SerializedName("lot_id") val lotId: String,
+    val status: String,
+    val category: String,
+    @SerializedName("is_blockchain_verified") val isBlockchainVerified: Boolean,
+    val network: String,
+    @SerializedName("chain_id") val chainId: Int,
+    @SerializedName("blockchain_tx_hash") val blockchainTxHash: String?,
+    @SerializedName("blockchain_proof_hash") val blockchainProofHash: String?,
+    @SerializedName("epr_token_id") val eprTokenId: String?,
+    @SerializedName("explorer_url") val explorerUrl: String?,
+    @SerializedName("statutory_compliance") val statutoryCompliance: String?
 )

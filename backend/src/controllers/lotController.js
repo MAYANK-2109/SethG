@@ -5,6 +5,7 @@ const { planTrips } = require('../lib/pooling');
 const { MAX_MATCH_KM, haversineSql } = require('../lib/geo');
 const { otpFor, otpHash, otpMatches, finalize } = require('../lib/handover');
 const escrow = require('../lib/escrow');
+const blockchain = require('../services/blockchain');
 const bcrypt = require('bcrypt');
 
 const CHAT_SALT_ROUNDS = 10;
@@ -122,15 +123,27 @@ exports.acceptOffer = async (req, res, next) => {
        WHERE o.id = $1 AND o.lot_id = $2 AND o.status = 'PENDING'`, [req.params.offerId, lot.id]);
     if (!offer) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Offer not found' }); }
 
-    // Create Escrow Hold via Razorpay Sandbox adapter
+    // Create Escrow Hold via Razorpay Sandbox adapter & On-chain Escrow
     const offerTotal = parseFloat(offer.rate_per_kg) * parseFloat(lot.weight_kg);
     const escrowHold = await escrow.createEscrowHold(lot.id, offerTotal, offer.recycler_id);
+    let blockchainEscrow = null;
+    try {
+      blockchainEscrow = await blockchain.lockEscrow({
+        lotId: lot.id,
+        collectorId: lot.collector_id,
+        recyclerId: offer.recycler_id,
+        amountInr: offerTotal
+      });
+    } catch (bcErr) {
+      console.warn('⚠️ Blockchain escrow lock warning (non-blocking):', bcErr.message);
+    }
 
     await client.query(
       `UPDATE lots SET status = 'ACCEPTED', accepted_offer_id = $1,
-              escrow_status = $2, escrow_tx_id = $3, escrow_amount = $4
-       WHERE id = $5`,
-      [offer.id, escrowHold.status, escrowHold.escrowTxId, escrowHold.amount, lot.id]
+              escrow_status = $2, escrow_tx_id = $3, escrow_amount = $4,
+              blockchain_tx_hash = COALESCE($5, blockchain_tx_hash)
+       WHERE id = $6`,
+      [offer.id, escrowHold.status, escrowHold.escrowTxId, escrowHold.amount, blockchainEscrow ? blockchainEscrow.txHash : null, lot.id]
     );
     await client.query(`UPDATE offers SET status = 'ACCEPTED' WHERE id = $1`, [offer.id]);
     await client.query(
@@ -453,6 +466,73 @@ exports.getMyChats = async (req, res, next) => {
       [userId]
     );
     res.json({ chats: rows });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * GET /lots/:id/blockchain-proof
+ * Public verifiable audit endpoint for on-chain custody proof and EPR Certificate.
+ */
+exports.getBlockchainProof = async (req, res, next) => {
+  try {
+    const lotId = req.params.id;
+    const { rows: [lot] } = await pool.query(
+      `SELECT l.*, c.name AS collector_name
+       FROM lots l
+       JOIN users c ON c.id = l.collector_id
+       WHERE l.id = $1`,
+      [lotId]
+    );
+
+    if (!lot) {
+      return res.status(404).json({ error: 'Lot not found' });
+    }
+
+    const { rows: [handover] } = await pool.query(
+      `SELECT h.*, r.name AS recycler_name
+       FROM handovers h
+       JOIN users r ON r.id = h.recycler_id
+       WHERE h.lot_id = $1`,
+      [lotId]
+    );
+
+    const txHash = lot.blockchain_tx_hash || (handover ? handover.blockchain_tx_hash : null);
+    const proofHash = lot.blockchain_proof_hash || (handover ? handover.blockchain_proof_hash : null);
+    const tokenId = lot.epr_token_id;
+
+    const explorerUrl = txHash ? `${blockchain.explorerBaseUrl}/tx/${txHash}` : null;
+
+    return res.json({
+      lot_id: lot.id,
+      status: lot.status,
+      category: lot.category,
+      is_blockchain_verified: Boolean(proofHash || txHash),
+      network: blockchain.networkName,
+      chain_id: blockchain.chainId,
+      blockchain_tx_hash: txHash,
+      blockchain_proof_hash: proofHash,
+      epr_token_id: tokenId ? String(tokenId) : null,
+      explorer_url: explorerUrl,
+      escrow: {
+        status: lot.escrow_status,
+        tx_id: lot.escrow_tx_id,
+        amount: lot.escrow_amount
+      },
+      audit: {
+        declared_weight_kg: parseFloat(lot.weight_kg),
+        actual_weight_kg: handover ? parseFloat(handover.actual_weight_kg) : null,
+        final_payout_inr: handover ? parseFloat(handover.final_amount) : null,
+        rate_per_kg: handover ? parseFloat(handover.rate_per_kg) : null,
+        weight_flagged: handover ? handover.weight_flagged : false,
+        scale_photo_hashes: (handover && handover.photo_hashes) || lot.photo_hashes || [],
+        handover_gps: handover ? { lat: handover.lat, lon: handover.lon } : null,
+        distance_from_lot_km: handover ? parseFloat(handover.distance_from_lot_km) : null,
+        confirmed_at: handover ? handover.confirmed_at : lot.vendor_confirmed_at
+      },
+      statutory_compliance: 'CPCB E-Waste Management Rules 2022 / Digital EPR Credit Registry'
+    });
   } catch (err) {
     next(err);
   }
