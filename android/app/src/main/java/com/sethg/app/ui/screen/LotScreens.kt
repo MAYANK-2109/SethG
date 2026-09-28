@@ -706,7 +706,11 @@ private fun CategoryTile(
 
 @Composable
 private fun LotSavedView(lotId: String, estimate: PriceEstimate?, onDone: () -> Unit) {
+    var showPoolOptions by remember { mutableStateOf(false) }
+    var poolState by remember { mutableStateOf("CHOICE") } // CHOICE, JOIN, JOINED
+
     BackHandler(onBack = onDone)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -715,20 +719,85 @@ private fun LotSavedView(lotId: String, estimate: PriceEstimate?, onDone: () -> 
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(88.dp))
-        Spacer(Modifier.height(16.dp))
-        Text(stringResource(R.string.lot_created), color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(Modifier.height(8.dp))
-        Text("${stringResource(R.string.lot_id)}: $lotId", color = TextPrimary, fontSize = 18.sp)
-        estimate?.let { Text(it.format(), color = OchreSecondary, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
-        Spacer(Modifier.height(8.dp))
-        Text(stringResource(R.string.saved_offline_note), color = TextSecondary, textAlign = TextAlign.Center)
-        Spacer(Modifier.height(32.dp))
-        Button(
-            onClick = onDone,
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
-        ) { Text(stringResource(R.string.done), fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+        if (!showPoolOptions) {
+            Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(88.dp))
+            Spacer(Modifier.height(16.dp))
+            Text(stringResource(R.string.lot_created), color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(8.dp))
+            Text("${stringResource(R.string.lot_id)}: $lotId", color = TextPrimary, fontSize = 18.sp)
+            estimate?.let { Text(it.format(), color = OchreSecondary, fontSize = 22.sp, fontWeight = FontWeight.Bold) }
+            Spacer(Modifier.height(8.dp))
+            Text(stringResource(R.string.saved_offline_note), color = TextSecondary, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(32.dp))
+            Button(
+                onClick = onDone,
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+            ) { Text("Post Lot", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+            Spacer(Modifier.height(16.dp))
+            androidx.compose.material3.OutlinedButton(
+                onClick = { showPoolOptions = true },
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+                shape = RoundedCornerShape(16.dp)
+            ) { Text("Pool Lot", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = GreenPrimary) }
+        } else {
+            when (poolState) {
+                "CHOICE" -> {
+                    Text("Pool Options", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(16.dp))
+                    Text("Group your lot with other vendors to attract bigger buyers.", textAlign = TextAlign.Center, color = TextSecondary)
+                    Spacer(Modifier.height(32.dp))
+                    Button(
+                        onClick = { poolState = "JOINED" }, // Simulate creating a pool
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                    ) { Text("Create a Pool (Admin)", fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+                    Spacer(Modifier.height(16.dp))
+                    androidx.compose.material3.OutlinedButton(
+                        onClick = { poolState = "JOIN" },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp)
+                    ) { Text("Join a Pool", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = GreenPrimary) }
+                }
+                "JOIN" -> {
+                    Text("Available Pools", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(16.dp))
+                    // Mock list of pools
+                    SethGCard(modifier = Modifier.fillMaxWidth().clickable { poolState = "JOINED" }) {
+                        Column {
+                            Text("Pool #P-8821", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Category: Mobile • 4 Lots • Total 45 kg", color = TextSecondary, fontSize = 14.sp)
+                            Text("Admin: Rajesh Kumar", color = GreenPrimary, fontSize = 12.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    SethGCard(modifier = Modifier.fillMaxWidth().clickable { poolState = "JOINED" }) {
+                        Column {
+                            Text("Pool #P-1093", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("Category: Mobile • 2 Lots • Total 12 kg", color = TextSecondary, fontSize = 14.sp)
+                            Text("Admin: Anita Singh", color = GreenPrimary, fontSize = 12.sp)
+                        }
+                    }
+                    Spacer(Modifier.height(32.dp))
+                    androidx.compose.material3.TextButton(onClick = { poolState = "CHOICE" }) { Text("Back") }
+                }
+                "JOINED" -> {
+                    Icon(Icons.Filled.CheckCircle, contentDescription = null, tint = GreenPrimary, modifier = Modifier.size(88.dp))
+                    Spacer(Modifier.height(16.dp))
+                    Text("Successfully Pooled!", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(8.dp))
+                    Text("Your lot is now part of the pool. The admin will post it soon.", textAlign = TextAlign.Center, color = TextSecondary)
+                    Spacer(Modifier.height(32.dp))
+                    Button(
+                        onClick = onDone,
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                    ) { Text(stringResource(R.string.done), fontSize = 18.sp, fontWeight = FontWeight.Bold) }
+                }
+            }
+        }
     }
 }

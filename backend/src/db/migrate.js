@@ -197,6 +197,16 @@ CREATE TABLE IF NOT EXISTS disputes (
 );
 CREATE INDEX IF NOT EXISTS idx_disputes_lot ON disputes(lot_id);
 
+-- ── Vendor Pools ────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS vendor_pools (
+  id          UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_id    UUID          NOT NULL REFERENCES users(id),
+  category    VARCHAR(20)   NOT NULL,
+  status      VARCHAR(20)   NOT NULL DEFAULT 'OPEN',       -- OPEN | POSTED
+  created_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW()
+);
+ALTER TABLE lots ADD COLUMN IF NOT EXISTS vendor_pool_id UUID REFERENCES vendor_pools(id);
+
 UPDATE handovers h SET confirmed_at = h.created_at
   FROM lots l WHERE l.id = h.lot_id AND l.status = 'HANDED_OVER' AND h.confirmed_at IS NULL;
 

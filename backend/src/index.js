@@ -11,6 +11,7 @@ const earningsRoutes = require('./routes/earnings');
 const lotRoutes = require('./routes/lots');
 const recyclerRoutes = require('./routes/recycler');
 const hubRoutes = require('./routes/hubs');
+const poolRoutes = require('./routes/pools');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -29,6 +30,7 @@ app.use('/earnings', earningsRoutes);
 app.use('/lots', lotRoutes);
 app.use('/recycler', recyclerRoutes);
 app.use('/hubs', hubRoutes);
+app.use('/pools', poolRoutes);
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'SethG API' }));
