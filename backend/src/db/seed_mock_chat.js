@@ -8,10 +8,8 @@ async function seedChat() {
         const recyclerId = '1748e390-8095-4e3f-a41c-250becb14da7'; // 9301095908
         const vendorId = '4f327c25-1b8e-4f40-8c30-ec711ae28678';   // 9340659812
 
-        // Ensure lot collector is vendor 9340659812
         await pool.query('UPDATE lots SET collector_id = $1 WHERE id = $2', [vendorId, lotId]);
 
-        // Clear old messages for this lot
         await pool.query('DELETE FROM chat_messages WHERE lot_id = $1', [lotId]);
 
         const messages = [

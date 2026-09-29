@@ -12,16 +12,19 @@ const lotRoutes = require('./routes/lots');
 const recyclerRoutes = require('./routes/recycler');
 const hubRoutes = require('./routes/hubs');
 const poolRoutes = require('./routes/pools');
+const notificationRoutes = require('./routes/notifications');
 const { errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: '*' } });
 setupSocketIO(io);
+app.set('io', io);
 
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 app.use('/auth', authRoutes);
@@ -31,6 +34,8 @@ app.use('/lots', lotRoutes);
 app.use('/recycler', recyclerRoutes);
 app.use('/hubs', hubRoutes);
 app.use('/pools', poolRoutes);
+app.use('/notifications', notificationRoutes);
+app.use('/user/notifications', notificationRoutes);
 
 // ── Health check ────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', service: 'SethG API' }));

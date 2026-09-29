@@ -220,8 +220,26 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content TEXT;
 ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS content_hash TEXT;
+ALTER TABLE chat_messages ADD COLUMN IF NOT EXISTS pool_id UUID REFERENCES vendor_pools(id) ON DELETE CASCADE;
+ALTER TABLE chat_messages ALTER COLUMN lot_id DROP NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_chat_messages_lot_id     ON chat_messages(lot_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_pool_id    ON chat_messages(pool_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
+
+ALTER TABLE lots ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
+-- ── Notifications ──────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS notifications (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id      UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title        TEXT        NOT NULL,
+  message      TEXT        NOT NULL,
+  type         VARCHAR(50) DEFAULT 'GENERAL',
+  reference_id TEXT,
+  is_read      BOOLEAN     NOT NULL DEFAULT false,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC);
 
 -- ── Trigger: auto-update updated_at on users ───────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()

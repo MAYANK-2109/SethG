@@ -54,7 +54,7 @@ fun RoleSelectionScreen(
 
             // App Logo
             Image(
-                painter = painterResource(id = R.drawable.sethg_logo),
+                painter = painterResource(id = R.drawable.sethg_emblem),
                 contentDescription = "SethG Logo",
                 modifier = Modifier
                     .size(80.dp)

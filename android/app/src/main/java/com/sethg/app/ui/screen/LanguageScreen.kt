@@ -93,15 +93,14 @@ fun LanguageScreen(
                         spotColor = Color(0x3D047857)
                     ),
                 shape = RoundedCornerShape(26.dp),
-                color = GreenPrimary,
+                color = Color.White,
                 tonalElevation = 8.dp
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Filled.Autorenew,
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(10.dp)) {
+                    Image(
+                        painter = androidx.compose.ui.res.painterResource(id = R.drawable.sethg_logo),
                         contentDescription = "Seth G Logo",
-                        tint = Color.White,
-                        modifier = Modifier.size(52.dp)
+                        modifier = Modifier.fillMaxSize()
                     )
                 }
             }

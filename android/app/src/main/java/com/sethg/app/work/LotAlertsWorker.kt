@@ -19,6 +19,7 @@ import com.sethg.app.data.local.SecureTokenStore
 import com.sethg.app.data.local.db.UserDao
 import com.sethg.app.data.repository.LotRepository
 import com.sethg.app.data.repository.RecyclerRepository
+import com.sethg.app.data.remote.SethGApiService
 import com.sethg.app.domain.model.Result as AppResult
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -41,6 +42,7 @@ class LotAlertsWorker(context: Context, params: WorkerParameters) : CoroutineWor
         fun preferences(): AppPreferences
         fun userDao(): UserDao
         fun tokenStore(): SecureTokenStore
+        fun apiService(): SethGApiService
     }
 
     companion object {
@@ -74,6 +76,7 @@ class LotAlertsWorker(context: Context, params: WorkerParameters) : CoroutineWor
             "recycler" -> recyclerAlerts(deps)
             "vendor", "user", null -> collectorAlerts(deps)
         }
+        poolAndNotificationAlerts(deps)
         return Result.success()
     }
 
@@ -123,6 +126,25 @@ class LotAlertsWorker(context: Context, params: WorkerParameters) : CoroutineWor
                 )
             )
         }
+    }
+
+    private suspend fun poolAndNotificationAlerts(deps: Deps) {
+        try {
+            val notifRes = deps.apiService().getNotifications()
+            if (notifRes.isSuccessful) {
+                val notifs = notifRes.body()?.notifications ?: emptyList()
+                val prefs = deps.preferences()
+                val unreadNotifs = notifs.filter { !it.isRead }
+                val fresh = prefs.takeUnnotified(unreadNotifs.map { "notif:${it.id}" }).toSet()
+                unreadNotifs.filter { "notif:${it.id}" in fresh }.forEach { notif ->
+                    notify(
+                        "notif:${notif.id}".hashCode(),
+                        notif.title,
+                        notif.message
+                    )
+                }
+            }
+        } catch (_: Exception) {}
     }
 
     private fun notify(id: Int, title: String, text: String) {

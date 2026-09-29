@@ -106,7 +106,7 @@ fun LoginScreen(
                 // Logo (Popped Card)
                 Surface(
                     modifier = Modifier
-                        .size(80.dp)
+                        .size(88.dp)
                         .shadow(
                             elevation = 10.dp,
                             shape = RoundedCornerShape(22.dp),
@@ -114,15 +114,14 @@ fun LoginScreen(
                             spotColor = Color(0x3D047857)
                         ),
                     shape = RoundedCornerShape(22.dp),
-                    color = GreenPrimary,
+                    color = Color.White,
                     tonalElevation = 6.dp
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Filled.Autorenew,
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(8.dp)) {
+                        Image(
+                            painter = androidx.compose.ui.res.painterResource(id = R.drawable.sethg_logo),
                             contentDescription = "Seth G Logo",
-                            tint = Color.White,
-                            modifier = Modifier.size(44.dp)
+                            modifier = Modifier.fillMaxSize()
                         )
                     }
                 }

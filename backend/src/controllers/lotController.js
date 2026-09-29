@@ -58,6 +58,7 @@ exports.syncLotValidation = [
   body('lat').isFloat({ min: -90, max: 90 }),
   body('lon').isFloat({ min: -180, max: 180 }),
   body('photo_hashes').optional().isArray({ max: 3 }),
+  body('photo_url').optional({ nullable: true }).isString(),
   body('price_region').optional({ nullable: true }).isString(),
 ];
 
@@ -67,12 +68,14 @@ exports.syncLot = async (req, res, next) => {
     const l = req.body;
     const { rows: [lot] } = await pool.query(
       `INSERT INTO lots (id, collector_id, category, weight_kg, estimate_low, estimate_high,
-                         price_region, lat, lon, photo_hashes)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-       ON CONFLICT (id) DO UPDATE SET id = lots.id          -- re-sync is a no-op
-       RETURNING id, collector_id, category, lat, lon`,
+                         price_region, lat, lon, photo_hashes, photo_url)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
+       ON CONFLICT (id) DO UPDATE SET 
+         photo_url = COALESCE(EXCLUDED.photo_url, lots.photo_url),
+         photo_hashes = COALESCE(EXCLUDED.photo_hashes, lots.photo_hashes)
+       RETURNING id, collector_id, category, lat, lon, photo_url`,
       [l.id, req.userId, l.category, l.weight_kg, l.estimate_low, l.estimate_high,
-       l.price_region || null, l.lat, l.lon, l.photo_hashes || []]
+       l.price_region || null, l.lat, l.lon, l.photo_hashes || [], l.photo_url || null]
     );
     if (lot.collector_id !== req.userId) return res.status(409).json({ error: 'Lot id already used' });
 

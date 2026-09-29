@@ -55,7 +55,7 @@ fun SethGTopHeader(
                 modifier = Modifier.clickable(onClick = onProfileClick)
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.sethg_logo),
+                    painter = painterResource(id = R.drawable.sethg_emblem),
                     contentDescription = "SethG Logo",
                     modifier = Modifier
                         .size(42.dp)

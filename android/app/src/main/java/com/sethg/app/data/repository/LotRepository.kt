@@ -171,13 +171,15 @@ class LotRepository @Inject constructor(
                 lat = here.latitude; lon = here.longitude
                 lotDao.setLocation(lot.lotId, lat, lon)
             }
+            val photoUrl = pending.photos.firstOrNull()?.filePath?.let { encodePhotoFile(it) }
             val response = runCatching {
                 api.syncLot(
                     SyncLotRequest(
                         id = lot.lotId, category = lot.category, weightKg = lot.weightKg,
                         estimateLow = lot.estimateLow, estimateHigh = lot.estimateHigh,
                         priceRegion = lot.priceRegion, lat = lat, lon = lon,
-                        photoHashes = pending.photos.map { it.sha256 }
+                        photoHashes = pending.photos.map { it.sha256 },
+                        photoUrl = photoUrl
                     )
                 )
             }.getOrNull() ?: break                                     // offline: try again later
@@ -188,6 +190,26 @@ class LotRepository @Inject constructor(
         }
         syncConfirmations()
         synced
+    }
+
+    private fun encodePhotoFile(filePath: String): String? {
+        return try {
+            val file = File(filePath)
+            if (!file.exists()) return null
+            val bitmap = android.graphics.BitmapFactory.decodeFile(file.absolutePath) ?: return null
+            val maxDim = 800
+            val scaled = if (bitmap.width > maxDim || bitmap.height > maxDim) {
+                val ratio = bitmap.width.toFloat() / bitmap.height.toFloat()
+                val (w, h) = if (ratio > 1) Pair(maxDim, (maxDim / ratio).toInt()) else Pair((maxDim * ratio).toInt(), maxDim)
+                android.graphics.Bitmap.createScaledBitmap(bitmap, w, h, true)
+            } else bitmap
+            val stream = java.io.ByteArrayOutputStream()
+            scaled.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, stream)
+            val bytes = stream.toByteArray()
+            "data:image/jpeg;base64," + android.util.Base64.encodeToString(bytes, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     // ── Stage 4: vendor confirms the handover with the recycler's code ──────

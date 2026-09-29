@@ -25,6 +25,10 @@ sealed class Screen(val route: String) {
         fun of(lotId: String, vendorName: String) = "chat/$lotId/${java.net.URLEncoder.encode(vendorName, "UTF-8")}"
     }
     object ChatInbox : Screen("chat_inbox")
+    object PoolChat : Screen("pool_chat/{poolId}/{simpleId}/{category}/{status}/{isAdmin}") {
+        fun of(poolId: String, simpleId: String, category: String, status: String, isAdmin: Boolean) =
+            "pool_chat/$poolId/${java.net.URLEncoder.encode(simpleId, "UTF-8")}/${java.net.URLEncoder.encode(category, "UTF-8")}/$status/$isAdmin"
+    }
 }
 
 @Composable
@@ -183,7 +187,30 @@ fun SethGNavHost() {
                 onOpenChat = { lotId, vendorName ->
                     navController.navigate(Screen.Chat.of(lotId, vendorName))
                 },
+                onOpenPoolChat = { poolId, simpleId, category, status, isAdmin ->
+                    navController.navigate(Screen.PoolChat.of(poolId, simpleId, category, status, isAdmin))
+                },
                 onBack = { navController.popBackStack() }
+            )
+        }
+
+        // ── Pool Chat ──────────────────────────────────────────────────────────
+        composable(Screen.PoolChat.route) { backStackEntry ->
+            val poolId   = backStackEntry.arguments?.getString("poolId") ?: ""
+            val simpleId = backStackEntry.arguments?.getString("simpleId")
+                ?.let { java.net.URLDecoder.decode(it, "UTF-8") } ?: ""
+            val category = backStackEntry.arguments?.getString("category")
+                ?.let { java.net.URLDecoder.decode(it, "UTF-8") } ?: ""
+            val status   = backStackEntry.arguments?.getString("status") ?: "OPEN"
+            val isAdmin  = backStackEntry.arguments?.getString("isAdmin")?.toBooleanStrictOrNull() ?: false
+
+            PoolChatScreen(
+                poolId   = poolId,
+                simpleId = simpleId,
+                category = category,
+                status   = status,
+                isAdmin  = isAdmin,
+                onBack   = { navController.popBackStack() }
             )
         }
     }

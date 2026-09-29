@@ -115,7 +115,8 @@ data class SyncLotRequest(
     @SerializedName("price_region") val priceRegion: String?,
     val lat: Double,
     val lon: Double,
-    @SerializedName("photo_hashes") val photoHashes: List<String>
+    @SerializedName("photo_hashes") val photoHashes: List<String>,
+    @SerializedName("photo_url") val photoUrl: String? = null
 )
 
 data class RemoteOffer(
@@ -158,7 +159,8 @@ data class RemoteLot(
     @SerializedName("escrow_amount") val escrowAmount: Double? = null,
     @SerializedName("blockchain_tx_hash") val blockchainTxHash: String? = null,
     @SerializedName("blockchain_proof_hash") val blockchainProofHash: String? = null,
-    @SerializedName("epr_token_id") val eprTokenId: String? = null
+    @SerializedName("epr_token_id") val eprTokenId: String? = null,
+    @SerializedName("photo_url") val photoUrl: String? = null
 )
 
 data class SyncLotResponse(
@@ -206,7 +208,8 @@ data class NearbyLot(
     @SerializedName("collector_first_name") val collectorFirstName: String,
     @SerializedName("distance_km") val distanceKm: Double,
     @SerializedName("offer_count") val offerCount: Int,
-    @SerializedName("my_rate_per_kg") val myRatePerKg: Double?
+    @SerializedName("my_rate_per_kg") val myRatePerKg: Double?,
+    @SerializedName("photo_url") val photoUrl: String? = null
 )
 
 data class NearbyLotsResponse(val lots: List<NearbyLot>, @SerializedName("server_time") val serverTime: String)
@@ -336,3 +339,55 @@ data class BlockchainProofResponse(
     @SerializedName("explorer_url") val explorerUrl: String?,
     @SerializedName("statutory_compliance") val statutoryCompliance: String?
 )
+
+// ── Pools & Pool Chat ────────────────────────────────────────────────────────
+data class PoolItem(
+    val id: String,
+    @SerializedName("admin_id") val adminId: String,
+    val category: String,
+    val status: String,
+    @SerializedName("admin_name") val adminName: String,
+    @SerializedName("simple_id") val simpleId: String,
+    @SerializedName("is_admin") val isAdmin: Boolean,
+    @SerializedName("total_weight") val totalWeight: Double,
+    @SerializedName("lot_count") val lotCount: Int,
+    @SerializedName("last_message") val lastMessage: String?,
+    @SerializedName("last_message_at") val lastMessageAt: String?,
+    @SerializedName("last_sender_id") val lastSenderId: String?,
+    @SerializedName("message_count") val messageCount: Int,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class MyPoolsResponse(
+    val pools: List<PoolItem>
+)
+
+data class CreatePoolRequest(
+    val category: String
+)
+
+data class PoolMessageItem(
+    val id: String,
+    @SerializedName("pool_id") val poolId: String,
+    @SerializedName("sender_id") val senderId: String,
+    @SerializedName("sender_name") val senderName: String,
+    val content: String,
+    @SerializedName("created_at") val createdAt: String
+)
+
+// ── In-App Notifications ──────────────────────────────────────────────────────
+data class RemoteNotification(
+    val id: String,
+    val title: String,
+    val message: String,
+    val type: String,
+    @SerializedName("reference_id") val referenceId: String?,
+    @SerializedName("is_read") val isRead: Boolean,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class NotificationsResponse(
+    val notifications: List<RemoteNotification>,
+    @SerializedName("unread_count") val unreadCount: Int
+)
+

@@ -65,6 +65,7 @@ exports.nearbyLots = async (req, res, next) => {
     const { rows } = await pool.query(
       `SELECT * FROM (
          SELECT l.id, l.category, l.weight_kg, l.estimate_low, l.estimate_high, l.price_region,
+                l.photo_url,
                 l.created_at, split_part(c.name, ' ', 1) AS collector_first_name,
                 ROUND((${dist})::numeric, 1) AS distance_km,
                 ${LOT_RADIUS_SQL} AS match_radius_km,

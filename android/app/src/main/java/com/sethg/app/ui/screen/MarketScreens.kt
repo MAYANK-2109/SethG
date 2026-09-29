@@ -493,11 +493,35 @@ private fun MarketListingCard(lot: NearbyLot, onOffer: () -> Unit, onChat: () ->
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
+                    .height(180.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
                     .background(LightSurfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(Icons.Filled.Category, contentDescription = null, tint = GreenPrimary.copy(alpha = 0.4f), modifier = Modifier.size(64.dp))
+                if (!lot.photoUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = lot.photoUrl,
+                        contentDescription = "Scrap ${categoryLabel(lot.category)}",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                    // Subtle dark gradient overlay at top & bottom so badges and distance remain razor sharp
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(
+                                androidx.compose.ui.graphics.Brush.verticalGradient(
+                                    colors = listOf(
+                                        Color.Black.copy(alpha = 0.35f),
+                                        Color.Transparent,
+                                        Color.Black.copy(alpha = 0.45f)
+                                    )
+                                )
+                            )
+                    )
+                } else {
+                    Icon(Icons.Filled.Category, contentDescription = null, tint = GreenPrimary.copy(alpha = 0.4f), modifier = Modifier.size(64.dp))
+                }
                 
                 Row(
                     modifier = Modifier.align(Alignment.TopStart).padding(12.dp),

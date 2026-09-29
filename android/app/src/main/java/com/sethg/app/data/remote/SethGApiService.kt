@@ -94,4 +94,27 @@ interface SethGApiService {
     // Blockchain & EPR Verification
     @GET("lots/{id}/blockchain-proof")
     suspend fun getBlockchainProof(@Path("id") lotId: String): Response<com.sethg.app.data.remote.model.BlockchainProofResponse>
+
+    // ── Pools & Pool Chat ────────────────────────────────────────────────────────
+    @GET("pools/mine")
+    suspend fun getMyPools(): Response<MyPoolsResponse>
+
+    @POST("pools")
+    suspend fun createPool(@Body request: CreatePoolRequest): Response<PoolItem>
+
+    @POST("pools/{id}/post")
+    suspend fun postPool(@Path("id") poolId: String): Response<Map<String, Any>>
+
+    @GET("pools/{id}/messages")
+    suspend fun getPoolMessages(@Path("id") poolId: String): Response<List<PoolMessageItem>>
+
+    @POST("pools/{id}/messages")
+    suspend fun postPoolMessage(@Path("id") poolId: String, @Body request: PostMessageRequest): Response<PoolMessageItem>
+
+    // ── Notifications ────────────────────────────────────────────────────────────
+    @GET("notifications")
+    suspend fun getNotifications(): Response<NotificationsResponse>
+
+    @POST("notifications/{id}/read")
+    suspend fun markNotificationRead(@Path("id") id: String): Response<Map<String, Any>>
 }
