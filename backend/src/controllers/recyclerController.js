@@ -162,8 +162,8 @@ exports.trips = async (req, res, next) => {
     const { rows: trips } = await pool.query(
       `SELECT t.*, h.name AS hub_name, h.lat AS hub_lat, h.lon AS hub_lon
        FROM pickup_trips t LEFT JOIN hubs h ON h.id = t.hub_id
-       WHERE t.recycler_id = $1 AND t.status = 'SCHEDULED'
-       ORDER BY t.scheduled_date, t.created_at`, [req.userId]);
+       WHERE t.recycler_id = $1 AND t.status IN ('SCHEDULED', 'DONE')
+       ORDER BY t.scheduled_date DESC, t.created_at DESC`, [req.userId]);
     for (const trip of trips) {
       const { rows: stops } = await pool.query(
         `SELECT l.id AS lot_id, l.accepted_offer_id, l.stop_seq, l.slot_start, l.slot_end, l.category, l.weight_kg, l.status,

@@ -241,6 +241,7 @@ data class RemoteTrip(
     @SerializedName("scheduled_date") val scheduledDate: String,
     @SerializedName("total_kg") val totalKg: Double,
     @SerializedName("hub_name") val hubName: String?,
+    val status: String? = null,
     val stops: List<TripStop>
 )
 

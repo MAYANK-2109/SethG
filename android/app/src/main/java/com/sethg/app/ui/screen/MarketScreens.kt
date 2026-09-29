@@ -374,26 +374,121 @@ fun RecyclerMarketSection(onHandover: (lotId: String, declaredKg: Double) -> Uni
 
 @Composable
 private fun TripCard(trip: RemoteTrip, onHandover: (String, Double) -> Unit, onNavigate: (Double, Double) -> Unit) {
-    Section("${trip.mode} · ${trip.scheduledDate.take(10)} · ${trip.totalKg} kg") {
-        trip.hubName?.let { Text(stringResource(R.string.drop_at_hub, it), color = TextSecondary) }
-        trip.stops.forEach { stop ->
-            Surface(color = LightSurfaceVariant, shape = RoundedCornerShape(12.dp)) {
-                Column(Modifier.fillMaxWidth().padding(12.dp)) {
-                    Text("${stop.stopSeq}. ${stop.collectorName} · ${formatSlot(stop.slotStart, stop.slotEnd)}",
-                        fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                    Text("${categoryLabel(stop.category)} ${stop.weightKg} kg · ${statusLabel(stop.status)}" +
-                        (stop.collectorPhone?.let { " · $it" } ?: ""), color = TextSecondary, fontSize = 12.sp)
-                    Text(stringResource(R.string.code_for_vendor) + ": " + stop.handoverOtp.chunked(3).joinToString(" "),
-                        color = GreenPrimary, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { onNavigate(stop.lat, stop.lon) }) {
-                            Icon(Icons.Filled.Directions, null, Modifier.size(16.dp)); Spacer(Modifier.width(4.dp))
-                            Text(stringResource(R.string.navigate))
+    val isCompleted = trip.status.equals("DONE", ignoreCase = true)
+    val statusLabel = if (isCompleted) "✓ COMPLETED" else "SCHEDULED"
+    val statusColor = if (isCompleted) GreenPrimary else Color(0xFF2563EB)
+    val statusContainer = if (isCompleted) GreenContainer else Color(0xFFDBEAFE)
+
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
+    ) {
+        Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "${trip.mode} TRIP",
+                        fontWeight = FontWeight.ExtraBold,
+                        color = TextPrimary,
+                        fontSize = 15.sp
+                    )
+                    Surface(color = statusContainer, shape = RoundedCornerShape(6.dp)) {
+                        Text(
+                            text = statusLabel,
+                            color = statusColor,
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+                Text(
+                    trip.scheduledDate.take(10),
+                    color = TextSecondary,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Surface(color = LightSurfaceVariant, shape = RoundedCornerShape(8.dp)) {
+                    Text(
+                        "📦 ${trip.totalKg} kg Total",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+                Surface(color = LightSurfaceVariant, shape = RoundedCornerShape(8.dp)) {
+                    Text(
+                        "🛑 ${trip.stops.size} Stop${if (trip.stops.size > 1) "s" else ""}",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+            }
+
+            trip.hubName?.let { Text(stringResource(R.string.drop_at_hub, it), color = TextSecondary, fontSize = 12.sp) }
+
+            trip.stops.forEach { stop ->
+                Surface(
+                    color = if (stop.status in listOf("WEIGHED", "HANDED_OVER")) Color(0xFFF0FDF4) else LightSurfaceVariant,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, if (stop.status in listOf("WEIGHED", "HANDED_OVER")) Color(0xFFBBF7D0) else Color.Transparent)
+                ) {
+                    Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "${stop.stopSeq}. ${stop.collectorName}",
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary,
+                                fontSize = 14.sp
+                            )
+                            if (stop.status in listOf("WEIGHED", "HANDED_OVER")) {
+                                Surface(color = GreenContainer, shape = RoundedCornerShape(4.dp)) {
+                                    Text("✓ HANDED OVER", color = GreenPrimary, fontSize = 10.sp, fontWeight = FontWeight.ExtraBold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
+                                }
+                            }
                         }
-                        if (stop.status !in listOf("WEIGHED", "HANDED_OVER")) Button(
-                            onClick = { onHandover(stop.lotId, stop.weightKg) },
-                            colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
-                        ) { Text(stringResource(R.string.do_handover)) }
+                        Text(
+                            "${categoryLabel(stop.category)} · ${stop.weightKg} kg" +
+                                (stop.collectorPhone?.let { " · 📞 $it" } ?: ""),
+                            color = TextSecondary,
+                            fontSize = 12.sp
+                        )
+                        if (!isCompleted) {
+                            Text(
+                                stringResource(R.string.code_for_vendor) + ": " + stop.handoverOtp.chunked(3).joinToString(" "),
+                                color = GreenPrimary,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 13.sp
+                            )
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedButton(onClick = { onNavigate(stop.lat, stop.lon) }) {
+                                    Icon(Icons.Filled.Directions, null, Modifier.size(16.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(stringResource(R.string.navigate))
+                                }
+                                if (stop.status !in listOf("WEIGHED", "HANDED_OVER")) Button(
+                                    onClick = { onHandover(stop.lotId, stop.weightKg) },
+                                    colors = ButtonDefaults.buttonColors(containerColor = GreenPrimary)
+                                ) { Text(stringResource(R.string.do_handover)) }
+                            }
+                        }
                     }
                 }
             }

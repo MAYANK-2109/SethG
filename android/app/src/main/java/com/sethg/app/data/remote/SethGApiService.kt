@@ -117,4 +117,7 @@ interface SethGApiService {
 
     @POST("notifications/{id}/read")
     suspend fun markNotificationRead(@Path("id") id: String): Response<Map<String, Any>>
+
+    @POST("notifications/read-all")
+    suspend fun markAllNotificationsRead(): Response<Map<String, Any>>
 }

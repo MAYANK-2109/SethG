@@ -69,4 +69,16 @@ class NotificationsViewModel @Inject constructor(
             } catch (_: Exception) {}
         }
     }
+
+    fun markAllRead() {
+        viewModelScope.launch {
+            try {
+                api.markAllNotificationsRead()
+                _uiState.update { state ->
+                    val updated = state.notifications.map { it.copy(isRead = true) }
+                    state.copy(notifications = updated, unreadCount = 0)
+                }
+            } catch (_: Exception) {}
+        }
+    }
 }
